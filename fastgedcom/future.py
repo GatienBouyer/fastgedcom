@@ -1,6 +1,6 @@
 from typing import IO
 
-from .gedcom_base import Gedcom, GedcomLine
+from .base import Gedcom, GedcomLine
 
 
 def export(gedcom: Gedcom, s: IO[str]) -> None:

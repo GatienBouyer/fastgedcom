@@ -1,8 +1,8 @@
 from typing import Callable, Literal, NamedTuple, cast
 from pathlib import Path
 
-from .gedcom_base import Gedcom
-from .gedcom_structure import FamRef, IndiRef, XRef
+from .base import Gedcom
+from .structure import FamRef, IndiRef, XRef
 
 GENDER = Literal['M', 'F', 'U']
 

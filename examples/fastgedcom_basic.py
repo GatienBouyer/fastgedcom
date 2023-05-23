@@ -1,4 +1,4 @@
-from fastgedcom.gedcom_parser import guess_encoding, parse
+from fastgedcom.parser import guess_encoding, parse
 
 gedcom_file = "C:/Users/gatie/Documents/Scripts_Python/GeneaCharts/bouyer-perret 20220809.ged"
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:

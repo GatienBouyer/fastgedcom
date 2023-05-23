@@ -1,8 +1,8 @@
 from typing import IO
 from pathlib import Path
 
-from .gedcom_base import Gedcom, GedcomLine
-from .gedcom_structure import XRef
+from .base import Gedcom, GedcomLine
+from .structure import XRef
 
 import ansel
 ansel.register()

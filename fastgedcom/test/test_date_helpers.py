@@ -1,6 +1,6 @@
 import unittest
 
-from ..gedcom_helper import (format_date, remove_trailing_zeros,
+from ..helpers import (format_date, remove_trailing_zeros,
                              extract_int_year, extract_year)
 
 

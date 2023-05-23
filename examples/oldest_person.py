@@ -1,7 +1,7 @@
-from fastgedcom.gedcom_helper import (extract_int_year, extract_year,
+from fastgedcom.helpers import (extract_int_year, extract_year,
                                       get_birth_date, get_death_date,
                                       get_gedcom_data, get_name)
-from fastgedcom.gedcom_parser import guess_encoding, parse
+from fastgedcom.parser import guess_encoding, parse
 
 gedcom_file = "C:/Users/gatie/Documents/Scripts_Python/GeneaCharts/bouyer-perret 20220809.ged"
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:

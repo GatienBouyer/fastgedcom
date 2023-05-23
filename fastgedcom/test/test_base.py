@@ -1,6 +1,6 @@
 import unittest
 
-from ..gedcom_base import GedcomLine
+from ..base import GedcomLine
 
 
 class TestParser(unittest.TestCase):

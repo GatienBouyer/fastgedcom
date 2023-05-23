@@ -1,8 +1,8 @@
 import unittest
 from pathlib import Path
 
-from ..gedcom_base import Gedcom
-from ..gedcom_parser import guess_encoding, parse
+from ..base import Gedcom
+from ..parser import guess_encoding, parse
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
 file_utf8_bom = Path(__file__).parent / "test_data" / "in_utf8_bom.ged"

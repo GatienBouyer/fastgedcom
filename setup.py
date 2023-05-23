@@ -8,7 +8,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
     name="fastgedcom",
-    version="0.0.10",
+    version="0.0.1",
     description="A gedcom tool to parse, browse and modify gedcom files",
     packages=find_packages(exclude=['fastgedcom.test']),
     long_description=long_description,
@@ -27,6 +27,9 @@ setup(
     ],
     keywords='fastgedcom gedcom parser genealogy',
     install_requires=requirements,
+    extras_require={
+        "dev": ["mypy", "twine"],
+	},
     python_requires=">=3.11",
 	project_urls={
         'Bug Reports': 'https://github.com/GatienBouyer/fastgedcom/issues',

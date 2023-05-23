@@ -1,7 +1,7 @@
 from typing import Iterable, Iterator
 from dataclasses import dataclass
 
-from .gedcom_structure import FamRef, IndiRef, XRef
+from .structure import FamRef, IndiRef, XRef
 
 
 @dataclass(slots=True)
