@@ -1,11 +1,89 @@
-from typing import Iterable, Iterator
+from abc import ABC, abstractmethod
+from typing import Iterator, Union
 from dataclasses import dataclass
 
 from .structure import FamRef, IndiRef, XRef
 
 
+class Line(ABC):
+	"""Abstract base class for gedcom lines.
+	(see GedcomLine for more information)
+	This class is for syntactic sugar. It defines operator
+	as alias of standard methods and allows the chaining of
+	operations thanks to the FakeLine implemantation.
+	
+	Example:
+	```python
+	# With standard methods:
+	indi = gedcom.get_record("@I1@")
+	birth_date = indi.get_sub_record("BIRT").get_sub_record_value("DATE")
+	sources = indi.get_sub_record("BIRT").get_sub_records("SOUR").
+	
+	# With magic methods:
+	indi = gedcom["@I1@"]
+	birth_date = indi > "BIRT" >= "DATE"
+	sources = indi > "BIRT" >> "SOUR"
+	```
+
+	In general, the use of `get_sub_record_payload` (or `>=`) is preferable
+	rather than the use of isinstance(line, FakeLine).
+	"""
+	@abstractmethod
+	def get_sub_records(self, tag: str) -> list['GedcomLine']:
+		raise NotImplementedError
+	@abstractmethod
+	def get_sub_record(self, tag: str) -> Union['GedcomLine', 'FakeLine']:
+		raise NotImplementedError
+	@abstractmethod
+	def get_sub_record_payload(self, tag: str) -> str | None:
+		# TODO Check if checking for CONT in sub_rec here doesn't hurt performance
+		raise NotImplementedError
+	__gt__ = get_sub_record # operator >
+	__ge__ = get_sub_record_payload # operator >=
+	__rshift__ = get_sub_records # operator >>
+
+class FakeLine(Line):
+	"""Dummy Line that allows the chaining of get_sub_record.
+
+	To differenciate a FakeLine from a GedcomLine a simple boolean test is
+	enough: `if line: line.payload`. However to tell typecheckers that after
+	the test it can't be FakeLine, I found nothing else than the use of
+	isinstance: `if not isinstance(line, FakeLine): line.payload`  
+
+	In general, the use of `get_sub_record_payload` (or `>=`) is preferable.
+
+	Example:
+	```python
+	indi_birth_date = (gedcom.get_record("@I1@") > "BIRT") > "DATE"
+	if not isinstance(line, FakeLine):
+		print("We know the birth date of @I1@ !")
+	```
+	"""
+	def get_sub_records(self, tag: str) -> list['GedcomLine']:
+		return []
+	
+	def get_sub_record(self, tag: str) -> Union['GedcomLine', 'FakeLine']:
+		return fake_line
+	
+	def get_sub_record_payload(self, tag: str) -> str | None:
+		return None
+	
+	__gt__ = get_sub_record # operator >
+	__ge__ = get_sub_record_payload # operator >=
+	__rshift__ = get_sub_records # operator >>
+	
+	def __repr__(self) -> str:
+		return f"<{self.__class__.__qualname__}>"
+	
+	def __bool__(self) -> bool:
+		return False
+
+
+fake_line = FakeLine()
+
+
 @dataclass(slots=True)
-class GedcomLine():
+class GedcomLine(Line):
 	"""Represent a line of a gedcom document and contains the sub-lines
 	to traverse the gedcom tree structure.
 
@@ -20,39 +98,55 @@ class GedcomLine():
 	payload: str | None
 	sub_rec: list['GedcomLine']
 
-	def __str__(self) -> str:
-		return f"{self.level} {self.tag} {self.payload if self.payload else ''}"
-
-	def __repr__(self) -> str:
-		return f"<{self.__class__.__qualname__}{self.level} {self.tag} {self.payload} -> {len(self.sub_rec)}>"
-
-	def all_sub_rec_recursive(self) -> Iterable['GedcomLine']:
-		sub_records = list(self.sub_rec)
-		while len(sub_records) > 0:
-			record = sub_records.pop(0)
-			yield record
-			sub_records = record.sub_rec + sub_records
-
 	def get_sub_records(self, tag: str) -> list['GedcomLine']:
 		return [sub_record for sub_record in self.sub_rec if sub_record.tag == tag]
+
+	def get_sub_record(self, tag: str) -> Union['GedcomLine', 'FakeLine']:
+		for sub_record in self.sub_rec:
+			if sub_record.tag == tag:
+				return sub_record
+		return fake_line
 
 	def get_sub_record_payload(self, tag: str) -> str | None:
 		for sub_record in self.sub_rec:
 			if sub_record.tag == tag:
 				return sub_record.payload
 		return None
+	
+	__gt__ = get_sub_record # operator >
+	__ge__ = get_sub_record_payload # operator >=
+	__rshift__ = get_sub_records # operator >>
 
-	def get_sub_record(self, tag: str) -> 'GedcomLine | None':
-		for sub_record in self.sub_rec:
-			if sub_record.tag == tag:
-				return sub_record
-		return None
+	def __str__(self) -> str:
+		return f"{self.level} {self.tag} {self.payload if self.payload else ''}"
+
+	def __repr__(self) -> str:
+		return f"<{self.__class__.__qualname__} {self.level} {self.tag} {self.payload} -> {len(self.sub_rec)}>"
+
 
 class Gedcom():
 	"""Stores all the information of the gedcom document.
 	
 	All level 0 records are directly accessible and the higher level records
-	are accessible via GedcomLine.sub_rec of the parent record."""
+	are accessible via GedcomLine.sub_rec of the parent record.
+	
+	Example:
+	```python
+	gedcom = Gedcom()
+
+	# Iterate over all records
+	for rec in gedcom: print(rec.tag)
+
+	# Iterate over individuals:
+	for rec in gedcom.get_records("INDI"): print(rec.tag)
+
+	# Get the record by XRef using standard method:
+	indi = gedcom.get_record("@I1@")
+
+	# Get the record by XRef using magic method:
+	indi = gedcom["@I1@"]
+	```	
+	"""
 
 	def __init__(self) -> None:
 		self.level0_index: dict[XRef, GedcomLine] = dict() #to get records
@@ -67,8 +161,9 @@ class Gedcom():
 			if record.payload == record_type:
 				yield record
 
-	def get_record(self, identifier: XRef) -> GedcomLine | None:
-		return self.level0_index.get(identifier, None)
+	def get_record(self, identifier: XRef) -> GedcomLine | FakeLine:
+		return self.level0_index.get(identifier, fake_line)
+	__getitem__ = get_record
 
 	def get_parent_family(self, child: IndiRef) -> FamRef | None:
 		"""Return the FamRef of the family with the parents of the person."""

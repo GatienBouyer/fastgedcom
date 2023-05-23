@@ -23,33 +23,34 @@ The `ansel` library is a dependancy of FastGedcom. It is automatically installed
 
 ## Motivations
 
-The FastGedcom library is intented to be read, understood, and used quickly, so you focus on what really matters. The code has type hints to help with development. Functions are based directly on gedcom pointers for ease of use. Due to the wide variety of gedcom software, no data parsing is done, but some standalone functions are provided (see the `gedcom_helper` module).
+The FastGedcom library is intented to be read, understood, and used quickly, so you focus on what really matters. The code has type hints to help with development. Functions are based directly on gedcom pointers for ease of use. Due to the wide variety of gedcom software, no data parsing is done, but some standalone functions are provided (see the `fastgedcom.helpers` module).
 
 
 ## Usage examples
 
 In the following example, we print the name of the person under the reference @I1@.
-
 ```python
-from fastgedcom.gedcom_parser import guess_encoding, parse
+from fastgedcom.parser import guess_encoding, parse
 
-gedcom_file = "your_gedcom_file"
+gedcom_file = YOUR_GEDCOM_FILE
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
 	gedcom, warnings = parse(f)
-print("Warnings:", *warnings, sep="\n", end="---\n")
+print("Warnings: ", *warnings, sep="\n", end="---\n")
 
 indi = gedcom.get_record("@I1@")
-assert(indi)
-name = indi.get_sub_record_payload("NAME")
-print(name)
+surname = indi.get_sub_record("NAME").get_sub_record_payload("SURN")
+print(surname)
+
+# With magic methods:
+print((gedcom["@I1@"] > "NAME") >= "SURN")
 ```
 
 In the following example, we count the number of ancestral generations of the person whose reference is @I1@.
 ```python
-from fastgedcom.gedcom_parser import guess_encoding, parse
-from fastgedcom.gedcom_structure import IndiRef
+from fastgedcom.parser import guess_encoding, parse
+from fastgedcom.structure import IndiRef
 
-gedcom_file = "fastgedcom/test/test_data/bouyer-perret 20220809.ged"
+gedcom_file = YOUR_GEDCOM_FILE
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
 	gedcom, _ = parse(f)
 
@@ -64,14 +65,13 @@ number_generations_above_root = nb_ancestral_gen("@I1@")
 print(f"Number of generations above root: {number_generations_above_root}")
 ```
 
-In the following example, we find the oldest deceased person. Then, we print his name and all his gedcom information using the `gedcom_helper` module
+In the following example, we find the oldest deceased person. Then, we print his name and all his gedcom information using the `fastgedcom.helpers` module
 ```python
-from fastgedcom.gedcom_helper import (extract_int_year, extract_year,
-                                      get_birth_date, get_death_date,
-                                      get_gedcom_data, get_name)
-from fastgedcom.gedcom_parser import guess_encoding, parse
+from fastgedcom.helpers import (extract_int_year, extract_year, format_name,
+                                get_gedcom_data)
+from fastgedcom.parser import guess_encoding, parse
 
-gedcom_file = "your_gedcom_file"
+gedcom_file = YOUR_GEDCOM_FILE
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
 	gedcom, _ = parse(f)
 
@@ -79,8 +79,8 @@ oldest = next(gedcom.get_records("INDI")).tag
 age_oldest = 0.0 # the age is a float to handle all type of date
 # A date such as between 2001 and 2002 returns 2001.5
 for individual in gedcom.get_records("INDI"):
-	birth_date = get_birth_date(gedcom, individual.tag)
-	death_date = get_death_date(gedcom, individual.tag)
+	birth_date = (gedcom[individual.tag] > "BIRT") >= "DATE"
+	death_date = (gedcom[individual.tag] > "DEAT") >= "DATE"
 	birth_year = extract_int_year(birth_date)
 	death_year = extract_int_year(death_date)
 	if birth_year is None or death_year is None: continue
@@ -89,9 +89,9 @@ for individual in gedcom.get_records("INDI"):
 		oldest = individual.tag
 		age_oldest = age
 
-print("Oldest person:", get_name(gedcom, oldest))
-print("Year of birth:", extract_year(get_birth_date(gedcom, oldest)))
-print("Year of death:", extract_year(get_death_date(gedcom, oldest)))
+print("Oldest person:", format_name(gedcom[oldest] >= "NAME"))
+print("Year of birth:", extract_year((gedcom[oldest] > "BIRT") >= "DATE"))
+print("Year of death:", extract_year((gedcom[oldest] > "DEAT") >= "DATE"))
 print("Age:", age_oldest)
 print("All the information:", get_gedcom_data(gedcom, oldest))
 ```

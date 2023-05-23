@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 
 from ..base import Gedcom
+from ..helpers import get_all_sub_records
 from ..parser import guess_encoding, parse
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
@@ -17,7 +18,7 @@ class TestParser(unittest.TestCase):
 		name = indi.get_sub_record_payload("NAME")
 		self.assertEqual(name, "éàç /ÉÀÇ/")
 		nb_lines = len(g.level0_index) + sum(1 
-			for r in g for _ in r.all_sub_rec_recursive())
+			for r in g for _ in get_all_sub_records(r))
 		self.assertEqual(nb_lines, 27)
 		
 	def test_parsing_utf8(self) -> None:
@@ -68,7 +69,7 @@ class TestParser(unittest.TestCase):
 		name = indi.get_sub_record_payload("NAME")
 		self.assertEqual(name, "éàç /ÉÀÇ/")
 		nb_lines = len(g.level0_index) + sum(1 
-			for r in g for _ in r.all_sub_rec_recursive())
+			for r in g for _ in get_all_sub_records(r))
 		self.assertEqual(nb_lines, 9)
 
 if __name__ == '__main__':	
