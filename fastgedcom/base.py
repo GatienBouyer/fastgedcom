@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterator, Union
+from typing import Iterator, TypeGuard, Union
 from dataclasses import dataclass
 
 from .structure import FamRef, IndiRef, XRef
@@ -10,7 +10,7 @@ class Line(ABC):
 	(see GedcomLine for more information)
 	This class is for syntactic sugar. It defines operator
 	as alias of standard methods and allows the chaining of
-	operations thanks to the FakeLine implemantation.
+	operations thanks to the FakeLine implementation.
 	
 	Example:
 	```python
@@ -24,39 +24,40 @@ class Line(ABC):
 	birth_date = indi > "BIRT" >= "DATE"
 	sources = indi > "BIRT" >> "SOUR"
 	```
-
-	In general, the use of `get_sub_record_payload` (or `>=`) is preferable
-	rather than the use of isinstance(line, FakeLine).
 	"""
 	@abstractmethod
-	def get_sub_records(self, tag: str) -> list['GedcomLine']:
-		raise NotImplementedError
+	def get_sub_records(self, tag: str) -> list['GedcomLine']: ...
+	
 	@abstractmethod
-	def get_sub_record(self, tag: str) -> Union['GedcomLine', 'FakeLine']:
-		raise NotImplementedError
+	def get_sub_record(self, tag: str) -> Union['GedcomLine', 'FakeLine']: ...
+	
 	@abstractmethod
-	def get_sub_record_payload(self, tag: str) -> str | None:
-		# TODO Check if checking for CONT in sub_rec here doesn't hurt performance
-		raise NotImplementedError
+	def get_sub_record_payload(self, tag: str) -> str | None: ...
+
 	__gt__ = get_sub_record # operator >
 	__ge__ = get_sub_record_payload # operator >=
 	__rshift__ = get_sub_records # operator >>
 
 class FakeLine(Line):
-	"""Dummy Line that allows the chaining of get_sub_record.
+	"""Dummy Line that allows the chaining of operators.
 
 	To differenciate a FakeLine from a GedcomLine a simple boolean test is
 	enough: `if line: line.payload`. However to tell typecheckers that after
-	the test it can't be FakeLine, I found nothing else than the use of
-	isinstance: `if not isinstance(line, FakeLine): line.payload`  
+	the test it the type is narrowed, you should use the line_exists
+	function.
 
 	In general, the use of `get_sub_record_payload` (or `>=`) is preferable.
 
 	Example:
 	```python
+	# Instead of:
 	indi_birth_date = (gedcom.get_record("@I1@") > "BIRT") > "DATE"
-	if not isinstance(line, FakeLine):
-		print("We know the birth date of @I1@ !")
+	if line_exists(indi_birth_date):
+		print(indi_birth_date.payload)
+
+	# Prefere the use of:
+	indi_birth_date = (gedcom.get_record("@I1@") > "BIRT") >= "DATE"
+	print(indi_birth_date)
 	```
 	"""
 	def get_sub_records(self, tag: str) -> list['GedcomLine']:
@@ -79,23 +80,20 @@ class FakeLine(Line):
 		return False
 
 
-fake_line = FakeLine()
-
-
 @dataclass(slots=True)
 class GedcomLine(Line):
 	"""Represent a line of a gedcom document and contains the sub-lines
 	to traverse the gedcom tree structure.
 
-	This class use the simplified 'Level Tag Payload EOL' structure
-	(instead of the normalized 'Level [Xref] Tag [LineVal] EOL' structure).
+	This class use the simplified 'Level Tag Payload' structure,
+	instead of the normalized 'Level [Xref] Tag [LineVal]' gedcom structure.
 	In this structure, the Tag is either the normalized Tag or the optional Xref.
 	Hence, the Payload is the LineVal when the Xref is not present,
 	or the Payload is the normalized Tag plus the LineVal when the Xref is present.
 	When the line contains neither a Xref or a LineVal, the Payload is None."""
 	level: int
 	tag: str | XRef
-	payload: str | None
+	payload: str | None # TODO Check if checking for CONT in sub_rec here doesn't hurt performance
 	sub_rec: list['GedcomLine']
 
 	def get_sub_records(self, tag: str) -> list['GedcomLine']:
@@ -122,6 +120,18 @@ class GedcomLine(Line):
 
 	def __repr__(self) -> str:
 		return f"<{self.__class__.__qualname__} {self.level} {self.tag} {self.payload} -> {len(self.sub_rec)}>"
+
+	@property
+	def payload_with_cont(self) -> str | None:
+		"""The ilne payload with the payload of the CONT sub-records."""
+		if self.payload is None: return None
+		text = ""
+		text += self.payload
+		for cont in self.get_sub_records('CONT'):
+			text += '\n'
+			text_part = cont.payload
+			if text_part is not None: text += text_part
+		return text
 
 
 class Gedcom():
@@ -248,3 +258,9 @@ class Gedcom():
 					spouse = sub_record.payload
 			unions.append((spouse, children))
 		return unions
+
+
+fake_line = FakeLine()
+
+def line_exists(line: Union[GedcomLine, FakeLine]) -> TypeGuard[GedcomLine]:
+	return bool(line)

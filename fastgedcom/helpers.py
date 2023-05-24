@@ -1,6 +1,6 @@
 from typing import Any, Callable, Iterator, Literal
 
-from .base import FakeLine, Gedcom, GedcomLine
+from .base import Gedcom, GedcomLine, line_exists
 from .structure import IndiRef, XRef
 
 MINIMAL_DATE = -99999 # used to sort None dates
@@ -126,24 +126,11 @@ def sorting_key_indi_union(gedcom: Gedcom, ref_indi: IndiRef) -> Callable[[IndiR
 		return -MINIMAL_DATE if union_year is None else union_year
 	return get_sorting_key_indi_union
 
-def get_note(gedcom: Gedcom, xref: IndiRef) -> str:
-	"""Return the content of the NOTE tag of the person. None if nothing."""
-	indi = gedcom.get_record(xref)
-	if indi is None: return ""
-	note = indi.get_sub_record('NOTE')
-	if isinstance(note, FakeLine): return ""
-	text = note.payload
-	if text is None: text = ""
-	for cont in note.get_sub_records('CONT'):
-		text += '\n'
-		text_part = cont.payload
-		if text_part is not None: text += text_part
-	return text
 
 def get_gedcom_data(gedcom: Gedcom, xref: XRef) -> str:
 	"""Return all the contents of the gedcom under this level 0 id (person id, family id, source id, ...)."""
 	rec = gedcom.get_record(xref)
-	if isinstance(rec, FakeLine): return ""
+	if not line_exists(rec): return ""
 	text = str(rec) + "\n"
 	for sub_rec in get_all_sub_records(rec):
 		text += str(sub_rec) + "\n"
