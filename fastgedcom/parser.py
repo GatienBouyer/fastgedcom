@@ -45,7 +45,7 @@ def parse(readable_lines: IO[str]) -> tuple[Gedcom, list[ParsingWarning]]:
 			if len(line_info) == 3:
 				parsed_line = GedcomLine(int(line_info[0]), line_info[1], line_info[2], [])
 			elif len(line_info) == 2:
-				parsed_line = GedcomLine(int(line_info[0]), line_info[1], None, [])
+				parsed_line = GedcomLine(int(line_info[0]), line_info[1], "", [])
 			else:
 				warnings.append(LineParsingWarning(line_number, line))
 				continue

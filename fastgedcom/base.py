@@ -1,11 +1,11 @@
-from abc import ABC, abstractmethod
-from typing import Iterator, TypeGuard, Union
+from abc import abstractmethod
+from typing import Iterator, Protocol, TypeGuard, Union
 from dataclasses import dataclass
 
 from .structure import FamRef, IndiRef, XRef
 
 
-class Line(ABC):
+class Line(Protocol):
 	"""Abstract base class for gedcom lines.
 	(see GedcomLine for more information)
 	This class is for syntactic sugar. It defines operator
@@ -25,6 +25,9 @@ class Line(ABC):
 	sources = indi > "BIRT" >> "SOUR"
 	```
 	"""
+	payload: str
+	payload_with_cont: str
+
 	@abstractmethod
 	def get_sub_records(self, tag: str) -> list['GedcomLine']: ...
 	
@@ -32,7 +35,7 @@ class Line(ABC):
 	def get_sub_record(self, tag: str) -> Union['GedcomLine', 'FakeLine']: ...
 	
 	@abstractmethod
-	def get_sub_record_payload(self, tag: str) -> str | None: ...
+	def get_sub_record_payload(self, tag: str) -> str: ...
 
 	__gt__ = get_sub_record # operator >
 	__ge__ = get_sub_record_payload # operator >=
@@ -60,14 +63,17 @@ class FakeLine(Line):
 	print(indi_birth_date)
 	```
 	"""
+	payload = ""
+	payload_with_cont = ""
+	
 	def get_sub_records(self, tag: str) -> list['GedcomLine']:
 		return []
 	
 	def get_sub_record(self, tag: str) -> Union['GedcomLine', 'FakeLine']:
 		return fake_line
 	
-	def get_sub_record_payload(self, tag: str) -> str | None:
-		return None
+	def get_sub_record_payload(self, tag: str) -> str:
+		return ""
 	
 	__gt__ = get_sub_record # operator >
 	__ge__ = get_sub_record_payload # operator >=
@@ -90,10 +96,11 @@ class GedcomLine(Line):
 	In this structure, the Tag is either the normalized Tag or the optional Xref.
 	Hence, the Payload is the LineVal when the Xref is not present,
 	or the Payload is the normalized Tag plus the LineVal when the Xref is present.
-	When the line contains neither a Xref or a LineVal, the Payload is None."""
+	When the line contains neither a Xref or a LineVal, the Payload is an empty string.
+	"""
 	level: int
 	tag: str | XRef
-	payload: str | None # TODO Check if checking for CONT in sub_rec here doesn't hurt performance
+	payload: str
 	sub_rec: list['GedcomLine']
 
 	def get_sub_records(self, tag: str) -> list['GedcomLine']:
@@ -105,32 +112,28 @@ class GedcomLine(Line):
 				return sub_record
 		return fake_line
 
-	def get_sub_record_payload(self, tag: str) -> str | None:
+	def get_sub_record_payload(self, tag: str) -> str:
 		for sub_record in self.sub_rec:
 			if sub_record.tag == tag:
 				return sub_record.payload
-		return None
+		return ""
 	
 	__gt__ = get_sub_record # operator >
 	__ge__ = get_sub_record_payload # operator >=
 	__rshift__ = get_sub_records # operator >>
 
 	def __str__(self) -> str:
-		return f"{self.level} {self.tag} {self.payload if self.payload else ''}"
+		return f"{self.level} {self.tag} {self.payload}"
 
 	def __repr__(self) -> str:
 		return f"<{self.__class__.__qualname__} {self.level} {self.tag} {self.payload} -> {len(self.sub_rec)}>"
 
 	@property
-	def payload_with_cont(self) -> str | None:
+	def payload_with_cont(self) -> str:
 		"""The ilne payload with the payload of the CONT sub-records."""
-		if self.payload is None: return None
-		text = ""
-		text += self.payload
+		text = self.payload
 		for cont in self.get_sub_records('CONT'):
-			text += '\n'
-			text_part = cont.payload
-			if text_part is not None: text += text_part
+			text += '\n' + cont.payload
 		return text
 
 
@@ -181,6 +184,7 @@ class Gedcom():
 		if record is None: return None
 		for sub_record in record.sub_rec:
 			if sub_record.tag == "FAMC":
+				if sub_record.payload == "": return None
 				return sub_record.payload
 		return None
 
@@ -199,11 +203,14 @@ class Gedcom():
 			record = self.level0_index[fam]
 			for sub_record in record.sub_rec:
 				if sub_record.tag == "CHIL":
-					if sub_record.payload is None: continue
+					if sub_record.payload == "": continue
 					children.append(sub_record.payload)
 		return children
 
-	def get_unions(self, parent: IndiRef, spouse: IndiRef | None = None) -> list[FamRef]:
+	def get_unions(self,
+		parent: IndiRef,
+		spouse: IndiRef | None = None
+	) -> list[FamRef]:
 		if spouse is None:
 			return self.unions.get(parent, [])
 		unions: list[FamRef] = []
@@ -219,7 +226,7 @@ class Gedcom():
 			record = self.level0_index[fam]
 			for sub_record in record.sub_rec:
 				if sub_record.payload != indi and (sub_record.tag == "HUSB" or sub_record.tag == "WIFE"):
-					if sub_record.payload is None: continue
+					if sub_record.payload == "": continue
 					spouses.append(sub_record.payload)
 		return spouses
 
@@ -230,7 +237,7 @@ class Gedcom():
 		siblings: list[IndiRef] = []
 		for sub_record in record.sub_rec:
 			if sub_record.payload != indi and sub_record.tag == "CHIL":
-				if sub_record.payload is None: continue
+				if sub_record.payload == "": continue
 				siblings.append(sub_record.payload)
 		return siblings
 
@@ -252,9 +259,10 @@ class Gedcom():
 			children: list[IndiRef] = []
 			for sub_record in record.sub_rec:
 				if sub_record.tag == "CHIL":
-					if sub_record.payload is None: continue
+					if sub_record.payload == "": continue
 					children.append(sub_record.payload)
 				elif sub_record.payload != indi and (sub_record.tag == "HUSB" or sub_record.tag == "WIFE"):
+					if sub_record.payload == "": continue
 					spouse = sub_record.payload
 			unions.append((spouse, children))
 		return unions

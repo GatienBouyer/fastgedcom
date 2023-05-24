@@ -1,9 +1,10 @@
 from typing import Any, Callable, Iterator, Literal
 
-from .base import Gedcom, GedcomLine, line_exists
-from .structure import IndiRef, XRef
+from .base import FakeLine, Gedcom, GedcomLine, line_exists
+from .structure import IndiRef
 
-MINIMAL_DATE = -99999 # used to sort None dates
+MINIMAL_DATE = -99999
+"""Used to sort empty date fields"""
 
 def get_all_sub_records(line: GedcomLine) -> Iterator[GedcomLine]:
 	"""Recursively iterate on all lines under the given line."""
@@ -13,10 +14,17 @@ def get_all_sub_records(line: GedcomLine) -> Iterator[GedcomLine]:
 		yield record
 		sub_records = record.sub_rec + sub_records
 
-def format_name(name: str | None) -> str:
+def get_gedcom_source(line: GedcomLine | FakeLine) -> str:
+	"""Return all the contents of the gedcom under this level 0 id (person id, family id, source id, ...)."""
+	if not line_exists(line): return ""
+	text = str(line) + "\n"
+	for sub_rec in get_all_sub_records(line):
+		text += str(sub_rec) + "\n"
+	return text
+
+def format_name(name: str) -> str:
 	"""Format the payload of the gedcom tag NAME.
 	Remove the backslash around the surname."""
-	if name is None: return ""
 	return name.replace("/", "")
 
 def gender_to_ascii(gender: Literal['M', 'F'] | Any) -> Literal['♂', '♀', '⚥']:
@@ -24,7 +32,7 @@ def gender_to_ascii(gender: Literal['M', 'F'] | Any) -> Literal['♂', '♀', '�
 	if gender == 'F': return '♀'
 	return '⚥'
 
-def format_date(date: str | None) -> str:
+def format_date(date: str) -> str:
 	"""Format the gedcom date into a shorter string.
 	Replace gedcom keywords by symbols.
 
@@ -41,7 +49,6 @@ def format_date(date: str | None) -> str:
 	- 'FROM d' is replaced by 'd',
 	- 'TO d' is replaced by 'd'.
 	"""
-	if date is None: return ""
 	date = remove_trailing_zeros(date)
 	if date[:4]=='BET ' and 'AND' in date:
 		date = date[4:]
@@ -74,7 +81,7 @@ def remove_trailing_zeros(date: str) -> str:
 			k += 1
 	return date
 
-def extract_year(date: str | None) -> str:
+def extract_year(date: str) -> str:
 	"""Return the only year of the date.
 	The parameter is the gedcom date or the formatted date string.
 	Keep the context of the date: '-', '~', '<', '>' and '--'."""
@@ -95,7 +102,7 @@ def extract_year(date: str | None) -> str:
 	if '>' in formated_date: year = '> '+year
 	return year
 
-def extract_int_year(date: str | None) -> float | None:
+def extract_int_year(date: str) -> float | None:
 	"""Return the year of the date as an integer.
 	Keep the context: A date BCE returns a negative number.
 	A date range of type `between` or `from-to` returns the median number of the range."""
@@ -113,27 +120,19 @@ def extract_int_year(date: str | None) -> float | None:
 
 
 def sorting_key_indi_birth(gedcom: Gedcom) -> Callable[[IndiRef], float]:
-	def get_sorting_key_indi_birth(indi: IndiRef) -> float:
+	def get_sorting_key_indi_birth(indi: IndiRef | None) -> float:
+		if indi is None: return MINIMAL_DATE
 		birth_year = extract_int_year((gedcom[indi] > "BIRT") >= "DATE")
-		return -MINIMAL_DATE if birth_year is None else birth_year
+		return MINIMAL_DATE if birth_year is None else birth_year
 	return get_sorting_key_indi_birth
 
 def sorting_key_indi_union(
 	gedcom: Gedcom, ref_indi: IndiRef
 ) -> Callable[[IndiRef], float]:
-	def get_sorting_key_indi_union(indi: IndiRef) -> float:
+	def get_sorting_key_indi_union(indi: IndiRef | None) -> float:
+		if indi is None: return MINIMAL_DATE
 		unions = gedcom.get_unions(ref_indi, indi)
-		if len(unions) == 0: return -MINIMAL_DATE
+		if len(unions) == 0: return MINIMAL_DATE
 		union_year = extract_int_year(gedcom[unions[0]] >= "DATE")
-		return -MINIMAL_DATE if union_year is None else union_year
+		return MINIMAL_DATE if union_year is None else union_year
 	return get_sorting_key_indi_union
-
-
-def get_gedcom_data(gedcom: Gedcom, xref: XRef) -> str:
-	"""Return all the contents of the gedcom under this level 0 id (person id, family id, source id, ...)."""
-	rec = gedcom.get_record(xref)
-	if not line_exists(rec): return ""
-	text = str(rec) + "\n"
-	for sub_rec in get_all_sub_records(rec):
-		text += str(sub_rec) + "\n"
-	return text

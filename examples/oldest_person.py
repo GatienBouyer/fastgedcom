@@ -1,5 +1,5 @@
 from fastgedcom.helpers import (extract_int_year, extract_year, format_name,
-                                get_gedcom_data)
+                                get_gedcom_source)
 from fastgedcom.parser import guess_encoding, parse
 
 gedcom_file = "C:/Users/gatie/Documents/Scripts_Python/GeneaCharts/bouyer-perret 20220809.ged"
@@ -24,4 +24,4 @@ print("Oldest person:", format_name(gedcom[oldest] >= "NAME"))
 print("Year of birth:", extract_year((gedcom[oldest] > "BIRT") >= "DATE"))
 print("Year of death:", extract_year((gedcom[oldest] > "DEAT") >= "DATE"))
 print("Age:", age_oldest)
-print("All the information:", get_gedcom_data(gedcom, oldest))
+print("All the information:", get_gedcom_source(gedcom[oldest]))

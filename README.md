@@ -68,7 +68,7 @@ print(f"Number of generations above root: {number_generations_above_root}")
 In the following example, we find the oldest deceased person. Then, we print his name and all his gedcom information using the `fastgedcom.helpers` module
 ```python
 from fastgedcom.helpers import (extract_int_year, extract_year, format_name,
-                                get_gedcom_data)
+                                get_gedcom_source)
 from fastgedcom.parser import guess_encoding, parse
 
 gedcom_file = YOUR_GEDCOM_FILE
@@ -93,7 +93,7 @@ print("Oldest person:", format_name(gedcom[oldest] >= "NAME"))
 print("Year of birth:", extract_year((gedcom[oldest] > "BIRT") >= "DATE"))
 print("Year of death:", extract_year((gedcom[oldest] > "DEAT") >= "DATE"))
 print("Age:", age_oldest)
-print("All the information:", get_gedcom_data(gedcom, oldest))
+print("All the information:", get_gedcom_source(gedcom[oldest]))
 ```
 
 
