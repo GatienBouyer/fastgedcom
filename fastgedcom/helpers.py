@@ -118,7 +118,9 @@ def sorting_key_indi_birth(gedcom: Gedcom) -> Callable[[IndiRef], float]:
 		return -MINIMAL_DATE if birth_year is None else birth_year
 	return get_sorting_key_indi_birth
 
-def sorting_key_indi_union(gedcom: Gedcom, ref_indi: IndiRef) -> Callable[[IndiRef], float]:
+def sorting_key_indi_union(
+	gedcom: Gedcom, ref_indi: IndiRef
+) -> Callable[[IndiRef], float]:
 	def get_sorting_key_indi_union(indi: IndiRef) -> float:
 		unions = gedcom.get_unions(ref_indi, indi)
 		if len(unions) == 0: return -MINIMAL_DATE

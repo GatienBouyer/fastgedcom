@@ -28,7 +28,12 @@ class DuplicateParsingWarning(ParsingWarning):
 		return f"<{self.__class__.__qualname__} xref={self.xref}>"
 
 def parse(readable_lines: IO[str]) -> tuple[Gedcom, list[ParsingWarning]]:
-	"""Parser for gedcom documents to create the Gedcom class."""
+	"""Parse the text input to create the Gedcom class.
+	
+	Return the Gedcom based on the input and the warnings about
+	input lines that can't be put into the Gedcom class.
+	
+	Raise ParsingError on failure."""
 	gedcom = Gedcom()
 	warnings: list[ParsingWarning] = []
 	line_number = 0
@@ -55,10 +60,8 @@ def parse(readable_lines: IO[str]) -> tuple[Gedcom, list[ParsingWarning]]:
 				if len(parent_lines) == 0: raise ParsingError("Inconsistent use of line levels")
 				parent_lines[-1].sub_rec.append(parsed_line)
 				parent_lines.append(parsed_line)
-	except UnicodeDecodeError:
-		raise ParsingError(line_number, "UnicodeDecodeError")
-	except ValueError: # raised on int parsing error
-		raise ParsingError(line_number, "Line parsing failed")
+	except ValueError as err: # raised on int parsing error
+		raise ParsingError(line_number, "Line parsing failed") from err
 	__build_parents(gedcom)
 	return (gedcom, warnings)
 
