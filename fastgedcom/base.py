@@ -1,11 +1,11 @@
-from abc import abstractmethod
-from typing import Iterator, Protocol, TypeGuard, Union
+from typing import Iterator, TypeGuard, Union
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from .structure import FamRef, IndiRef, XRef
 
 
-class Line(Protocol):
+class Line(ABC):
 	"""Abstract base class for gedcom lines.
 	(see GedcomLine for more information)
 	This class is for syntactic sugar. It defines operator
@@ -25,8 +25,13 @@ class Line(Protocol):
 	sources = indi > "BIRT" >> "SOUR"
 	```
 	"""
-	payload: str
-	payload_with_cont: str
+	@property
+	@abstractmethod
+	def payload(self) -> str: ...
+	
+	@property
+	@abstractmethod
+	def payload_with_cont(self) -> str: ...
 
 	@abstractmethod
 	def get_sub_records(self, tag: str) -> list['GedcomLine']: ...
