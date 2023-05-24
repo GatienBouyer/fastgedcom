@@ -119,7 +119,7 @@ def extract_int_year(date: str) -> float | None:
 	return int(year_without_context)
 
 
-def sorting_key_indi_birth(gedcom: Gedcom) -> Callable[[IndiRef], float]:
+def sorting_key_indi_birth(gedcom: Gedcom) -> Callable[[IndiRef | None], float]:
 	def get_sorting_key_indi_birth(indi: IndiRef | None) -> float:
 		if indi is None: return MINIMAL_DATE
 		birth_year = extract_int_year((gedcom[indi] > "BIRT") >= "DATE")
@@ -128,7 +128,7 @@ def sorting_key_indi_birth(gedcom: Gedcom) -> Callable[[IndiRef], float]:
 
 def sorting_key_indi_union(
 	gedcom: Gedcom, ref_indi: IndiRef
-) -> Callable[[IndiRef], float]:
+) -> Callable[[IndiRef | None], float]:
 	def get_sorting_key_indi_union(indi: IndiRef | None) -> float:
 		if indi is None: return MINIMAL_DATE
 		unions = gedcom.get_unions(ref_indi, indi)
