@@ -1,6 +1,6 @@
 from typing import Iterator, TypeGuard, Union
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .structure import FamRef, IndiRef, XRef
 
@@ -106,7 +106,7 @@ class GedcomLine(Line):
 	level: int
 	tag: str | XRef
 	payload: str
-	sub_rec: list['GedcomLine']
+	sub_rec: list['GedcomLine'] = field(default_factory=list)
 
 	def get_sub_records(self, tag: str) -> list['GedcomLine']:
 		return [sub_record for sub_record in self.sub_rec if sub_record.tag == tag]
