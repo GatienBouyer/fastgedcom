@@ -27,5 +27,3 @@ e.g.: in a family record, a line '2 CHIL @VOID@' indicates a placeholder for an 
 Pointer: TypeAlias = XRef | VoidRef
 """Generic pointer that is used in the payload to reference an existing record or a non-existing one."""
 
-# TODO add tag macros ref: https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#structure-types
-
