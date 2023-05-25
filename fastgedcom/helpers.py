@@ -1,7 +1,6 @@
 from typing import Any, Callable, Iterator, Literal
 
-from .base import FakeLine, Gedcom, GedcomLine, line_exists
-from .structure import IndiRef
+from .base import FakeLine, Gedcom, GedcomLine, IndiRef, line_exists
 
 MINIMAL_DATE = -99999
 """Used to sort empty date fields"""

@@ -1,10 +1,10 @@
 from typing import IO
 from pathlib import Path
 
-from .base import Gedcom, GedcomLine
-from .structure import XRef
-
 import ansel
+
+from .base import Gedcom, GedcomLine, XRef
+
 ansel.register()
 
 class ParsingError(Exception): pass
