@@ -62,31 +62,7 @@ def parse(readable_lines: IO[str]) -> tuple[Gedcom, list[ParsingWarning]]:
 				parent_lines.append(parsed_line)
 	except ValueError as err: # raised on int parsing error
 		raise ParsingError(line_number, "Line parsing failed") from err
-	__build_parents(gedcom)
 	return (gedcom, warnings)
-
-def __build_parents(gedcom: Gedcom) -> None:
-	for fam_record in gedcom.level0_index.values():
-		if fam_record.payload != "FAM": continue
-		father = mother = None
-		children = []
-		for record in fam_record.sub_rec:
-			if record.payload is None: continue
-			if record.tag == "CHIL":
-				children.append(record.payload)
-			elif record.tag == "HUSB":
-				father = record.payload
-				if father in gedcom.unions:
-					gedcom.unions[father].append(fam_record.tag)
-				else: gedcom.unions[father] = [fam_record.tag]
-			elif record.tag == "WIFE":
-				mother = record.payload
-				if mother in gedcom.unions:
-					gedcom.unions[mother].append(fam_record.tag)
-				else: gedcom.unions[mother] = [fam_record.tag]
-		for child in children:
-			gedcom.parents[child] = (father, mother)
-
 
 def guess_encoding(file: str | Path) -> str | None:
 	try:
