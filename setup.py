@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import setup
 
 with open("Readme.md", "r") as f:
     long_description = f.read()
@@ -10,9 +10,16 @@ setup(
     name="fastgedcom",
     version="0.0.2",
     description="A gedcom tool to parse, browse and modify gedcom files",
-    packages=find_packages(exclude=['fastgedcom.test']),
+    packages=["fastgedcom"],
+    package_data={"fastgedcom": ["py.typed"]},
     long_description=long_description,
     long_description_content_type="text/markdown",
+    zip_safe=False,
+    install_requires=requirements,
+    extras_require={
+        "dev": ["mypy", "twine"],
+	},
+    python_requires=">=3.11",
     url="https://github.com/GatienBouyer/fastgedcom",
     author="Gatien Bouyer",
     author_email="gatien.bouyer.dev@gmail.com",
@@ -26,11 +33,6 @@ setup(
         "Development Status :: 2 - Pre-Alpha",
     ],
     keywords='fastgedcom gedcom parser genealogy',
-    install_requires=requirements,
-    extras_require={
-        "dev": ["mypy", "twine"],
-	},
-    python_requires=">=3.11",
 	project_urls={
         'Bug Reports': 'https://github.com/GatienBouyer/fastgedcom/issues',
         'Source': 'https://github.com/GatienBouyer/fastgedcom',
