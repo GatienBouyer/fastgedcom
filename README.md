@@ -2,105 +2,90 @@
 
 A gedcom tool to parse, browse and modify gedcom files
 
-
-## Installation
-You can install FastGedcom using pip:
 ```bash
 pip install fastgedcom
 ```
 
-The `ansel` library is a dependancy of FastGedcom. It is automatically installed by pip. This library allows to decode files encoded in ansel or gedcom.
+Want's to open a gedcom file?
+```python
+from fastgedcom.parser import guess_encoding, parse
+
+gedcom_file = "my_gedcom_file.ged"
+with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
+	document, warnings = parse(f)
+
+print(warnings) # in case of duplicate record reference
+```
 
 
-## Features
+Simple to write! Free to chose the fields, the data, and the formatting.
+```python
+from fastgedcom.helpers import format_date
+
+birth_date = (document["@I1@"] > "BIRT") >= "DATE"
+print(format_date(birth_date))
+```
+
+A field is missing? FakeLine to the rescue. Like a TrueLine, but no error, no value, and no error handling code!
+```python
+indi = document["@I1"]
+death_date = (indi > "DEAT") >= "DATE"
+if death_date != "": print(format_date(death_date)) 
+if not is_true(indi): print("It was not even present!")
+```
+
+Don't like magic operators overload? Use standard methods!
+```python
+indi = document.get_record("@I1@")
+surname = indi.get_sub_line("NAME").get_sub_line_payload("SURN")
+```
+
+Typehints for salvation!
+```python
+from fastgedcom.base import Document, Record, IndiRef, is_true
+from fastgedcom.helpers import format_name
+
+def print_infos(gedcom: Document, indi: IndiRef) -> None:
+	record = document[indi]
+	if is_true(record): print_name(record)
+
+def print_name(record: Record) -> None:
+	print(format_name(record >= "NAME"))
+```
+
+Iterate over family really fast. Don't blink!
+```python
+from fastgedcom.family_aid import FamilyAid
+
+booster = FamilyAid(document)
+
+def number_of_ascendants(indi: Record | FakeLine) -> int:
+	if not is_true(indi): return 1
+	father, mother = booster.get_parents(indi.tag)
+	return 1+max(number_of_ascendants(father), number_of_ascendants(mother))
+
+def number_of_descendants(indi: IndiRef) -> int:
+	children = booster.get_children(parent)
+	return len(children) + sum(number_of_descendants(c) for c in children)
+
+print(number_of_ascendants(document["@I1@"]))
+print(number_of_descendants("@I1@"))
+```
+
+You want to see more? [Here are some examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)
+
+I promise you it is fast! I [test it](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) and I use it.
+
+
+
+## Feature details
 
 - Supports the read of gedcom files encoded in UTF-8 with and without BOM, UTF-16 (also named UNICODE), ANSI, and ANSEL.
 - ~~Supports the export to gedcom files encoded in UTF-8, UTF-16, and ANSI.~~
 
-- The gedcom representation (the data structure) is very lite (2 classes overall).
-- No data parsing is done (due to the wide diversity), but helper methods are provided.
+## Feedbacks
 
-
-## Motivations
-
-The FastGedcom library is intented to be read, understood, and used quickly, so you focus on what really matters. The code has type hints to help with development. Functions are based directly on gedcom pointers for ease of use. Due to the wide variety of gedcom software, no data parsing is done, but some standalone functions are provided (see the `fastgedcom.helpers` module).
-
-
-## Usage examples
-
-In the following example, we print the name of the person under the reference @I1@.
-```python
-from fastgedcom.parser import guess_encoding, parse
-
-gedcom_file = YOUR_GEDCOM_FILE
-with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	document, warnings = parse(f)
-print("Warnings: ", *warnings, sep="\n", end="---\n")
-
-indi = document.get_record("@I1@")
-surname = indi.get_sub_line("NAME").get_sub_line_payload("SURN")
-print(surname)
-
-# With magic methods:
-print((document["@I1@"] > "NAME") >= "SURN")
-```
-
-In the following example, we count the number of ancestral generations of the person whose reference is @I1@.
-```python
-from fastgedcom.base import FakeLine, TrueLine, is_true
-from fastgedcom.family_aid import FamilyAid
-from fastgedcom.parser import guess_encoding, parse
-
-gedcom_file = YOUR_GEDCOM_FILE
-with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	document, _ = parse(f)
-
-booster = FamilyAid(document)
-def nb_ancestral_gen(indi: TrueLine | FakeLine) -> int:
-	if not is_true(indi): return 1
-	father, mother = booster.get_parents(indi.tag)
-	return 1+max(nb_ancestral_gen(father), nb_ancestral_gen(mother))
-
-number_generations_above_root = nb_ancestral_gen(document["@I1@"])
-
-print(f"Number of generations above root: {number_generations_above_root}")
-```
-
-In the following example, we find the oldest deceased person. Then, we print his name and all his gedcom information using the `fastgedcom.helpers` module
-```python
-from fastgedcom.helpers import (extract_int_year, extract_year, format_name,
-                                get_source_infos)
-from fastgedcom.parser import guess_encoding, parse
-
-gedcom_file = YOUR_GEDCOM_FILE
-with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	document, _ = parse(f)
-
-oldest = next(document.get_records("INDI"))
-age_oldest = 0.0 # the age is a float to handle all type of date
-# A date such as" between 2001 and 2002" would by 2001.5
-for individual in document.get_records("INDI"):
-	birth_date = (individual > "BIRT") >= "DATE"
-	death_date = (individual > "DEAT") >= "DATE"
-	birth_year = extract_int_year(birth_date)
-	death_year = extract_int_year(death_date)
-	if birth_year is None or death_year is None: continue
-	age = death_year - birth_year
-	if age > age_oldest:
-		oldest = individual
-		age_oldest = age
-
-print("Oldest person:", format_name(oldest >= "NAME"))
-print("Year of birth:", extract_year((oldest > "BIRT") >= "DATE"))
-print("Year of death:", extract_year((oldest > "DEAT") >= "DATE"))
-print("Age:", age_oldest)
-print("All the information:", get_source_infos(oldest))
-```
-
-
-## Contributing
-
-Contributions are welcome, and they will be greatly appreciated!
+Feedbacks are welcome, and they will be greatly appreciated!
 
 If you like this project, consider putting a star on [Github](https://github.com/GatienBouyer/fastgedcom), thank you!
 
