@@ -29,9 +29,6 @@ e.g.: in a family record, the line '2 CHIL @VOID@' indicates that the parents ha
 Pointer: TypeAlias = XRef | VoidRef
 """Generic pointer that is used in the payload to reference an existing record or a non-existing one."""
 
-Record: TypeAlias = 'TrueLine'
-"""A level 0 line referenced by an XRef in the document."""
-
 class Line(ABC):
 	"""
 	Abstract base class for gedcom lines i.e. TrueLine and FakeLine.
@@ -172,6 +169,9 @@ class TrueLine(Line):
 		return text
 
 
+Record: TypeAlias = TrueLine
+"""A level 0 line referenced by an XRef in the document."""
+
 class Document():
 	"""
 	Stores all the information of the gedcom document.
@@ -198,7 +198,7 @@ class Document():
 	"""
 
 	def __init__(self) -> None:
-		self.level0_index: dict[XRef, Record] = dict() #to get records
+		self.level0_index: dict[XRef, Record] = dict()
 
 	def __iter__(self) -> Iterator[Record]:
 		return iter(self.level0_index.values())
