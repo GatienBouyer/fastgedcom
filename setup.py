@@ -8,7 +8,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
     name="fastgedcom",
-    version="0.0.3",
+    version="0.0.4",
     description="A gedcom tool to parse, browse and modify gedcom files",
     packages=["fastgedcom"],
     package_data={"fastgedcom": ["py.typed"]},
@@ -30,7 +30,7 @@ setup(
         "Topic :: Sociology :: Genealogy",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
     ],
     keywords='fastgedcom gedcom parser genealogy',
 	project_urls={
