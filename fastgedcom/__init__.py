@@ -1,4 +1,5 @@
-"""References:
+"""
+References:
 - (main) https://gedcom.io/specifications/FamilySearchGEDCOMv7.pdf
 - https://github.com/FamilySearch/GEDCOM
 - https://wiki.genealogy.net/GEDCOM/_Nutzerdef-Tag

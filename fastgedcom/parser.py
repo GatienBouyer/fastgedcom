@@ -3,7 +3,7 @@ from pathlib import Path
 
 import ansel
 
-from .base import Gedcom, GedcomLine, XRef
+from .base import Document, TrueLine, XRef
 
 ansel.register()
 
@@ -27,42 +27,42 @@ class DuplicateParsingWarning(ParsingWarning):
 	def __repr__(self) -> str:
 		return f"<{self.__class__.__qualname__} xref={self.xref}>"
 
-def parse(readable_lines: IO[str]) -> tuple[Gedcom, list[ParsingWarning]]:
-	"""Parse the text input to create the Gedcom class.
+def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
+	"""Parse the text input to create the Document object.
 	
-	Return the Gedcom based on the input and the warnings about
-	input lines that can't be put into the Gedcom class.
+	Return the Document based on the input and the warnings about
+	input lines that can't be put into the Document.
 	
 	Raise ParsingError on failure."""
-	gedcom = Gedcom()
+	document = Document()
 	warnings: list[ParsingWarning] = []
 	line_number = 0
 	try:
-		parent_lines: list[GedcomLine] = []
+		parent_lines: list[TrueLine] = []
 		for line in readable_lines:
 			line_number += 1
 			line_info = line.rstrip().split(' ', 2)
 			if len(line_info) == 3:
-				parsed_line = GedcomLine(int(line_info[0]), line_info[1], line_info[2], [])
+				parsed_line = TrueLine(int(line_info[0]), line_info[1], line_info[2], [])
 			elif len(line_info) == 2:
-				parsed_line = GedcomLine(int(line_info[0]), line_info[1], "", [])
+				parsed_line = TrueLine(int(line_info[0]), line_info[1], "", [])
 			else:
 				warnings.append(LineParsingWarning(line_number, line))
 				continue
 			if parsed_line.level == 0:
 				parent_lines = [parsed_line]
-				if parsed_line.tag in gedcom.level0_index:
+				if parsed_line.tag in document.level0_index:
 					warnings.append(DuplicateParsingWarning(parsed_line.tag))
-				gedcom.level0_index[parsed_line.tag] = parsed_line
+				document.level0_index[parsed_line.tag] = parsed_line
 			else:
 				while parent_lines and parsed_line.level <= parent_lines[-1].level:
 					parent_lines.pop(-1)
 				if len(parent_lines) == 0: raise ParsingError("Inconsistent use of line levels")
-				parent_lines[-1].sub_rec.append(parsed_line)
+				parent_lines[-1].sub_lines.append(parsed_line)
 				parent_lines.append(parsed_line)
 	except ValueError as err: # raised on int parsing error
 		raise ParsingError(line_number, "Line parsing failed") from err
-	return (gedcom, warnings)
+	return (document, warnings)
 
 def guess_encoding(file: str | Path) -> str | None:
 	try:

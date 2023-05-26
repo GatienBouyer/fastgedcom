@@ -1,17 +1,17 @@
 import unittest
 
-from ..base import GedcomLine
-from ..helpers import get_all_sub_records
+from ..base import TrueLine
+from ..helpers import get_all_sub_lines
 
 
 class TestParser(unittest.TestCase):
 	def test_sub_rec_recursive(self) -> None:
-		surn = GedcomLine(2, "SURN", "BOUYER", [])
-		givn = GedcomLine(2, "GIVN", "Gatien", [])
-		name = GedcomLine(1, "NAME", "Gatien /BOUYER/", [surn, givn])
-		sex = GedcomLine(1, "SEX", "M", [])
-		indi = GedcomLine(0, "@I1@", "INDI", [name, sex])
-		all_recs = list(get_all_sub_records(indi))
+		surn = TrueLine(2, "SURN", "BOUYER", [])
+		givn = TrueLine(2, "GIVN", "Gatien", [])
+		name = TrueLine(1, "NAME", "Gatien /BOUYER/", [surn, givn])
+		sex = TrueLine(1, "SEX", "M", [])
+		indi = TrueLine(0, "@I1@", "INDI", [name, sex])
+		all_recs = list(get_all_sub_lines(indi))
 		self.assertListEqual(all_recs, [name, surn, givn, sex])
 
 if __name__ == '__main__':	

@@ -1,8 +1,8 @@
 import unittest
 from pathlib import Path
 
-from ..base import Gedcom
-from ..helpers import get_all_sub_records
+from ..base import Document
+from ..helpers import get_all_sub_lines
 from ..parser import guess_encoding, parse
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
@@ -12,13 +12,13 @@ file_ansel =  Path(__file__).parent / "test_data" / "in_ansel.ged"
 file_unicode =  Path(__file__).parent / "test_data" / "in_unicode.ged"
 
 class TestParser(unittest.TestCase):
-	def _test_parsing(self, g: Gedcom) -> None:
+	def _test_parsing(self, g: Document) -> None:
 		indi = g.get_record("@I1@")
 		self.assertIsNotNone(indi) ; assert(indi)
-		name = indi.get_sub_record_payload("NAME")
+		name = indi.get_sub_line_payload("NAME")
 		self.assertEqual(name, "éàç /ÉÀÇ/")
 		nb_lines = len(g.level0_index) + sum(1 
-			for r in g for _ in get_all_sub_records(r))
+			for r in g for _ in get_all_sub_lines(r))
 		self.assertEqual(nb_lines, 27)
 		
 	def test_parsing_utf8(self) -> None:
@@ -43,7 +43,7 @@ class TestParser(unittest.TestCase):
 			ansel_name = b'\xe2e\xe1a\xf0c /\xe2E\xe1A\xf0C/'.decode("gedcom")
 			indi = g.get_record("@I1@")
 			self.assertIsNotNone(indi) ; assert(indi)
-			name = indi.get_sub_record_payload("NAME")
+			name = indi.get_sub_line_payload("NAME")
 			self.assertEqual(name, ansel_name)
 
 	def test_guess_parsing(self) -> None:
@@ -66,10 +66,10 @@ class TestParser(unittest.TestCase):
 		self.assertListEqual(w, [])
 		indi = g.get_record("@I1@")
 		self.assertIsNotNone(indi) ; assert(indi)
-		name = indi.get_sub_record_payload("NAME")
+		name = indi.get_sub_line_payload("NAME")
 		self.assertEqual(name, "éàç /ÉÀÇ/")
 		nb_lines = len(g.level0_index) + sum(1 
-			for r in g for _ in get_all_sub_records(r))
+			for r in g for _ in get_all_sub_lines(r))
 		self.assertEqual(nb_lines, 9)
 
 if __name__ == '__main__':	

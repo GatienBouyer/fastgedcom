@@ -1,39 +1,41 @@
 from typing import Any, Callable, Iterator, Literal
 
-from .base import FakeLine, Gedcom, GedcomLine, IndiRef, line_exists
+from .base import Document, FakeLine, IndiRef, TrueLine, is_true
+from .family_aid import FamilyAid
 
 MINIMAL_DATE = -99999
 """Used to sort empty date fields"""
 
-def get_all_sub_records(line: GedcomLine) -> Iterator[GedcomLine]:
+def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
 	"""Recursively iterate on all lines under the given line."""
-	sub_records = list(line.sub_rec)
-	while len(sub_records) > 0:
-		record = sub_records.pop(0)
-		yield record
-		sub_records = record.sub_rec + sub_records
+	lines = list(line.sub_lines)
+	while len(lines) > 0:
+		line = lines.pop(0)
+		yield line
+		lines = line.sub_lines + lines
 
-def get_gedcom_source(line: GedcomLine | FakeLine) -> str:
-	"""Return all the contents of the gedcom under this level 0 id (person id, family id, source id, ...)."""
-	if not line_exists(line): return ""
+def get_source_infos(line: TrueLine | FakeLine) -> str:
+	"""Return the gedcom text for the line and the sub-lines."""
+	if not is_true(line): return ""
 	text = str(line) + "\n"
-	for sub_rec in get_all_sub_records(line):
-		text += str(sub_rec) + "\n"
+	for sub_line in get_all_sub_lines(line):
+		text += str(sub_line) + "\n"
 	return text
 
 def format_name(name: str) -> str:
-	"""Format the payload of the gedcom tag NAME.
+	"""Format the payload of NAME lines.
 	Remove the backslash around the surname."""
 	return name.replace("/", "")
 
-def gender_to_ascii(gender: Literal['M', 'F'] | Any) -> Literal['♂', '♀', '⚥']:
+def gender_to_ascii(gender: Literal['M', 'F'] | str) -> Literal['♂', '♀', '⚥']:
 	if gender == 'M': return '♂'
 	if gender == 'F': return '♀'
 	return '⚥'
 
 def format_date(date: str) -> str:
-	"""Format the gedcom date into a shorter string.
-	Replace gedcom keywords by symbols.
+	"""Format the payload of DATE lines.
+	Return a short string representation of the date by
+	replacing keywords by symbols.
 
 	Replacements:
 	- 'd BC' standing for before christ is replaced by '-d',
@@ -72,6 +74,7 @@ def format_date(date: str) -> str:
 	return date
 
 def remove_trailing_zeros(date: str) -> str:
+	"""Removes useless prefixing 0 from numbers."""
 	k = 0
 	while k+1 < len(date):
 		if date[k]=='0' and (k==0 or (k>0 and (date[k-1].isspace() or date[k-1] == '-'))):
@@ -81,8 +84,8 @@ def remove_trailing_zeros(date: str) -> str:
 	return date
 
 def extract_year(date: str) -> str:
-	"""Return the only year of the date.
-	The parameter is the gedcom date or the formatted date string.
+	"""Format the payload of DATE lines and remove day and month information.
+	The parameter is the DATE payload or the formatted date string.
 	Keep the context of the date: '-', '~', '<', '>' and '--'."""
 	formated_date = format_date(date)
 	if ' -- ' in formated_date:
@@ -104,7 +107,9 @@ def extract_year(date: str) -> str:
 def extract_int_year(date: str) -> float | None:
 	"""Return the year of the date as an integer.
 	Keep the context: A date BCE returns a negative number.
-	A date range of type `between` or `from-to` returns the median number of the range."""
+	For date range of type `between` or `from-to`, this function returns
+	the median number of the range, hence the float type.
+	Return None on failure."""
 	year = extract_year(date)
 	if ' -- ' in year:
 		str_year1, str_year2 = year.split(' -- ', 1)
@@ -118,20 +123,21 @@ def extract_int_year(date: str) -> float | None:
 	return int(year_without_context)
 
 
-def sorting_key_indi_birth(gedcom: Gedcom) -> Callable[[IndiRef | None], float]:
+def sorting_key_indi_birth(document: Document) -> Callable[[IndiRef | None], float]:
 	def get_sorting_key_indi_birth(indi: IndiRef | None) -> float:
 		if indi is None: return MINIMAL_DATE
-		birth_year = extract_int_year((gedcom[indi] > "BIRT") >= "DATE")
+		birth_year = extract_int_year((document[indi] > "BIRT") >= "DATE")
 		return MINIMAL_DATE if birth_year is None else birth_year
 	return get_sorting_key_indi_birth
 
-def sorting_key_indi_union(
-	gedcom: Gedcom, ref_indi: IndiRef
+def sorting_key_indi_union_with(
+	document: Document, ref_indi: IndiRef
 ) -> Callable[[IndiRef | None], float]:
-	def get_sorting_key_indi_union(indi: IndiRef | None) -> float:
+	family_aid = FamilyAid(document)
+	def get_sorting_key_indi_union_with(indi: IndiRef | None) -> float:
 		if indi is None: return MINIMAL_DATE
-		unions = gedcom.get_unions(ref_indi, indi)
+		unions = family_aid.get_unions_with(ref_indi, indi)
 		if len(unions) == 0: return MINIMAL_DATE
-		union_year = extract_int_year(gedcom[unions[0]] >= "DATE")
+		union_year = extract_int_year(document[unions[0]] >= "DATE")
 		return MINIMAL_DATE if union_year is None else union_year
-	return get_sorting_key_indi_union
+	return get_sorting_key_indi_union_with

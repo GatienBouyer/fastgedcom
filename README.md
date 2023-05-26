@@ -34,35 +34,34 @@ from fastgedcom.parser import guess_encoding, parse
 
 gedcom_file = YOUR_GEDCOM_FILE
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	gedcom, warnings = parse(f)
+	document, warnings = parse(f)
 print("Warnings: ", *warnings, sep="\n", end="---\n")
 
-indi = gedcom.get_record("@I1@")
-surname = indi.get_sub_record("NAME").get_sub_record_payload("SURN")
+indi = document.get_record("@I1@")
+surname = indi.get_sub_line("NAME").get_sub_line_payload("SURN")
 print(surname)
 
 # With magic methods:
-print((gedcom["@I1@"] > "NAME") >= "SURN")
+print((document["@I1@"] > "NAME") >= "SURN")
 ```
 
 In the following example, we count the number of ancestral generations of the person whose reference is @I1@.
 ```python
-from fastgedcom.base import IndiRef
+from fastgedcom.base import FakeLine, TrueLine, is_true
 from fastgedcom.family_aid import FamilyAid
 from fastgedcom.parser import guess_encoding, parse
 
 gedcom_file = YOUR_GEDCOM_FILE
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	gedcom, _ = parse(f)
+	document, _ = parse(f)
 
-booster = FamilyAid(gedcom)
-def nb_ancestral_gen(indi: IndiRef) -> int:
-	father, mother = booster.get_parents(indi)
-	father_gens = 0 if father is None else 1+nb_ancestral_gen(father)
-	mother_gens = 0 if mother is None else 1+nb_ancestral_gen(mother)
-	return max(1, father_gens, mother_gens)
+booster = FamilyAid(document)
+def nb_ancestral_gen(indi: TrueLine | FakeLine) -> int:
+	if not is_true(indi): return 1
+	father, mother = booster.get_parents(indi.tag)
+	return 1+max(nb_ancestral_gen(father), nb_ancestral_gen(mother))
 
-number_generations_above_root = nb_ancestral_gen("@I1@")
+number_generations_above_root = nb_ancestral_gen(document["@I1@"])
 
 print(f"Number of generations above root: {number_generations_above_root}")
 ```
@@ -70,17 +69,17 @@ print(f"Number of generations above root: {number_generations_above_root}")
 In the following example, we find the oldest deceased person. Then, we print his name and all his gedcom information using the `fastgedcom.helpers` module
 ```python
 from fastgedcom.helpers import (extract_int_year, extract_year, format_name,
-                                get_gedcom_source)
+                                get_source_infos)
 from fastgedcom.parser import guess_encoding, parse
 
 gedcom_file = YOUR_GEDCOM_FILE
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	gedcom, _ = parse(f)
+	document, _ = parse(f)
 
-oldest = next(gedcom.get_records("INDI"))
+oldest = next(document.get_records("INDI"))
 age_oldest = 0.0 # the age is a float to handle all type of date
-# A date such as between 2001 and 2002 returns 2001.5
-for individual in gedcom.get_records("INDI"):
+# A date such as" between 2001 and 2002" would by 2001.5
+for individual in document.get_records("INDI"):
 	birth_date = (individual > "BIRT") >= "DATE"
 	death_date = (individual > "DEAT") >= "DATE"
 	birth_year = extract_int_year(birth_date)
@@ -95,7 +94,7 @@ print("Oldest person:", format_name(oldest >= "NAME"))
 print("Year of birth:", extract_year((oldest > "BIRT") >= "DATE"))
 print("Year of death:", extract_year((oldest > "DEAT") >= "DATE"))
 print("Age:", age_oldest)
-print("All the information:", get_gedcom_source(oldest))
+print("All the information:", get_source_infos(oldest))
 ```
 
 
