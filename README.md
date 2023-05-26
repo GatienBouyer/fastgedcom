@@ -6,7 +6,7 @@ A gedcom tool to parse, browse and modify gedcom files
 pip install fastgedcom
 ```
 
-Want's to open a gedcom file?
+Want to open a gedcom file?
 ```python
 from fastgedcom.parser import guess_encoding, parse
 
@@ -28,13 +28,15 @@ print(format_date(birth_date))
 
 A field is missing? FakeLine to the rescue. Like a TrueLine, but no error, no value, and no error handling code!
 ```python
+from fastgedcom.base import is_true
+
 indi = document["@I1"]
 death_date = (indi > "DEAT") >= "DATE"
 if death_date != "": print(format_date(death_date)) 
 if not is_true(indi): print("It was not even present!")
 ```
 
-Don't like magic operators overload? Use standard methods!
+Don't like magic operator overload? Use standard methods!
 ```python
 indi = document.get_record("@I1@")
 surname = indi.get_sub_line("NAME").get_sub_line_payload("SURN")
@@ -42,18 +44,20 @@ surname = indi.get_sub_line("NAME").get_sub_line_payload("SURN")
 
 Typehints for salvation!
 ```python
-from fastgedcom.base import Document, Record, IndiRef, is_true
+from fastgedcom.base import Document, FakeLine, IndiRef, Record, is_true
 from fastgedcom.helpers import format_name
 
 def print_infos(gedcom: Document, indi: IndiRef) -> None:
-	record = document[indi]
+	record = gedcom[indi]
 	if is_true(record): print_name(record)
 
-def print_name(record: Record) -> None:
+def print_name(record: Record | FakeLine) -> None:
 	print(format_name(record >= "NAME"))
+
+print_infos(document, "@I1@")
 ```
 
-Iterate over family really fast. Don't blink!
+Iteration on families is fast. Don't blink!
 ```python
 from fastgedcom.family_aid import FamilyAid
 
@@ -65,7 +69,7 @@ def number_of_ascendants(indi: Record | FakeLine) -> int:
 	return 1+max(number_of_ascendants(father), number_of_ascendants(mother))
 
 def number_of_descendants(indi: IndiRef) -> int:
-	children = booster.get_children(parent)
+	children = booster.get_children(indi)
 	return len(children) + sum(number_of_descendants(c) for c in children)
 
 print(number_of_ascendants(document["@I1@"]))
