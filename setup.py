@@ -19,13 +19,14 @@ setup(
     extras_require={
         "dev": ["mypy", "twine"],
 	},
-    python_requires=">=3.11",
+    python_requires=">=3.10",
     url="https://github.com/GatienBouyer/fastgedcom",
     author="Gatien Bouyer",
     author_email="gatien.bouyer.dev@gmail.com",
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Topic :: Sociology :: Genealogy",
         "Intended Audience :: Developers",
