@@ -208,7 +208,7 @@ class Document():
 			if record.payload == record_type:
 				yield record
 
-	def get_record(self, identifier: XRef) -> Record | FakeLine:
+	def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
 		return self.level0_index.get(identifier, fake_line)
 	__getitem__ = get_record
 
