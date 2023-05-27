@@ -1,6 +1,6 @@
 from fastgedcom.parser import guess_encoding, parse
 
-gedcom_file = "my_gedcom_file.ged"
+gedcom_file = "../my_gedcom.ged"
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
 	document, warnings = parse(f)
 
@@ -13,7 +13,7 @@ print(format_date(birth_date))
 
 from fastgedcom.base import is_true
 
-indi = document["@I1"]
+indi = document["@I1@"]
 death_date = (indi > "DEAT") >= "DATE"
 if death_date != "": print(format_date(death_date)) 
 if not is_true(indi): print("It was not even present!")

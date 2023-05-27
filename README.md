@@ -18,7 +18,7 @@ print(warnings) # in case of duplicate record reference
 ```
 
 
-Simple to write! Free to chose the fields, the data, and the formatting.
+Easy to write! Free choice of fields, data, and formatting.
 ```python
 from fastgedcom.helpers import format_date
 
@@ -30,7 +30,7 @@ A field is missing? FakeLine to the rescue. Like a TrueLine, but no error, no va
 ```python
 from fastgedcom.base import is_true
 
-indi = document["@I1"]
+indi = document["@I1@"]
 death_date = (indi > "DEAT") >= "DATE"
 if death_date != "": print(format_date(death_date)) 
 if not is_true(indi): print("It was not even present!")
@@ -84,8 +84,8 @@ I promise you it is fast! I [test it](https://github.com/GatienBouyer/fastgedcom
 
 ## Feature details
 
-- Supports the read of gedcom files encoded in UTF-8 with and without BOM, UTF-16 (also named UNICODE), ANSI, and ANSEL.
-- ~~Supports the export to gedcom files encoded in UTF-8, UTF-16, and ANSI.~~
+- Supports reading of gedcom files encoded in UTF-8 with and without BOM, UTF-16 (also named UNICODE), ANSI, and ANSEL.
+- ~~Supports export of gedcom files encoded in UTF-8, UTF-16, and ANSI.~~
 
 ## Feedbacks
 
