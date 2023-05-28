@@ -4,7 +4,7 @@ gedcom_file = "../my_gedcom.ged"
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
 	document, warnings = parse(f)
 
-print(warnings) # in case of duplicate record reference
+if warnings: print(warnings) # in case of duplicate record reference
 
 from fastgedcom.helpers import format_date
 

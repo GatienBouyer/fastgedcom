@@ -14,7 +14,7 @@ gedcom_file = "my_gedcom_file.ged"
 with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
 	document, warnings = parse(f)
 
-print(warnings) # in case of duplicate record reference
+if warnings: print(warnings) # in case of duplicate record reference
 ```
 
 
@@ -42,7 +42,7 @@ indi = document.get_record("@I1@")
 surname = indi.get_sub_line("NAME").get_sub_line_payload("SURN")
 ```
 
-Typehints for salvation!
+Typehints for salvation! Autocompletion and type checking make development so much easier.
 ```python
 from fastgedcom.base import Document, FakeLine, IndiRef, Record, is_true
 from fastgedcom.helpers import format_name
@@ -57,7 +57,7 @@ def print_name(record: Record | FakeLine) -> None:
 print_infos(document, "@I1@")
 ```
 
-Iteration on families is fast. Don't blink!
+Iteration on families is fast. Save time!
 ```python
 from fastgedcom.family_aid import FamilyAid
 
@@ -78,7 +78,7 @@ print(number_of_descendants("@I1@"))
 
 You want to see more? [Here are some examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)
 
-I promise you it is fast! I [test it](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) and I use it.
+I promise you it is efficient! I [test it](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) and I use it.
 
 
 
