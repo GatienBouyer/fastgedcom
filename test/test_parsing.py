@@ -1,9 +1,9 @@
 import unittest
 from pathlib import Path
 
-from ..base import Document
-from ..helpers import get_all_sub_lines
-from ..parser import guess_encoding, parse
+from fastgedcom.base import Document
+from fastgedcom.helpers import get_all_sub_lines
+from fastgedcom.parser import guess_encoding, parse
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
 file_utf8_bom = Path(__file__).parent / "test_data" / "in_utf8_bom.ged"

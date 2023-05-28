@@ -1,7 +1,7 @@
 import unittest
 
-from ..base import TrueLine
-from ..helpers import get_all_sub_lines
+from fastgedcom.base import TrueLine
+from fastgedcom.helpers import get_all_sub_lines
 
 
 class TestParser(unittest.TestCase):

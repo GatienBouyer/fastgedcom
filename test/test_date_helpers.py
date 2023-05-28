@@ -1,7 +1,7 @@
 import unittest
 
-from ..helpers import (format_date, remove_trailing_zeros,
-                             extract_int_year, extract_year)
+from fastgedcom.helpers import (extract_int_year, extract_year, format_date,
+                                remove_trailing_zeros)
 
 
 class TestParser(unittest.TestCase):
