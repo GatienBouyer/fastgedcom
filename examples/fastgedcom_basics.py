@@ -47,5 +47,5 @@ def number_of_descendants(indi: IndiRef) -> int:
 	children = booster.get_children(indi)
 	return len(children) + sum(number_of_descendants(c) for c in children)
 
-print(number_of_ascendants(document["@I1@"]))
-print(number_of_descendants("@I1@"))
+print(max(number_of_ascendants(indi) for indi in document.get_records("INDI")))
+print(max(number_of_descendants(indi.tag) for indi in document.get_records("INDI")))
