@@ -157,4 +157,9 @@ cython_debug/
 # Various IDEs
 .idea/
 .vscode/
+
+# Mac
 .DS_Store
+
+# Private outputs
+private
