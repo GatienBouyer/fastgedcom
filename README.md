@@ -1,6 +1,6 @@
 # FastGedcom
 
-A gedcom tool to parse, browse and modify gedcom files
+A lightweight tool to parse, browse and edit gedcom files.
 
 ```bash
 pip install fastgedcom

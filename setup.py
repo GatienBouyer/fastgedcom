@@ -9,7 +9,7 @@ with open("requirements.txt", "r") as f:
 setup(
     name="fastgedcom",
     version="0.0.4",
-    description="A gedcom tool to parse, browse and modify gedcom files",
+    description="A lightweight tool to parse, browse and edit gedcom files.",
     packages=["fastgedcom"],
     package_data={"fastgedcom": ["py.typed"]},
     long_description=long_description,
