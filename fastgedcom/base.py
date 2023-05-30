@@ -116,22 +116,19 @@ class FakeLine(Line):
 		return []
 
 	def __rshift__(self, tag: str) -> list['TrueLine']:
-		# Override for code documentation
-		return super().__rshift__(tag)
+		return self.get_sub_lines(tag)
 
 	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
 		return fake_line
 
 	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
-		# Override for code documentation
-		return super().__gt__(tag)
+		return self.get_sub_line(tag)
 
 	def get_sub_line_payload(self, tag: str) -> str:
 		return ""
 
 	def __ge__(self, tag: str) -> str:
-		# Override for code documentation
-		return super().__ge__(tag)
+		return self.get_sub_line_payload(tag)
 
 	def __repr__(self) -> str:
 		"""Return the string representation of the class."""
@@ -179,8 +176,7 @@ class TrueLine(Line):
 		return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
 
 	def __rshift__(self, tag: str) -> list['TrueLine']:
-		# Override for code documentation
-		return super().__rshift__(tag)
+		return self.get_sub_lines(tag)
 
 	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
 		for sub_line in self.sub_lines:
@@ -189,8 +185,7 @@ class TrueLine(Line):
 		return fake_line
 
 	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
-		# Override for code documentation
-		return super().__gt__(tag)
+		return self.get_sub_line(tag)
 
 	def get_sub_line_payload(self, tag: str) -> str:
 		for sub_line in self.sub_lines:
@@ -199,8 +194,7 @@ class TrueLine(Line):
 		return ""
 
 	def __ge__(self, tag: str) -> str:
-		# Override for code documentation
-		return super().__ge__(tag)
+		return self.get_sub_line_payload(tag)
 
 	def __str__(self) -> str:
 		"""Return the gedcom representation of the line (sub-lines excluded)."""
