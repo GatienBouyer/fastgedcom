@@ -1,13 +1,19 @@
-from typing import Any, Callable, Iterator, Literal
+"""Utilitary functions to sort, format, or extract information."""
+
+from typing import Callable, Iterator, Literal
 
 from .base import Document, FakeLine, IndiRef, TrueLine, is_true
 from .family_aid import FamilyAid
 
 MINIMAL_DATE = -99999
-"""Used to sort empty date fields"""
+"""Default year when sorting dates.
+Used when the dates cannot be convert to an integer using
+:py:func:`.extract_int_year`."""
 
 def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
-	"""Recursively iterate on all lines under the given line."""
+	"""Recursively iterate on :py:class:`.TrueLine` of higher level.
+	All lines under the given line are returned. The order is preserved
+	as in the gedcom file, sub-lines come before siblings lines."""
 	lines = list(line.sub_lines)
 	while len(lines) > 0:
 		line = lines.pop(0)
@@ -15,7 +21,7 @@ def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
 		lines = line.sub_lines + lines
 
 def get_source_infos(line: TrueLine | FakeLine) -> str:
-	"""Return the gedcom text for the line and the sub-lines."""
+	"""Return the gedcom text equivalent for the line and its sub-lines."""
 	if not is_true(line): return ""
 	text = str(line) + "\n"
 	for sub_line in get_all_sub_lines(line):
@@ -28,27 +34,39 @@ def format_name(name: str) -> str:
 	return name.replace("/", "")
 
 def gender_to_ascii(gender: Literal['M', 'F'] | str) -> Literal['♂', '♀', '⚥']:
+	"""Format the payload of SEX lines."""
 	if gender == 'M': return '♂'
 	if gender == 'F': return '♀'
 	return '⚥'
 
+def remove_trailing_zeros(date: str) -> str:
+	"""Removes useless 0 prefixing numbers."""
+	k = 0
+	while k+1 < len(date):
+		if date[k]!='0': k += 1
+		elif k==0 or date[k-1].isspace() or date[k-1] == '-':
+			date = date[:k] + date[k+1:]
+		else: k += 1
+	return date
+
 def format_date(date: str) -> str:
 	"""Format the payload of DATE lines.
 	Return a short string representation of the date by
-	replacing keywords by symbols.
+	replacing gedcom keywords by symbols.
 
 	Replacements:
-	- 'd BC' standing for before christ is replaced by '-d',
-	- 'd BCE' or before common era with '-d',
-	- 'ABT d' stading for about is replaced by '~ d',
-	- 'EST d' stading for estimated is replaced by '~ d',
-	- 'CAL d' stading for calculated is replaced by '~ d',
-	- 'BEF d' standing for before is replaced by '< d',
-	- 'AFT d' standing for after is replaced by '> d',
-	- 'BET d AND d' standing for between is replaced by 'd -- d',
-	- 'FROM d TO d' is replace by 'd -- d',
-	- 'FROM d' is replaced by 'd',
-	- 'TO d' is replaced by 'd'.
+
+	* 'd BC' standing for before christ is replaced by '-d',
+	* 'd BCE' or before common era with '-d',
+	* 'ABT d' stading for about is replaced by '~ d',
+	* 'EST d' stading for estimated is replaced by '~ d',
+	* 'CAL d' stading for calculated is replaced by '~ d',
+	* 'BEF d' standing for before is replaced by '< d',
+	* 'AFT d' standing for after is replaced by '> d',
+	* 'BET d AND d' standing for between is replaced by 'd -- d',
+	* 'FROM d TO d' is replace by 'd -- d',
+	* 'FROM d' is replaced by 'd',
+	* 'TO d' is replaced by 'd'.
 	"""
 	date = remove_trailing_zeros(date)
 	if date[:4]=='BET ' and 'AND' in date:
@@ -73,20 +91,15 @@ def format_date(date: str) -> str:
 	elif date[:3]=='TO ': date = date[3:]
 	return date
 
-def remove_trailing_zeros(date: str) -> str:
-	"""Removes useless prefixing 0 from numbers."""
-	k = 0
-	while k+1 < len(date):
-		if date[k]=='0' and (k==0 or (k>0 and (date[k-1].isspace() or date[k-1] == '-'))):
-			date = date[:k] + date[k+1:]
-		else:
-			k += 1
-	return date
-
 def extract_year(date: str) -> str:
-	"""Format the payload of DATE lines and remove day and month information.
+	"""Format the payload of DATE lines.
+
+	Keep the context of the date: '-', '~', '<', '>' and '--'.
+	To extract year but not the context, use :py:func:`.extract_int_year`.
+
+	Remove the day and the month if present.
 	The parameter is the DATE payload or the formatted date string.
-	Keep the context of the date: '-', '~', '<', '>' and '--'."""
+	"""
 	formated_date = format_date(date)
 	if ' -- ' in formated_date:
 		first_date, second_date = formated_date.split(' -- ', 1)
@@ -105,10 +118,12 @@ def extract_year(date: str) -> str:
 	return year
 
 def extract_int_year(date: str) -> float | None:
-	"""Return the year of the date as an integer.
+	"""Format the payload of DATE lines.
+	Return the year of the date as an integer.
+
 	Keep the context: A date BCE returns a negative number.
-	For date range of type `between` or `from-to`, this function returns
-	the median number of the range, hence the float type.
+	For a date range of type `between` or `from-to`, this function
+	returns the median number of the range, hence the float type.
 	Return None on failure."""
 	year = extract_year(date)
 	if ' -- ' in year:
@@ -124,6 +139,11 @@ def extract_int_year(date: str) -> float | None:
 
 
 def sorting_key_indi_birth(document: Document) -> Callable[[IndiRef | None], float]:
+	"""Function that can be used to sort individuals by year of birth.
+
+	Usage:
+	:code:`sorted(individuals, key=sorting_key_indi_birth(document)`
+	"""
 	def get_sorting_key_indi_birth(indi: IndiRef | None) -> float:
 		if indi is None: return MINIMAL_DATE
 		birth_year = extract_int_year((document[indi] > "BIRT") >= "DATE")
@@ -133,6 +153,14 @@ def sorting_key_indi_birth(document: Document) -> Callable[[IndiRef | None], flo
 def sorting_key_indi_union_with(
 	document: Document, ref_indi: IndiRef
 ) -> Callable[[IndiRef | None], float]:
+	"""Function that can be used to sort the spouses of someone by date of union.
+
+	The optionnal :py:class:`.FamilyAid` object can be passed to avoid
+	repetitive creation of that object.
+
+	Usage:
+	:code:`sorted(spouses_of_indiX, key=sorting_key_indi_union_with(document, indiX)`
+	"""
 	family_aid = FamilyAid(document)
 	def get_sorting_key_indi_union_with(indi: IndiRef | None) -> float:
 		if indi is None: return MINIMAL_DATE
