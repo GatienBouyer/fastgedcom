@@ -33,12 +33,6 @@ def format_name(name: str) -> str:
 	Remove the backslash around the surname."""
 	return name.replace("/", "")
 
-def gender_to_ascii(gender: Literal['M', 'F'] | str) -> Literal['♂', '♀', '⚥']:
-	"""Format the payload of SEX lines."""
-	if gender == 'M': return '♂'
-	if gender == 'F': return '♀'
-	return '⚥'
-
 def remove_trailing_zeros(date: str) -> str:
 	"""Removes useless 0 prefixing numbers."""
 	k = 0
