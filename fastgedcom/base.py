@@ -52,8 +52,9 @@ class Line(ABC):
 	@property
 	@abstractmethod
 	def payload_with_cont(self) -> str:
-		"""The content of this gedcom field namely the payload combined
-		with every payload of the CONT sub-lines as a new line."""
+		"""The content of this gedcom field, namely the payload combined
+		with all CONT sub-lines payload as a new line, and
+		with all CONC sub-lines payload as a space."""
 		...
 
 	@abstractmethod
@@ -212,8 +213,10 @@ class TrueLine(Line):
 	@property
 	def payload_with_cont(self) -> str:
 		text = self.payload
-		for cont in self.get_sub_lines('CONT'):
+		for cont in self.get_sub_lines("CONT"):
 			text += '\n' + cont.payload
+		for conc in self.get_sub_lines("CONC"):
+			text += ' ' + conc.payload
 		return text
 
 
