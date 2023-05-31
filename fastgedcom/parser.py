@@ -69,9 +69,9 @@ def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
 				continue
 			if parsed_line.level == 0:
 				parent_lines = [parsed_line]
-				if parsed_line.tag in document.level0_index:
+				if parsed_line.tag in document.records:
 					warnings.append(DuplicateParsingWarning(parsed_line.tag))
-				document.level0_index[parsed_line.tag] = parsed_line
+				document.records[parsed_line.tag] = parsed_line
 			else:
 				while parent_lines and parsed_line.level <= parent_lines[-1].level:
 					parent_lines.pop(-1)

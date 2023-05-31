@@ -24,15 +24,14 @@ class FamilyAid():
 
 	def __init__(self, document: Document) -> None:
 		self.document = document
-		self.parents: dict[IndiRef,
-		    tuple[Record | FakeLine, Record | FakeLine]]
+		self.parents: dict[IndiRef, tuple[Record | FakeLine, Record | FakeLine]]
 		self.unions: defaultdict[IndiRef, list[Record]]
 		self._build_parents()
 
 	def _build_parents(self) -> None:
 		self.parents = dict()
 		self.unions = defaultdict(list)
-		for fam_record in self.document.level0_index.values():
+		for fam_record in self.document.records.values():
 			if fam_record.payload != "FAM": continue
 			children: list[IndiRef] = []
 			father: FakeLine | TrueLine = fake_line
@@ -42,10 +41,10 @@ class FamilyAid():
 				if line.tag == "CHIL":
 					children.append(line.payload)
 				elif line.tag == "HUSB":
-					father = self.document.level0_index[line.payload]
+					father = self.document.records[line.payload]
 					self.unions[father.tag].append(fam_record)
 				elif line.tag == "WIFE":
-					mother = self.document.level0_index[line.payload]
+					mother = self.document.records[line.payload]
 					self.unions[mother.tag].append(fam_record)
 			for child in children:
 				self.parents[child] = (father, mother)
@@ -62,7 +61,7 @@ class FamilyAid():
 	def get_parent_family(self, child: TrueLine | FakeLine) -> Record | FakeLine:
 		"""Return the family record with the parents of the person."""
 		fam_ref = self.get_parent_family_ref(child)
-		return self.document.level0_index[fam_ref] if fam_ref else fake_line
+		return self.document.records[fam_ref] if fam_ref else fake_line
 
 	def get_parents(self,
 		child: IndiRef
@@ -93,7 +92,7 @@ class FamilyAid():
 
 	def get_children(self, parent: IndiRef) -> list[Record]:
 		"""Return the children's records of a person."""
-		return [self.document.level0_index[child]
+		return [self.document.records[child]
 			for child in self.get_children_ref(parent)]
 
 	def get_children_with_ref(self,
@@ -112,7 +111,7 @@ class FamilyAid():
 		spouse2: IndiRef
 	) -> list[Record]:
 		"""Return the children's records of the couple."""
-		return [self.document.level0_index[child]
+		return [self.document.records[child]
 			for child in self.get_children_with_ref(spouse1, spouse2)]
 
 	def get_spouses_ref(self, indi: IndiRef) -> list[IndiRef]:
@@ -124,7 +123,7 @@ class FamilyAid():
 
 	def get_spouses(self, indi: IndiRef) -> list[Record]:
 		"""Return the spouses' records of the person."""
-		return [self.document.level0_index[spouse]
+		return [self.document.records[spouse]
 			for spouse in self.get_spouses_ref(indi)]
 
 	def get_all_siblings_ref(self, indi: IndiRef) -> list[IndiRef]:
@@ -145,13 +144,13 @@ class FamilyAid():
 	def get_all_siblings(self, indi: IndiRef) -> list[Record]:
 		"""Return the siblings' records of the person.
 		Stepsiblings included."""
-		return [self.document.level0_index[sibling]
+		return [self.document.records[sibling]
 			for sibling in self.get_all_siblings_ref(indi)]
 
 	def get_siblings_ref(self, indi: IndiRef) -> list[IndiRef]:
 		"""Return the siblings' references of the person.
 		Stepsiblings excluded."""
-		fam = self.get_parent_family(self.document.level0_index[indi])
+		fam = self.get_parent_family(self.document.records[indi])
 		return [sub_line.payload
 			for sub_line in fam.sub_lines
 			if (sub_line.tag == "CHIL" and sub_line.payload != ""
@@ -160,13 +159,13 @@ class FamilyAid():
 	def get_siblings(self, indi: IndiRef) -> list[Record]:
 		"""Return the siblings' records of the person.
 		Stepsiblings excluded."""
-		return [self.document.level0_index[sibling]
+		return [self.document.records[sibling]
 			for sibling in self.get_siblings_ref(indi)]
 
 	def get_stepsiblings_ref(self, indi: IndiRef) -> list[IndiRef]:
 		"""Return the stepsiblings' references of the person.
 		Siblings excluded."""
-		parent_fam = self.get_parent_family_ref(self.document.level0_index[indi])
+		parent_fam = self.get_parent_family_ref(self.document.records[indi])
 		father, mother = self.get_parents(indi)
 		unions: list[Record] = []
 		if is_true(father):
@@ -184,7 +183,7 @@ class FamilyAid():
 	def get_stepsiblings(self, indi: IndiRef) -> list[Record]:
 		"""Return the stepsiblings of the person.
 		Siblings excluded."""
-		return [self.document.level0_index[stepsibling]
+		return [self.document.records[stepsibling]
 			for stepsibling in self.get_stepsiblings_ref(indi)]
 
 	def get_spouse_in_fam_ref(self, indi: IndiRef, fam: Record) -> IndiRef:
@@ -196,4 +195,4 @@ class FamilyAid():
 
 	def get_spouse_in_fam(self, indi: IndiRef, fam: Record) -> Record:
 		"""Return the spouse's record of the family that is not the person's."""
-		return self.document.level0_index[self.get_spouse_in_fam_ref(indi, fam)]
+		return self.document.records[self.get_spouse_in_fam_ref(indi, fam)]

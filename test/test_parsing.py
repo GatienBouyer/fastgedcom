@@ -17,10 +17,10 @@ class TestParser(unittest.TestCase):
 		self.assertIsNotNone(indi) ; assert(indi)
 		name = indi.get_sub_line_payload("NAME")
 		self.assertEqual(name, "éàç /ÉÀÇ/")
-		nb_lines = len(g.level0_index) + sum(1 
+		nb_lines = len(g.records) + sum(1
 			for r in g for _ in get_all_sub_lines(r))
 		self.assertEqual(nb_lines, 27)
-		
+
 	def test_parsing_utf8(self) -> None:
 		with open(file_utf8, "r", encoding="utf-8") as f:
 			self._test_parsing(parse(f)[0])
@@ -58,7 +58,7 @@ class TestParser(unittest.TestCase):
 			guess = guess_encoding(filename)
 			guess_lower = guess.lower() if guess else None
 			self.assertEqual(guess_lower, encoding)
-	
+
 	def test_stream_parsing(self) -> None:
 		from io import StringIO
 		stream = StringIO("0 HEAD\n1 GEDC\n2 VERS 5.5\n1 CHAR UTF-8\n0 @I1@ INDI\n1 NAME éàç /ÉÀÇ/\n2 SURN ÉÀÇ\n2 GIVN éàç\n1 SEX M")
@@ -68,9 +68,9 @@ class TestParser(unittest.TestCase):
 		self.assertIsNotNone(indi) ; assert(indi)
 		name = indi.get_sub_line_payload("NAME")
 		self.assertEqual(name, "éàç /ÉÀÇ/")
-		nb_lines = len(g.level0_index) + sum(1 
+		nb_lines = len(g.records) + sum(1
 			for r in g for _ in get_all_sub_lines(r))
 		self.assertEqual(nb_lines, 9)
 
-if __name__ == '__main__':	
+if __name__ == '__main__':
 	unittest.main()

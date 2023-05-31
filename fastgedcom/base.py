@@ -223,29 +223,31 @@ class Document():
 	"""Store all the information of the gedcom document.
 
 	All records (level 0 lines) are directly accessible via the
-	:py:attr:`level0_index` dictionnary and the other lines level are
+	:py:attr:`records` dictionnary and the other lines level are
 	accessible via :py:attr:`.TrueLine.sub_lines`."""
 
-	level0_index: dict[XRef, Record]
-	"""Dictionnary of records, accessible via :py:meth:`get_records`
-	or :py:meth:`__getitem__`."""
+	records: dict[XRef, Record]
+	"""Dictionnary of records, accessible via :py:meth:`get_records` or
+	:py:meth:`__getitem__`. Access it directly to raise KeyError instead
+	of getting a :py:class:`.FakeLine`. Usefull when you a pretty sure of
+	the Record existing in the document."""
 
 	def __init__(self) -> None:
-		self.level0_index = dict()
+		self.records = dict()
 
 	def __iter__(self) -> Iterator[Record]:
 		"""Iterate on the lines of level 0."""
-		return iter(self.level0_index.values())
+		return iter(self.records.values())
 
 	def get_records(self, record_type: str) -> Iterator[Record]:
 		"""Return an iterator over records of that ``record_type``."""
-		for record in self.level0_index.values():
+		for record in self.records.values():
 			if record.payload == record_type:
 				yield record
 
 	def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
 		"""Return the record under that ``identifier``."""
-		return self.level0_index.get(identifier, fake_line)
+		return self.records.get(identifier, fake_line)
 
 	__getitem__ = get_record
 	"""Alias for :py:meth:`get_record` to shorten the syntax

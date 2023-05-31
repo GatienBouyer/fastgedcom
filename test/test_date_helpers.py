@@ -16,7 +16,7 @@ class TestParser(unittest.TestCase):
 		self.assertEqual(remove_trailing_zeros("10 May 067"), "10 May 67")
 		self.assertEqual(remove_trailing_zeros("-10"), "-10")
 		self.assertEqual(remove_trailing_zeros("-010"), "-10")
-	
+
 	def test_format_date(self) -> None:
 		self.assertEqual(format_date(""), "")
 		self.assertEqual(format_date('22 Mar 2001'), '22 Mar 2001')
@@ -30,7 +30,7 @@ class TestParser(unittest.TestCase):
 		self.assertEqual(format_date('BET 2001 AND 2002'), '2001 -- 2002')
 		self.assertEqual(format_date('BET 22 May 67 AND 1 Apr 67'), '22 May 67 -- 1 Apr 67')
 		self.assertEqual(format_date('BET 62 BC AND 64 BC'), '-62 -- -64')
-	
+
 	def test_format_date_stability(self) -> None:
 		dates = ('22 Mar 2001', '2001', '12 Fev 67 BCE', 'ABT 22 Mar 2001',
 		         'ABT Mar 2001', 'ABT 2000 BCE', '67 BCE', 'BEF Mar 2001 BCE',
@@ -50,7 +50,7 @@ class TestParser(unittest.TestCase):
 		self.assertEqual(extract_year('BEF Mar 2001 BCE'), '< -2001')
 		self.assertEqual(extract_year('BET 2001 AND 2002'), '2001 -- 2002')
 		self.assertEqual(extract_year('BET 22 May 67 AND 1 Apr 67'), '67')
-	
+
 	def test_extract_int_year(self) -> None:
 		self.assertEqual(extract_int_year(""), None)
 		self.assertEqual(extract_int_year('22 Mar 2001'), 2001)

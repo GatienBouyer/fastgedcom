@@ -14,5 +14,5 @@ class TestParser(unittest.TestCase):
 		all_recs = list(get_all_sub_lines(indi))
 		self.assertListEqual(all_recs, [name, surn, givn, sex])
 
-if __name__ == '__main__':	
+if __name__ == '__main__':
 	unittest.main()
