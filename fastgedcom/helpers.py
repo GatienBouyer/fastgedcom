@@ -1,9 +1,8 @@
 """Utilitary functions to sort, format, or extract information."""
 
-from typing import Callable, Iterator, Literal
+from typing import Iterator
 
-from .base import Document, FakeLine, IndiRef, TrueLine, is_true
-from .family_aid import FamilyAid
+from .base import FakeLine, Record, TrueLine, is_true
 
 MINIMAL_DATE = -99999
 """Default year when sorting dates.
@@ -132,34 +131,21 @@ def extract_int_year(date: str) -> float | None:
 	return int(year_without_context)
 
 
-def sorting_key_indi_birth(document: Document) -> Callable[[IndiRef | None], float]:
+def sorting_key_indi_birth(indi: Record) -> float:
 	"""Function that can be used to sort individuals by year of birth.
 
 	Usage:
-	:code:`sorted(individuals, key=sorting_key_indi_birth(document)`
+	:code:`sorted(individuals, key=sorting_key_indi_birth)`
 	"""
-	def get_sorting_key_indi_birth(indi: IndiRef | None) -> float:
-		if indi is None: return MINIMAL_DATE
-		birth_year = extract_int_year((document[indi] > "BIRT") >= "DATE")
-		return MINIMAL_DATE if birth_year is None else birth_year
-	return get_sorting_key_indi_birth
+	birth_year = extract_int_year((indi > "BIRT") >= "DATE")
+	return MINIMAL_DATE if birth_year is None else birth_year
 
-def sorting_key_indi_union_with(
-	document: Document, ref_indi: IndiRef
-) -> Callable[[IndiRef | None], float]:
-	"""Function that can be used to sort the spouses of someone by date of union.
-
-	The optionnal :py:class:`.FamilyAid` object can be passed to avoid
-	repetitive creation of that object.
+def sorting_key_union(family: Record) -> float:
+	"""Function that can be used to sort family by marriage date.
 
 	Usage:
-	:code:`sorted(spouses_of_indiX, key=sorting_key_indi_union_with(document, indiX)`
+	:code:`sorted(unions, key=sorting_key_union)`
 	"""
-	family_aid = FamilyAid(document)
-	def get_sorting_key_indi_union_with(indi: IndiRef | None) -> float:
-		if indi is None: return MINIMAL_DATE
-		unions = family_aid.get_unions_with(ref_indi, indi)
-		if len(unions) == 0: return MINIMAL_DATE
-		union_year = extract_int_year(document[unions[0]] >= "DATE")
-		return MINIMAL_DATE if union_year is None else union_year
-	return get_sorting_key_indi_union_with
+	marr_year = extract_int_year((family > "MARR") >= "DATE")
+	return MINIMAL_DATE if marr_year is None else marr_year
+

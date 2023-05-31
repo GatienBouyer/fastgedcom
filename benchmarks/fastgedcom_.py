@@ -38,7 +38,7 @@ print(f"Time to traverse parents: {end_time - start_time}")
 start_time = perf_counter()
 
 def nb_descendants_rec(parent: IndiRef) -> int:
-	children = booster.get_children(parent)
+	children = booster.get_children_ref(parent)
 	return len(children) + sum(nb_descendants_rec(child) for child in children)
 
 nb_descendants = nb_descendants_rec("@I1692@")

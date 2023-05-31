@@ -7,7 +7,7 @@ On module import, register the ansel and gedcom codecs from the `ansel python li
 from typing import IO
 from pathlib import Path
 
-import ansel
+import ansel # type: ignore[import]
 
 from .base import Document, TrueLine, XRef
 

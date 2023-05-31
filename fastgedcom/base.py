@@ -111,6 +111,7 @@ class FakeLine(Line):
 
 	payload = ""
 	payload_with_cont = ""
+	sub_lines: list['TrueLine'] = []
 
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		return []

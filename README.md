@@ -69,7 +69,7 @@ def number_of_ascendants(indi: Record | FakeLine) -> int:
 	return 1+max(number_of_ascendants(father), number_of_ascendants(mother))
 
 def number_of_descendants(indi: IndiRef) -> int:
-	children = booster.get_children(indi)
+	children = booster.get_children_ref(indi)
 	return len(children) + sum(number_of_descendants(c) for c in children)
 
 print(max(number_of_ascendants(indi)
