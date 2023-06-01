@@ -1,10 +1,10 @@
 import unittest
 
-from ..base import TrueLine
-from ..helpers import get_all_sub_lines
+from fastgedcom.base import TrueLine
+from fastgedcom.helpers import get_all_sub_lines
 
 
-class TestParser(unittest.TestCase):
+class TestBase(unittest.TestCase):
 	def test_sub_rec_recursive(self) -> None:
 		surn = TrueLine(2, "SURN", "BOUYER", [])
 		givn = TrueLine(2, "GIVN", "Gatien", [])
@@ -14,5 +14,5 @@ class TestParser(unittest.TestCase):
 		all_recs = list(get_all_sub_lines(indi))
 		self.assertListEqual(all_recs, [name, surn, givn, sex])
 
-if __name__ == '__main__':	
+if __name__ == '__main__':
 	unittest.main()
