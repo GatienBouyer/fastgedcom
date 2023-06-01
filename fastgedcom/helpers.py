@@ -32,6 +32,20 @@ def format_name(name: str) -> str:
 	Remove the backslash around the surname."""
 	return name.replace("/", "")
 
+def extract_name_parts(name: str) ->tuple[str, str]:
+	"""Split the payload of NAME lines into the given name and the surname parts.
+	The surname is the part of the payload surrounded by '/'."""
+	first = name.find('/')
+	second = name.find('/', first+1)
+	if second == -1: return name.strip(), ""
+	if (second+1 < len(name) and name[second+1] == " "
+			and first > 0 and name[first-1] == " "):
+		given_name = name[:first] + name[second+2:]
+	else:
+		given_name = name[:first] + name[second+1:]
+	surname = name[first+1:second]
+	return given_name.strip(), surname.strip()
+
 def remove_trailing_zeros(date: str) -> str:
 	"""Removes useless 0 prefixing numbers."""
 	k = 0
