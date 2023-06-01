@@ -6,6 +6,9 @@ with open("Readme.md", "r") as f:
 with open("requirements.txt", "r") as f:
 	requirements = f.readlines()
 
+with open("requirements-dev.txt", "r") as f:
+	requirements_dev = f.readlines()
+
 setup(
 	name="fastgedcom",
 	version="0.0.5",
@@ -17,7 +20,7 @@ setup(
 	zip_safe=False,
 	install_requires=requirements,
 	extras_require={
-		"dev": ["mypy", "twine", "sphinx_rtx_theme", "sphinx-autoapi"],
+		"dev": requirements_dev,
 	},
 	python_requires=">=3.10", # typing.TypeGuard, addded in 3.10, is need
 	url="https://github.com/GatienBouyer/fastgedcom",
