@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup #type: ignore[import]
 
 with open("Readme.md", "r") as f:
 	long_description = f.read()
@@ -19,7 +19,7 @@ setup(
 	extras_require={
 		"dev": ["mypy", "twine", "sphinx_rtx_theme", "sphinx-autoapi"],
 	},
-	python_requires=">=3.10",
+	python_requires=">=3.10", # typing.TypeGuard, addded in 3.10, is need
 	url="https://github.com/GatienBouyer/fastgedcom",
 	author="Gatien Bouyer",
 	author_email="gatien.bouyer.dev@gmail.com",

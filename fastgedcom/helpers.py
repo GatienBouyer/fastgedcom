@@ -114,7 +114,7 @@ def extract_year(date: str) -> str:
 		second_year = extract_year(second_date)
 		if first_year == second_year: return first_year
 		return first_year + ' -- ' + second_year
-	date_parts = formated_date.split()
+	date_parts = formated_date.replace('/', ' ').split()
 	numeric_parts = sorted(filter(lambda p: p.isdecimal() or (p[0] == '-' and p[1:].isdecimal()), date_parts), key=len)
 	if len(numeric_parts) == 0:
 		return ""

@@ -4,7 +4,7 @@ from fastgedcom.base import TrueLine
 from fastgedcom.helpers import get_all_sub_lines
 
 
-class TestParser(unittest.TestCase):
+class TestBase(unittest.TestCase):
 	def test_sub_rec_recursive(self) -> None:
 		surn = TrueLine(2, "SURN", "BOUYER", [])
 		givn = TrueLine(2, "GIVN", "Gatien", [])
