@@ -1,4 +1,4 @@
 mypy
 twine
-sphinx_rtx_theme
+sphinx-rtd-theme
 sphinx-autoapi
