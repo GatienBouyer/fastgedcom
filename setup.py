@@ -23,7 +23,6 @@ setup(
 		"dev": requirements_dev,
 	},
 	python_requires=">=3.10", # typing.TypeGuard, addded in 3.10, is need
-	url="https://github.com/GatienBouyer/fastgedcom",
 	author="Gatien Bouyer",
 	author_email="gatien.bouyer.dev@gmail.com",
 	license="MIT",
@@ -40,5 +39,6 @@ setup(
 	project_urls={
 		'Bug Reports': 'https://github.com/GatienBouyer/fastgedcom/issues',
 		'Source': 'https://github.com/GatienBouyer/fastgedcom',
+		'Documentation': 'https://fastgedcom.readthedocs.io/en/latest/',
 	},
 )

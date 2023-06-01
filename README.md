@@ -33,7 +33,7 @@ from fastgedcom.base import is_true
 indi = document["@I1@"]
 death_date = (indi > "DEAT") >= "DATE"
 if death_date != "": print(format_date(death_date)) 
-if not is_true(indi): print("It was not even present!")
+if not is_true(indi): print("@I1@ was not even present!")
 ```
 
 Don't like magic operator overload? Use standard methods!
@@ -81,6 +81,8 @@ print(max(number_of_descendants(indi.tag)
 ```
 
 You want to see more? [Here are some examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)
+
+The documentation of FastGedcom is available [here](https://fastgedcom.readthedocs.io/en/latest/) on ReadTheDocs.
 
 I promise you it is efficient! I [test it](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) and I use it.
 
