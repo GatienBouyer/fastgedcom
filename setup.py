@@ -8,7 +8,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
 	name="fastgedcom",
-	version="0.0.4",
+	version="0.0.5",
 	description="A lightweight tool to parse, browse and edit gedcom files.",
 	packages=["fastgedcom"],
 	package_data={"fastgedcom": ["py.typed"]},
