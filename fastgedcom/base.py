@@ -1,6 +1,6 @@
 """Classes and types for the data structure used to represent a gedcom."""
 
-from typing import Iterator, Literal, TypeAlias, TypeGuard, Union
+from typing import Iterator, Literal, TypeAlias, TypeGuard
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
@@ -42,6 +42,12 @@ class Line(ABC):
 	Implementations are :py:class:`.TrueLine` and :py:class:`.FakeLine`,
 	see these classes for more information.
 	"""
+	@property
+	@abstractmethod
+	def exists(self) -> bool: 
+		"""Is True if it is a :py:class:`.TrueLine`,
+		False if it is a :py:class:`.FakeLine`."""
+		...
 
 	@property
 	@abstractmethod
@@ -69,12 +75,12 @@ class Line(ABC):
 		return self.get_sub_lines(tag)
 
 	@abstractmethod
-	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
 		"""Return the first sub-line having the given :any:`tag`.
 		A :py:class:`.FakeLine` if no line matches."""
 		...
 
-	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
 		"""Alias for :py:meth:`get_sub_line` to shorten the syntax
 		by using the > operator."""
 		return self.get_sub_line(tag)
@@ -105,13 +111,15 @@ class FakeLine(Line):
 	:py:class:`.TrueLine` a simple boolean test is enough:
 	:code:`if line: line.payload`. However to tell typecheckers that after
 	the test, the type is narrowed, you should use the :py:func:`is_true`
-	function. In general, the use of :py:meth:`get_sub_line_payload` (or ``>=``)
+	function (or the :py:attr:`exists` attribute). In general, the use of :py:meth:`get_sub_line_payload` (or ``>=``)
 	and then to check if the string is empty, is generally preferable.
 	"""
 
-	payload = ""
-	payload_with_cont = ""
+	payload = "" # pyright: ignore[reportGeneralTypeIssues]
+	payload_with_cont = "" # pyright: ignore[reportGeneralTypeIssues]
 	sub_lines: list['TrueLine'] = []
+
+	exists: Literal[False] = False
 
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		return []
@@ -119,10 +127,10 @@ class FakeLine(Line):
 	def __rshift__(self, tag: str) -> list['TrueLine']:
 		return self.get_sub_lines(tag)
 
-	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
 		return fake_line
 
-	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
 		return self.get_sub_line(tag)
 
 	def get_sub_line_payload(self, tag: str) -> str:
@@ -173,19 +181,21 @@ class TrueLine(Line):
 	"""List of the sub-lines, i.e. the next-level lines that are part
 	of this structure."""
 
+	exists:Literal[True] = True
+
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
 
 	def __rshift__(self, tag: str) -> list['TrueLine']:
 		return self.get_sub_lines(tag)
 
-	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
 		for sub_line in self.sub_lines:
 			if sub_line.tag == tag:
 				return sub_line
 		return fake_line
 
-	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
 		return self.get_sub_line(tag)
 
 	def get_sub_line_payload(self, tag: str) -> str:
@@ -259,7 +269,7 @@ fake_line = FakeLine()
 Used to avoid having multiple unnecessary instances of :py:class:`.FakeLine`."""
 
 
-def is_true(line: Union[TrueLine, FakeLine]) -> TypeGuard[TrueLine]:
+def is_true(line: TrueLine | FakeLine) -> TypeGuard[TrueLine]:
 	"""Return true when the given ``line`` is a :py:class:`.TrueLine`,
 	false when the given ``line`` is a :py:class:`.FakeLine`.
 	Usefull when using a typechecker."""
