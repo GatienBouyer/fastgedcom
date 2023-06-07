@@ -111,7 +111,7 @@ class FakeLine(Line):
 	:py:class:`.TrueLine` a simple boolean test is enough:
 	:code:`if line: line.payload`. However to tell typecheckers that after
 	the test, the type is narrowed, you should use the :py:func:`is_true`
-	function (or the :py:attr:`exists` attribute). In general, the use of :py:meth:`get_sub_line_payload` (or ``>=``)
+	function or the :py:attr:`exists` attribute. In general, the use of :py:meth:`get_sub_line_payload` (or ``>=``)
 	and then to check if the string is empty, is generally preferable.
 	"""
 

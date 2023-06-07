@@ -1,5 +1,6 @@
 """Utilitary functions to sort, format, or extract information."""
 
+from datetime import datetime, time
 from typing import Iterator
 
 from .base import FakeLine, Record, TrueLine, is_true
@@ -101,7 +102,7 @@ def format_date(date: str) -> str:
 def extract_year(date: str) -> str:
 	"""Format the payload of DATE lines.
 
-	Keep the context of the date: '-', '~', '<', '>' and '--'.
+	Keep the context of the date, i.e. replacements by :py:func:`format_date`.
 	To extract year but not the context, use :py:func:`.extract_int_year`.
 
 	Remove the day and the month if present.
@@ -144,6 +145,71 @@ def extract_int_year(date: str) -> float | None:
 	if year_without_context == "": return None
 	return int(year_without_context)
 
+def to_datetime(date: str, default: datetime | None = None) -> datetime:
+	"""Convert the payload of DATE lines to datetime object.
+	
+	If default is provided, return default on failure.
+	Otherwise, raise ValueError on failure.
+
+	The returned date is more precise than :py:func:`.extract_int_year`, but
+	works less often. Infact, this method only works for positive dates
+	(i.e. not BC) and ABT, CAL, EST date types. For BET AND or TO FROM date
+	types, use the :py:func:`.to_datetime_range` function. The BEF and AFT date
+	types are not supported."""
+	if date[:4] in ("ABT ", "CAL ", "EST "): date = date[4:]
+	year = extract_int_year(date)
+	if year and 0 < year < 1000:
+		four_digits_year = f"{year:04}"
+		date = date.replace(str(year), four_digits_year)
+	err: ValueError | None = None
+	for fmt in ("%d %b %Y", "%d %b %Y", "%b %Y", "%Y"):
+		try:
+			return datetime.strptime(date, fmt)
+		except ValueError as e:
+			err = e
+	if default is not None: return default
+	if err is not None: raise err 
+	raise ValueError(f"Fail to parse {date} as a date")
+
+def to_datetime_range(
+		date: str,
+		default: datetime | None = None,
+	) -> tuple[datetime, datetime]:
+	"""Convert the payload of DATE lines to datetime objects.
+	
+	If default is provided, return default on failure.
+	Otherwise, raise ValueError on failure.
+
+	A case of failure is if the date types is not BET AND, or FROM TO.
+
+	Call :py:func:`.to_datetime` on the first and second date."""
+	if date.startswith("BET ") and date.count(" AND ") == 1:
+		part1, part2 = date[4:].split(" AND ")
+	elif date.startswith("FROM ") and date.count(" TO ") == 1:
+		part1, part2 = date[5:].split(" TO ")
+	elif default is not None: return default, default
+	else: raise ValueError(f"Fail to parse {date} as a date range")
+	return to_datetime(part1, default), to_datetime(part2, default)
+
+def add_time(date: datetime, time_: str) -> datetime:
+	"""Parse the payload of TIME lines.
+	If the time is parsed, return the datetime with its time set.
+	Otherwise, return the datetime as it was.
+
+	Note: datetime is immutable, thus the presence of a returned value."""
+	try:
+		t = time.fromisoformat(time_)
+	except ValueError:
+		return date
+	return datetime.combine(date.date(), t)
+
+def line_to_datetime(
+		date: TrueLine | FakeLine,
+		default: datetime | None = None,
+	) -> datetime:
+	"""Convert DATE lines to datetime object using the payload and the TIME sub-line."""
+	dt = to_datetime(date.payload, default)
+	return add_time(dt, date >= "TIME")
 
 def sorting_key_indi_birth(indi: Record) -> float:
 	"""Function that can be used to sort individuals by year of birth.
