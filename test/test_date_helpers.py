@@ -1,9 +1,10 @@
 import unittest
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
-from fastgedcom.helpers import (add_time, extract_int_year, extract_year,
-                                format_date, remove_trailing_zeros,
-                                to_datetime, to_datetime_range)
+from fastgedcom.helpers import (DateType, add_time, extract_int_year,
+                                extract_year, format_date, get_date_type,
+                                remove_trailing_zeros, to_datetime,
+                                to_datetime_range)
 
 
 class TestDateHelpers(unittest.TestCase):
@@ -109,6 +110,18 @@ class TestDateHelpers(unittest.TestCase):
 			add_time(datetime(1234, 12, 13), "14:15:16.123456Z"),
 			datetime(1234, 12, 13, 14, 15, 16, 123456, UTC)
 		)
+	
+	def test_get_date_type(self) -> None:
+		self.assertEqual(get_date_type(""), None)
+		self.assertEqual(get_date_type("AFT 2000"), DateType.AFT)
+		self.assertEqual(get_date_type("BEF 2000"), DateType.BEF)
+		self.assertEqual(get_date_type("ABT 2000 BC"), DateType.ABT)
+		self.assertEqual(get_date_type("CAL 2000"), DateType.CAL)
+		self.assertEqual(get_date_type("EST 2000"), DateType.EST)
+		self.assertEqual(get_date_type("FROM 2000 BC"), DateType.FROM)
+		self.assertEqual(get_date_type("TO 2000"), DateType.TO)
+		self.assertEqual(get_date_type("BET 1000 AND 2000"), DateType.BET_AND)
+		self.assertEqual(get_date_type("FROM 2000 BC TO 2000"), DateType.FROM_TO)
 
 if __name__ == '__main__':
 	unittest.main()

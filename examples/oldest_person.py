@@ -7,8 +7,7 @@ with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
 	document, _ = parse(f)
 
 oldest = next(document.get_records("INDI"))
-age_oldest = 0.0 # the age is a float to handle all type of date
-# A date such as" between 2001 and 2002" would by 2001.5
+age_oldest = 0.0
 for individual in document.get_records("INDI"):
 	birth_date = (individual > "BIRT") >= "DATE"
 	death_date = (individual > "DEAT") >= "DATE"
