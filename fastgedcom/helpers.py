@@ -1,14 +1,10 @@
 """Utilitary functions to sort, format, or extract information."""
 
+from typing import Iterator, overload
 from datetime import datetime, time
-from typing import Iterator
 
-from .base import FakeLine, Record, TrueLine, is_true
+from .base import FakeLine, TrueLine, is_true
 
-MINIMAL_DATE = -99999
-"""Default year when sorting dates.
-Used when the dates cannot be convert to an integer using
-:py:func:`.extract_int_year`."""
 
 def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
 	"""Recursively iterate on :py:class:`.TrueLine` of higher level.
@@ -125,14 +121,18 @@ def extract_year(date: str) -> str:
 	if '>' in formated_date: year = '> '+year
 	return year
 
-def extract_int_year(date: str) -> float | None:
-	"""Format the payload of DATE lines.
-	Return the year of the date as an integer.
+@overload
+def extract_int_year(date: str) -> float | None: ...
+@overload
+def extract_int_year(date: str, default: float) -> float: ...
 
-	Keep the context: A date BCE returns a negative number.
+def extract_int_year(date: str, default: float | None = None) -> float | None:
+	"""Format the payload of DATE lines.
+	Return the year of the date as an integer. On failure, return the default.
+
+	Keep the context: A BCE date returns a negative number.
 	For a date range of type `between` or `from-to`, this function
-	returns the median number of the range, hence the float type.
-	Return None on failure."""
+	returns the median number of the range, hence the float type."""
 	year = extract_year(date)
 	if ' -- ' in year:
 		str_year1, str_year2 = year.split(' -- ', 1)
@@ -142,7 +142,7 @@ def extract_int_year(date: str) -> float | None:
 		elif year2 is None: return year1
 		return (year1 + year2) / 2
 	year_without_context = ''.join(filter(lambda c: c.isdecimal() or c=='-', year))
-	if year_without_context == "": return None
+	if year_without_context == "": return default
 	return int(year_without_context)
 
 def to_datetime(date: str, default: datetime | None = None) -> datetime:
@@ -210,22 +210,3 @@ def line_to_datetime(
 	"""Convert DATE lines to datetime object using the payload and the TIME sub-line."""
 	dt = to_datetime(date.payload, default)
 	return add_time(dt, date >= "TIME")
-
-def sorting_key_indi_birth(indi: Record) -> float:
-	"""Function that can be used to sort individuals by year of birth.
-
-	Usage:
-	:code:`sorted(individuals, key=sorting_key_indi_birth)`
-	"""
-	birth_year = extract_int_year((indi > "BIRT") >= "DATE")
-	return MINIMAL_DATE if birth_year is None else birth_year
-
-def sorting_key_union(family: Record) -> float:
-	"""Function that can be used to sort family by marriage date.
-
-	Usage:
-	:code:`sorted(unions, key=sorting_key_union)`
-	"""
-	marr_year = extract_int_year((family > "MARR") >= "DATE")
-	return MINIMAL_DATE if marr_year is None else marr_year
-

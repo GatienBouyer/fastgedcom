@@ -57,7 +57,7 @@ class TestDateHelpers(unittest.TestCase):
 		self.assertEqual(extract_year("FROM 16 Feb 1546/1547"), "1547")
 
 	def test_extract_int_year(self) -> None:
-		self.assertEqual(extract_int_year(""), None)
+		self.assertEqual(extract_int_year("", 9999), 9999)
 		self.assertEqual(extract_int_year('22 Mar 2001'), 2001)
 		self.assertEqual(extract_int_year('2001'), 2001)
 		self.assertEqual(extract_int_year('2'), 2)
