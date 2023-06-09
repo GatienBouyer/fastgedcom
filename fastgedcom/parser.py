@@ -14,6 +14,9 @@ from .base import Document, TrueLine, XRef
 
 ansel.register()
 
+class ParsingError(Exception):
+	"""Error raise by :py:func:`.strict_parse`."""
+
 class NothingParsed(Exception):
 	"""Error raised by :py:func:`.parse`."""
 
@@ -50,8 +53,6 @@ class EmptyLineWarning(ParsingWarning):
 def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
 	"""Parse the text input to create the
 	:py:class:`.Document` object.
-
-	Raise :py:exc:`.NothingParsed` when the input is empty or isn't gedcom.
 
 	List of possible :py:class:`.ParsingWarning`:
 
@@ -94,7 +95,6 @@ def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
 				warnings.append(LevelInconsistencyWarning(line_number))
 			parent_lines[-1].sub_lines.append(parsed_line)
 			parent_lines.append(parsed_line)
-	if len(document.records) == 0: raise NothingParsed()
 	return (document, warnings)
 
 def guess_encoding(file: str | Path) -> str | None:
@@ -129,3 +129,16 @@ def guess_encoding(file: str | Path) -> str | None:
 	else: return "utf-16"
 	return None
 
+def strict_parse(file: str | Path) -> Document:
+	"""Open and parse the gedcom file.
+	Return the :py:class:`.Document` representing the gedcom file.
+
+	Raise :py:exc:`.ParsingError` when a error occurs in the parsing process.
+	Raise :py:exc:`.NothingParsed` when the input is empty or isn't gedcom.
+	"""
+	with open(file, "r", encoding=guess_encoding(file)) as f:
+		document, warnings = parse(f)
+	if warnings: raise ParsingError()
+	if len(document.records) == 0: raise NothingParsed()
+
+	return document

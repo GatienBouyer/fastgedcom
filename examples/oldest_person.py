@@ -1,10 +1,9 @@
 from fastgedcom.helpers import (extract_int_year, extract_year, format_name,
                                 get_source_infos)
-from fastgedcom.parser import guess_encoding, parse
+from fastgedcom.parser import strict_parse
 
 gedcom_file = "../my_gedcom.ged"
-with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	document, _ = parse(f)
+document = strict_parse(gedcom_file)
 
 oldest = next(document.get_records("INDI"))
 age_oldest = 0.0

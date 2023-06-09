@@ -2,15 +2,14 @@ from time import perf_counter
 
 from fastgedcom.base import FakeLine, Record, is_true, IndiRef
 from fastgedcom.helpers import extract_int_year, format_name
-from fastgedcom.parser import guess_encoding, parse
+from fastgedcom.parser import strict_parse
 from fastgedcom.family_aid import FamilyAid
 
 gedcom_file = "../my_gedcom.ged"
 
 start_time = perf_counter()
 
-with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	gedcom, _ = parse(f)
+gedcom = strict_parse(gedcom_file)
 booster = FamilyAid(gedcom)
 
 end_time = perf_counter()
