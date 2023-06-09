@@ -5,81 +5,96 @@ On module import, register the ansel and gedcom codecs from the `ansel python li
 """
 
 from typing import IO
+from dataclasses import dataclass
 from pathlib import Path
 
-import ansel # type: ignore[import]
+import ansel  # type: ignore[import]
 
 from .base import Document, TrueLine, XRef
 
 ansel.register()
 
-class ParsingError(Exception):
+class NothingParsed(Exception):
 	"""Error raised by :py:func:`.parse`."""
 
 class ParsingWarning():
 	"""Base warning class."""
 
+@dataclass
 class LineParsingWarning(ParsingWarning):
-	"""Warn about an unparsable line."""
-	def __init__(self, line_number: int, line_content: str) -> None:
-		self.line_number = line_number
-		self.line_content = line_content
-	def __repr__(self) -> str:
-		return f"<{self.__class__.__qualname__} line {self.line_number}>"
+	"""Warn about a line with a single word.
+	There should be at least a line level and a tag."""
+	line_number: int
+	line_content: str
 
-class DuplicateParsingWarning(ParsingWarning):
+@dataclass
+class DuplicateXRefWarning(ParsingWarning):
 	"""Warn about a cross-reference identifier that is defined twice."""
-	def __init__(self, xref: XRef) -> None:
-		self.xref = xref
-	def __repr__(self) -> str:
-		return f"<{self.__class__.__qualname__} xref={self.xref}>"
+	xref: XRef
+
+@dataclass
+class LevelInconsistencyWarning(ParsingWarning):
+	"""Warn about a line without correct parent line."""
+	line_number: int
+
+@dataclass
+class LevelParsingWarning(ParsingWarning):
+	"""Warn about an unparsable line level."""
+	line_number: int
+
+@dataclass
+class EmptyLineWarning(ParsingWarning):
+	"""Warn about an empty line."""
+	line_number: int
 
 def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
 	"""Parse the text input to create the
 	:py:class:`.Document` object.
 
-	For major failure, raise :py:exc:`.ParsingError`.
+	Raise :py:exc:`.NothingParsed` when the input is empty or isn't gedcom.
 
-	For minor failure, append a :py:class:`.ParsingWarning` to the returned list.
+	List of possible :py:class:`.ParsingWarning`:
 
-	Non-exhaustive list of possible failures:
-
-	* (Major) First line word can't be converted to an integer.
-	* (Minor) Line with a single word. :py:class:`.LineParsingWarning`
-	* (Minor) A cross-reference identifier is defined twice. :py:class:`.DuplicateParsingWarning`
-	* (Major) Inconsistent use of line level.
+	* :py:class:`.LineParsingWarning`
+	* :py:class:`.DuplicateXRefWarning`
+	* :py:class:`.LevelInconsistencyWarning`
+	* :py:class:`.LevelParsingWarning`
+	* :py:class:`.EmptyLineWarning`
 	"""
 	document = Document()
 	warnings: list[ParsingWarning] = []
 	line_number = 0
-	try:
-		parent_lines: list[TrueLine] = []
-		for line in readable_lines:
-			line_number += 1
-			line_info = line.rstrip().split(' ', 2)
+	parent_lines: list[TrueLine] = []
+	for line in readable_lines:
+		line_number += 1
+		line_info = line.rstrip().split(' ', 2)
+		try:
 			if len(line_info) == 3:
 				parsed_line = TrueLine(int(line_info[0]), line_info[1], line_info[2], [])
 			elif len(line_info) == 2:
 				parsed_line = TrueLine(int(line_info[0]), line_info[1], "", [])
 			elif line_info == [""]:
-				# empty line is ok
+				warnings.append(EmptyLineWarning(line_number))
 				continue
 			else:
 				warnings.append(LineParsingWarning(line_number, line))
 				continue
-			if parsed_line.level == 0:
-				parent_lines = [parsed_line]
-				if parsed_line.tag in document.records:
-					warnings.append(DuplicateParsingWarning(parsed_line.tag))
-				document.records[parsed_line.tag] = parsed_line
-			else:
-				while parent_lines and parsed_line.level <= parent_lines[-1].level:
-					parent_lines.pop(-1)
-				if len(parent_lines) == 0: raise ParsingError("Inconsistent use of line levels")
-				parent_lines[-1].sub_lines.append(parsed_line)
-				parent_lines.append(parsed_line)
-	except ValueError as err: # raised on int parsing error
-		raise ParsingError(line_number, "Line parsing failed") from err
+		except ValueError:
+			warnings.append(LevelParsingWarning(line_number))
+			continue
+		if parsed_line.level == 0:
+			parent_lines = [parsed_line]
+			if parsed_line.tag in document.records:
+				warnings.append(DuplicateXRefWarning(parsed_line.tag))
+			document.records[parsed_line.tag] = parsed_line
+		else:
+			while parent_lines and parsed_line.level <= parent_lines[-1].level:
+				parent_lines.pop(-1)
+			if len(parent_lines) == 0:
+				warnings.append(LevelInconsistencyWarning(line_number))
+			parent_lines[-1].sub_lines.append(parsed_line)
+			parent_lines.append(parsed_line)
+	if len(document.records) == 0: raise NothingParsed()
 	return (document, warnings)
 
 def guess_encoding(file: str | Path) -> str | None:
