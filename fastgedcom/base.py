@@ -247,14 +247,20 @@ class Document():
 		self.records = dict()
 
 	def __iter__(self) -> Iterator[Record]:
-		"""Iterate on the lines of level 0."""
+		"""Iterate on the lines of level 0
+		(the records, the header, and the TRLR line)."""
 		return iter(self.records.values())
 
 	def get_records(self, record_type: str) -> Iterator[Record]:
-		"""Return an iterator over records of that ``record_type``."""
+		"""Return an iterator over records of that ``record_type``
+		(i.e. the :py:attr:`~.TrueLine.payload` of level 0 lines)."""
 		for record in self.records.values():
 			if record.payload == record_type:
 				yield record
+
+	__rshift__ = get_records
+	"""Alias for :py:meth:`get_records` to shorten the syntax
+	by using the >> operator."""
 
 	def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
 		"""Return the record under that ``identifier``."""
