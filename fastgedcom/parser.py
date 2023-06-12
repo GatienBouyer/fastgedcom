@@ -93,8 +93,9 @@ def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
 				parent_lines.pop(-1)
 			if len(parent_lines) == 0:
 				warnings.append(LevelInconsistencyWarning(line_number))
-			parent_lines[-1].sub_lines.append(parsed_line)
-			parent_lines.append(parsed_line)
+			else:
+				parent_lines[-1].sub_lines.append(parsed_line)
+				parent_lines.append(parsed_line)
 	return (document, warnings)
 
 def guess_encoding(file: str | Path) -> str | None:

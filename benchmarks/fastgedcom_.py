@@ -1,9 +1,9 @@
 from time import perf_counter
 
-from fastgedcom.base import FakeLine, Record, is_true, IndiRef
+from fastgedcom.base import FakeLine, IndiRef, Record, is_true
+from fastgedcom.family_links import FamilyLink
 from fastgedcom.helpers import extract_int_year, format_name
 from fastgedcom.parser import strict_parse
-from fastgedcom.family_links import FamilyLink
 
 gedcom_file = "../my_gedcom.ged"
 
