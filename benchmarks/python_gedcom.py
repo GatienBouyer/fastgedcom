@@ -71,6 +71,5 @@ for element in gedcom.get_root_child_elements():
 
 end_time = perf_counter()
 assert(oldest)
-print(f"Oldest person: {oldest.get_name()}")
-print(f"Age: {age_oldest}")
+print(f"Oldest person: {oldest.get_name()}    Age: {age_oldest}")
 print(f"Time to traverse ages: {end_time - start_time}")

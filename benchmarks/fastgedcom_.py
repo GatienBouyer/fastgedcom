@@ -65,6 +65,5 @@ for individual in gedcom.get_records("INDI"):
 
 end_time = perf_counter()
 
-print(f"Oldest person: {format_name(oldest >= 'NAME')}")
-print(f"Age: {age_oldest}")
+print(f"Oldest person: {format_name(oldest >= 'NAME')}    Age: {age_oldest}")
 print(f"Time to traverse ages: {end_time - start_time}")

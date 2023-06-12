@@ -250,6 +250,10 @@ class Document():
 		"""Iterate on the lines of level 0
 		(the records, the header, and the TRLR line)."""
 		return iter(self.records.values())
+	
+	def __contains__(self, identifier: XRef) -> bool:
+		"""Return True if the identifier refers to an existing record."""
+		return identifier in self.records
 
 	def get_records(self, record_type: str) -> Iterator[Record]:
 		"""Return an iterator over records of that ``record_type``
