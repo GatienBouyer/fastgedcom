@@ -37,7 +37,7 @@ class FamilyLink():
 			father: FakeLine | TrueLine = fake_line
 			mother: FakeLine | TrueLine = fake_line
 			for line in fam_record.sub_lines:
-				if line.payload == "": continue
+				if line.payload == "@VOID@": continue
 				if line.tag == "CHIL":
 					children.append(line.payload)
 				elif line.tag == "HUSB":
@@ -54,7 +54,7 @@ class FamilyLink():
 		if not is_true(child): return None
 		for sub_line in child.sub_lines:
 			if sub_line.tag == "FAMC":
-				if sub_line.payload == "": return None
+				if sub_line.payload == "@VOID@": return None
 				return sub_line.payload
 		return None
 
@@ -88,7 +88,7 @@ class FamilyLink():
 		unions = self.unions.get(parent, [])
 		return [sub_line.payload
 			for fam in unions for sub_line in fam.sub_lines
-			if sub_line.tag == "CHIL" and sub_line.payload != ""]
+			if sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"]
 
 	def get_children(self, parent: IndiRef) -> list[Record]:
 		"""Return the children's records of a person."""
@@ -104,7 +104,7 @@ class FamilyLink():
 		unions = [fam for fam in self.unions.get(spouse2, []) if fam in fams]
 		return [sub_line.payload
 			for fam in unions for sub_line in fam.sub_lines
-			if sub_line.tag == "CHIL" and sub_line.payload != ""]
+			if sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"]
 
 	def get_children_with(self,
 		spouse1: IndiRef,
@@ -119,7 +119,7 @@ class FamilyLink():
 		return [sub_line.payload
 			for fam in self.unions.get(indi, []) for sub_line in fam.sub_lines
 			if (sub_line.tag in ("HUSB", "WIFE") and sub_line.payload != indi
-				and sub_line.payload != "")]
+				and sub_line.payload != "@VOID@")]
 
 	def get_spouses(self, indi: IndiRef) -> list[Record]:
 		"""Return the spouses' records of the person."""
@@ -138,7 +138,7 @@ class FamilyLink():
 		return [sub_line.payload
 			for fam in unions
 			for sub_line in fam.sub_lines
-			if (sub_line.tag == "CHIL" and sub_line.payload != ""
+			if (sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"
 				and sub_line.payload != indi)]
 
 	def get_all_siblings(self, indi: IndiRef) -> list[Record]:
@@ -153,7 +153,7 @@ class FamilyLink():
 		fam = self.get_parent_family(self.document.records[indi])
 		return [sub_line.payload
 			for sub_line in fam.sub_lines
-			if (sub_line.tag == "CHIL" and sub_line.payload != ""
+			if (sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"
 				and sub_line.payload != indi)]
 
 	def get_siblings(self, indi: IndiRef) -> list[Record]:
@@ -177,7 +177,7 @@ class FamilyLink():
 			if fam.tag != parent_fam:
 				stepsiblings.extend(sub_line.payload
 					for sub_line in fam.sub_lines
-					if sub_line.tag == "CHIL" and sub_line.payload != "")
+					if sub_line.tag == "CHIL" and sub_line.payload != "@VOID@")
 		return stepsiblings
 
 	def get_stepsiblings(self, indi: IndiRef) -> list[Record]:
