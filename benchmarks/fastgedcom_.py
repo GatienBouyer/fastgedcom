@@ -3,14 +3,14 @@ from time import perf_counter
 from fastgedcom.base import FakeLine, Record, is_true, IndiRef
 from fastgedcom.helpers import extract_int_year, format_name
 from fastgedcom.parser import strict_parse
-from fastgedcom.family_aid import FamilyAid
+from fastgedcom.family_links import FamilyLink
 
 gedcom_file = "../my_gedcom.ged"
 
 start_time = perf_counter()
 
 gedcom = strict_parse(gedcom_file)
-booster = FamilyAid(gedcom)
+families = FamilyLink(gedcom)
 
 end_time = perf_counter()
 
@@ -22,7 +22,7 @@ start_time = perf_counter()
 
 def nb_gen(indi: Record | FakeLine) -> int:
 	if not is_true(indi): return 1
-	father, mother = booster.get_parents(indi.tag)
+	father, mother = families.get_parents(indi.tag)
 	return 1+max(nb_gen(father), nb_gen(mother))
 
 number_generations_above_root = nb_gen(gedcom["@I1@"])
@@ -37,7 +37,7 @@ print(f"Time to traverse parents: {end_time - start_time}")
 start_time = perf_counter()
 
 def nb_descendants_rec(parent: IndiRef) -> int:
-	children = booster.get_children_ref(parent)
+	children = families.get_children_ref(parent)
 	return len(children) + sum(nb_descendants_rec(child) for child in children)
 
 nb_descendants = nb_descendants_rec("@I1692@")

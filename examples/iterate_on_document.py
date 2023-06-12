@@ -1,10 +1,10 @@
 from fastgedcom.base import FakeLine, IndiRef, Record, is_true
-from fastgedcom.family_aid import FamilyAid
-from fastgedcom.helpers import extract_int_year, extract_year, format_name
+from fastgedcom.family_links import FamilyLink
+from fastgedcom.helpers import extract_int_year, format_name
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")
-booster = FamilyAid(document)
+families = FamilyLink(document)
 
 ###############################################################################
 # Iterate on individuals
@@ -25,7 +25,7 @@ print("Number of records:", sum(1 for _ in iter(document)))
 
 def nb_ancestral_gen(indi: Record | FakeLine) -> int:
 	if not is_true(indi): return 1
-	father, mother = booster.get_parents(indi.tag)
+	father, mother = families.get_parents(indi.tag)
 	return 1+max(nb_ancestral_gen(father), nb_ancestral_gen(mother))
 
 root = next(document.get_records("INDI"))
@@ -41,7 +41,7 @@ print(f"Number of ascending generations from {format_name(root >= 'NAME')}:",
 
 def nb_of_descendants(indi: IndiRef, visited: set[IndiRef]) -> int:
 	visited.add(indi)
-	children = booster.get_children_ref(indi)
+	children = families.get_children_ref(indi)
 	return len(children) + sum(nb_of_descendants(c, visited) for c in children if c not in visited)
 
 max_nb_desc = max(nb_of_descendants(indi.tag, set()) for indi in document.get_records("INDI"))
@@ -65,7 +65,4 @@ for individual in document.get_records("INDI"):
 		oldest = individual
 		age_oldest = age
 
-print("Oldest person:", format_name(oldest >= "NAME"))
-print("His year of birth:", extract_year((oldest > "BIRT") >= "DATE"))
-print("His year of death:", extract_year((oldest > "DEAT") >= "DATE"))
-print("His age:", age_oldest)
+print(f"Oldest person: {format_name(oldest >= 'NAME')}    Age: {age_oldest}")

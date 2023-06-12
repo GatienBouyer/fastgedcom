@@ -1,4 +1,4 @@
-"""Define the :py:class:`.FamilyAid` class used to bypass family records."""
+"""Define the :py:class:`.FamilyLink` class used to bypass family records."""
 
 from collections import defaultdict
 
@@ -6,8 +6,8 @@ from .base import (Document, FakeLine, FamRef, IndiRef, Record, TrueLine,
                    fake_line, is_true)
 
 
-class FamilyAid():
-	"""Class with methods to easily get close relatives of someone.
+class FamilyLink():
+	"""Class with methods to easily get relatives of someone.
 
 	Methods ending in _ref (such as :py:meth:`.get_parent_family_ref`)
 	are called by their non-_ref counterparts (such as

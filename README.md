@@ -44,7 +44,7 @@ Typehints for salvation! Autocompletion and type checking make development so mu
 
 FastGedcom's aim is to keep the code close to your gedcom files. So, you don't have to learn what FastGedcom does for you. The content of your gedcom file is what you get. The data processing is optional to best suit your needs.
 
-The name **FastGedcom** doesn't just come from its ease of use. Getting relatives can be done quickly. That's what the [FamilyAid](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/family_aid/index.html#fastgedcom.family_aid.FamilyAid) class is all about. [Here](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) are the benchmark I used.
+The name **FastGedcom** doesn't just come from its ease of use. Getting relatives can be done quickly. That's what the [FamilyLink](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/family_link/index.html#fastgedcom.family_link.FamilyLink) class is all about. [Here](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) are the benchmark I used.
 
 ## Documentation and examples
 

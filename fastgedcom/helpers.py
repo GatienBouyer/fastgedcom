@@ -17,7 +17,7 @@ def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
 		yield line
 		lines = line.sub_lines + lines
 
-def get_source_infos(line: TrueLine | FakeLine) -> str:
+def get_source(line: TrueLine | FakeLine) -> str:
 	"""Return the gedcom text equivalent for the line and its sub-lines."""
 	if not is_true(line): return ""
 	text = str(line) + "\n"
