@@ -4,7 +4,7 @@ On module import, register the ansel and gedcom codecs from the `ansel python li
 <https://pypi.org/project/ansel/>`_.
 """
 
-from typing import IO
+from typing import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,8 +17,8 @@ ansel.register()
 class ParsingError(Exception):
 	"""Error raise by :py:func:`.strict_parse`."""
 
-class NothingParsed(Exception):
-	"""Error raised by :py:func:`.parse`."""
+class NothingParsed(ParsingError):
+	"""Raised by :py:func:`.strict_parse` when the resulting document is empty."""
 
 class ParsingWarning():
 	"""Base warning class."""
@@ -50,7 +50,14 @@ class EmptyLineWarning(ParsingWarning):
 	"""Warn about an empty line."""
 	line_number: int
 
-def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
+@dataclass
+class CharacterInsteadOfLineWarning(ParsingWarning):
+	"""Warn about the presents of a 1-character-long line.
+	This happens when the object parsed is an iterable on characters,
+	whereas an iterable on lines is expected."""
+	line_number: int
+
+def parse(lines: Iterable[str]) -> tuple[Document, list[ParsingWarning]]:
 	"""Parse the text input to create the
 	:py:class:`.Document` object.
 
@@ -61,12 +68,16 @@ def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
 	* :py:class:`.LevelInconsistencyWarning`
 	* :py:class:`.LevelParsingWarning`
 	* :py:class:`.EmptyLineWarning`
+	* :py:class:`.CharacterInsteadOfLineWarning`
+
+	Only :py:class:`.CharacterInsteadOfLineWarning` stops the parsing. If
+	other warnings occur, the parsing continues with the next line.
 	"""
 	document = Document()
 	warnings: list[ParsingWarning] = []
 	line_number = 0
 	parent_lines: list[TrueLine] = []
-	for line in readable_lines:
+	for line in lines:
 		line_number += 1
 		line_info = line.rstrip().split(' ', 2)
 		try:
@@ -78,6 +89,9 @@ def parse(readable_lines: IO[str]) -> tuple[Document, list[ParsingWarning]]:
 				warnings.append(EmptyLineWarning(line_number))
 				continue
 			else:
+				if len(line) == 1:
+					warnings.append(CharacterInsteadOfLineWarning(line_number))
+					break
 				warnings.append(LineParsingWarning(line_number, line))
 				continue
 		except ValueError:
@@ -139,7 +153,7 @@ def strict_parse(file: str | Path) -> Document:
 	"""
 	with open(file, "r", encoding=guess_encoding(file)) as f:
 		document, warnings = parse(f)
-	if warnings: raise ParsingError()
+	if warnings: raise ParsingError(warnings)
 	if len(document.records) == 0: raise NothingParsed()
 
 	return document
