@@ -84,8 +84,8 @@ class DateType(StrEnum):
 def get_date_type(date: str) -> DateType | None:
 	"""Return the modifier used by DATE line payloads.
 	If no modifier is recognized, return None.
-	For :py:attr:`BC` and :py:attr:`BCE`, return None, because
-	these modifiers can be combined with the others."""
+	Ignore :py:attr:`BC` and :py:attr:`BCE` and return None,
+	because these modifiers can be combined with the others."""
 	if date[:4]=='ABT ': return DateType.ABT
 	if date[:4]=='CAL ': return DateType.CAL
 	if date[:4]=='EST ': return DateType.EST
@@ -202,9 +202,11 @@ def extract_int_year(date: str, default: float | None = None) -> float | None:
 
 def to_datetime(date: str, default: datetime | None = None) -> datetime:
 	"""Convert the payload of DATE lines to datetime object.
-	
+
 	If default is provided, return default on failure.
 	Otherwise, raise ValueError on failure.
+
+	If no day or month is specified, the first day and month are used.
 
 	The returned date is more precise than :py:func:`.extract_int_year`, but
 	works less often. Infact, this method only works for positive dates
