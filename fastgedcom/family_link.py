@@ -137,7 +137,8 @@ class FamilyLink():
 		if is_true(father):
 			unions.extend(self.unions.get(father.tag, []))
 		if is_true(mother):
-			unions.extend(self.unions.get(mother.tag, []))
+			unions.extend(u for u in self.unions.get(mother.tag, [])
+				if u not in unions) # remove duplicates
 		return [sub_line.payload
 			for fam in unions
 			for sub_line in fam.sub_lines
@@ -214,11 +215,12 @@ class FamilyLink():
 			last_parents = parents
 			parents = [p.tag for i in parents for p in self.get_parents(i)
 				if is_true(p)]
-		if ascend == 1 and descent != 0: parents.pop() # to avoid duplicate
 		children = parents
-		for _ in range(descent):
+		for k in range(descent):
 			children = [c for i in children for c in self.get_children_ref(i)
 				if c not in last_parents]
+			if k == 0 and ascend == 1: # remove duplicates
+				children = list(set(children))
 		return children
 
 	def traverse(self, indi: IndiRef,

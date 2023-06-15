@@ -64,7 +64,7 @@ class TestFamilyLink(unittest.TestCase):
 	def test_siblings(self) -> None:
 		self.assertCountEqual(self.linker.get_siblings_ref("@I7@"), ["@I41@"])
 		self.assertCountEqual(self.linker.get_stepsiblings_ref("@I7@"), ["@I6@"])
-		self.assertCountEqual(self.linker.get_all_siblings_ref("@I7@"), ["@I6@", "@I41@", "@I41@"]) # FIXME
+		self.assertCountEqual(self.linker.get_all_siblings_ref("@I7@"), ["@I6@", "@I41@"])
 
 	def test_get_relatives(self) -> None:
 		person_id = "@I1@"
@@ -92,6 +92,10 @@ class TestFamilyLink(unittest.TestCase):
 		self.assertCountEqual(nephews_and_nieces, ["@I14@", "@I15@", "@I16@"])
 		self.assertCountEqual(grandchildren_of_siblings, ["@I17@"])
 		self.assertCountEqual(children_of_cousins, ["@I25@"])
+		# when both parent are defined:
+		all_siblings = self.linker.get_relatives_ref("@I7@", 0, 1)
+		self.assertCountEqual(all_siblings, ["@I6@", "@I41@"])
+
 
 if __name__ == '__main__':
 	unittest.main()
