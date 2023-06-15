@@ -148,6 +148,9 @@ class FakeLine(Line):
 		"""Return False."""
 		return False
 
+	def __eq__(self, value: object) -> bool:
+		return isinstance(value, FakeLine)
+
 
 @dataclass(slots=True)
 class TrueLine(Line):
