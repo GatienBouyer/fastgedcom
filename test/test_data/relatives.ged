@@ -1,0 +1,339 @@
+﻿0 HEAD
+1 GEDC
+2 VERS 5.5
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 LANG English
+0 @I1@ INDI
+1 NAME root //
+2 GIVN root
+1 SEX M
+1 FAMS @F2@
+1 FAMS @F3@
+1 FAMC @F1@
+0 @I2@ INDI
+1 NAME father //
+2 GIVN father
+1 SEX M
+1 FAMS @F1@
+1 FAMC @F12@
+0 @I3@ INDI
+1 NAME mother //
+2 GIVN mother
+1 SEX F
+1 FAMS @F1@
+0 @I4@ INDI
+1 NAME spouse1 //
+2 GIVN spouse1
+1 SEX F
+1 FAMS @F2@
+0 @I5@ INDI
+1 NAME spouse2 //
+2 GIVN spouse2
+1 SEX F
+1 FAMS @F3@
+0 @I6@ INDI
+1 NAME child1 //
+2 GIVN child1
+1 SEX M
+1 FAMS @F4@
+1 FAMC @F2@
+0 @I7@ INDI
+1 NAME child2 //
+2 GIVN child2
+1 SEX M
+1 FAMS @F6@
+1 FAMC @F3@
+0 @I8@ INDI
+1 NAME grandchild1 //
+2 GIVN grandchild1
+1 SEX M
+1 FAMS @F5@
+1 FAMC @F4@
+0 @I9@ INDI
+1 NAME greatgrandchild //
+2 GIVN greatgrandchild
+1 SEX U
+1 FAMC @F5@
+0 @I10@ INDI
+1 NAME grandchild2 //
+2 GIVN grandchild2
+1 SEX U
+1 FAMC @F4@
+0 @I11@ INDI
+1 NAME grandchild2-1 //
+2 GIVN grandchild2-1
+1 SEX U
+1 FAMC @F6@
+0 @I12@ INDI
+1 NAME brother //
+2 GIVN brother
+1 SEX M
+1 FAMS @F7@
+1 FAMC @F1@
+0 @I13@ INDI
+1 NAME sister //
+2 GIVN sister
+1 SEX F
+1 FAMS @F8@
+1 FAMC @F1@
+0 @I14@ INDI
+1 NAME nephewB //
+2 GIVN nephewB
+1 SEX M
+1 FAMS @F10@
+1 FAMC @F7@
+0 @I15@ INDI
+1 NAME niece //
+2 GIVN niece
+1 SEX U
+1 FAMC @F7@
+0 @I16@ INDI
+1 NAME nephewS //
+2 GIVN nephewS
+1 SEX M
+1 FAMS @F9@
+1 FAMC @F8@
+0 @I17@ INDI
+1 NAME greatnephew //
+2 GIVN greatnephew
+1 SEX M
+1 FAMS @F11@
+1 FAMC @F10@
+0 @I18@ INDI
+1 NAME greatgreatnephew //
+2 GIVN greatgreatnephew
+1 SEX U
+1 FAMC @F11@
+0 @I19@ INDI
+1 NAME grandfather //
+2 GIVN grandfather
+1 SEX M
+1 FAMS @F12@
+1 FAMC @F13@
+0 @I20@ INDI
+1 NAME great grandfather //
+2 GIVN great grandfather
+1 SEX M
+1 FAMS @F13@
+1 FAMC @F14@
+0 @I21@ INDI
+1 NAME great-great grandfather //
+2 GIVN great-great grandfather
+1 SEX M
+1 FAMS @F14@
+0 @I22@ INDI
+1 NAME uncle //
+2 GIVN uncle
+1 SEX M
+1 FAMS @F15@
+1 FAMC @F12@
+0 @I23@ INDI
+1 NAME aunt //
+2 GIVN aunt
+1 SEX F
+1 FAMC @F12@
+0 @I24@ INDI
+1 NAME firstcousin //
+2 GIVN firstcousin
+1 SEX M
+1 FAMS @F16@
+1 FAMC @F15@
+0 @I25@ INDI
+1 NAME first cousin once-removed //
+2 GIVN first cousin once-removed
+1 SEX M
+1 FAMS @F17@
+1 FAMC @F16@
+0 @I26@ INDI
+1 NAME first cousin twice-removed //
+2 GIVN first cousin twice-removed
+1 SEX M
+1 FAMS @F18@
+1 FAMC @F17@
+0 @I27@ INDI
+1 NAME first cousin thrice-removed //
+2 GIVN first cousin thrice-removed
+1 SEX U
+1 FAMC @F18@
+0 @I28@ INDI
+1 NAME great uncle //
+2 GIVN great uncle
+1 SEX M
+1 FAMS @F19@
+1 FAMC @F13@
+0 @I29@ INDI
+1 NAME first cousin once-removed2 //
+2 GIVN first cousin once-removed2
+1 SEX M
+1 FAMS @F20@
+1 FAMC @F19@
+0 @I30@ INDI
+1 NAME second cousin //
+2 GIVN second cousin
+1 SEX M
+1 FAMS @F21@
+1 FAMC @F20@
+0 @I31@ INDI
+1 NAME second cousin once-removed //
+2 GIVN second cousin once-removed
+1 SEX M
+1 FAMS @F22@
+1 FAMC @F21@
+0 @I32@ INDI
+1 NAME second cousin twice-removed //
+2 GIVN second cousin twice-removed
+1 SEX M
+1 FAMS @F23@
+1 FAMC @F22@
+0 @I33@ INDI
+1 NAME second cousin thrice-removed //
+2 GIVN second cousin thrice-removed
+1 SEX U
+1 FAMC @F23@
+0 @I34@ INDI
+1 NAME great-great aunt //
+2 GIVN great-great aunt
+1 SEX M
+1 FAMS @F24@
+1 FAMC @F14@
+0 @I35@ INDI
+1 NAME first cousin twice-removed2 //
+2 GIVN first cousin twice-removed2
+1 SEX M
+1 FAMS @F25@
+1 FAMC @F24@
+0 @I36@ INDI
+1 NAME second cousin once-removed2 //
+2 GIVN second cousin once-removed2
+1 SEX M
+1 FAMS @F26@
+1 FAMC @F25@
+0 @I37@ INDI
+1 NAME thrid cousin //
+2 GIVN thrid cousin
+1 SEX M
+1 FAMS @F27@
+1 FAMC @F26@
+0 @I38@ INDI
+1 NAME third cousin once-removed //
+2 GIVN third cousin once-removed
+1 SEX M
+1 FAMS @F28@
+1 FAMC @F27@
+0 @I39@ INDI
+1 NAME thrid cousin twice-removed //
+2 GIVN thrid cousin twice-removed
+1 SEX M
+1 FAMS @F29@
+1 FAMC @F28@
+0 @I40@ INDI
+1 NAME thrid cousin thrice-removed //
+2 GIVN thrid cousin thrice-removed
+1 SEX U
+1 FAMC @F29@
+0 @I41@ INDI
+1 NAME child2 //
+2 GIVN child2
+1 SEX M
+1 FAMC @F3@
+0 @F1@ FAM
+1 HUSB @I2@
+1 WIFE @I3@
+1 CHIL @I1@
+1 CHIL @I12@
+1 CHIL @I13@
+0 @F2@ FAM
+1 DIV Y
+1 HUSB @I1@
+1 WIFE @I4@
+1 CHIL @I6@
+0 @F3@ FAM
+1 HUSB @I1@
+1 WIFE @I5@
+1 CHIL @I7@
+1 CHIL @I41@
+0 @F4@ FAM
+1 HUSB @I6@
+1 CHIL @I8@
+1 CHIL @I10@
+0 @F5@ FAM
+1 HUSB @I8@
+1 CHIL @I9@
+0 @F6@ FAM
+1 HUSB @I7@
+1 CHIL @I11@
+0 @F7@ FAM
+1 HUSB @I12@
+1 CHIL @I14@
+1 CHIL @I15@
+0 @F8@ FAM
+1 WIFE @I13@
+1 CHIL @I16@
+0 @F9@ FAM
+1 HUSB @I16@
+0 @F10@ FAM
+1 HUSB @I14@
+1 CHIL @I17@
+0 @F11@ FAM
+1 HUSB @I17@
+1 CHIL @I18@
+0 @F12@ FAM
+1 HUSB @I19@
+1 CHIL @I2@
+1 CHIL @I22@
+1 CHIL @I23@
+0 @F13@ FAM
+1 HUSB @I20@
+1 CHIL @I19@
+1 CHIL @I28@
+0 @F14@ FAM
+1 HUSB @I21@
+1 CHIL @I20@
+1 CHIL @I34@
+0 @F15@ FAM
+1 HUSB @I22@
+1 CHIL @I24@
+0 @F16@ FAM
+1 HUSB @I24@
+1 CHIL @I25@
+0 @F17@ FAM
+1 HUSB @I25@
+1 CHIL @I26@
+0 @F18@ FAM
+1 HUSB @I26@
+1 CHIL @I27@
+0 @F19@ FAM
+1 HUSB @I28@
+1 CHIL @I29@
+0 @F20@ FAM
+1 HUSB @I29@
+1 CHIL @I30@
+0 @F21@ FAM
+1 HUSB @I30@
+1 CHIL @I31@
+0 @F22@ FAM
+1 HUSB @I31@
+1 CHIL @I32@
+0 @F23@ FAM
+1 HUSB @I32@
+1 CHIL @I33@
+0 @F24@ FAM
+1 HUSB @I34@
+1 CHIL @I35@
+0 @F25@ FAM
+1 HUSB @I35@
+1 CHIL @I36@
+0 @F26@ FAM
+1 HUSB @I36@
+1 CHIL @I37@
+0 @F27@ FAM
+1 HUSB @I37@
+1 CHIL @I38@
+0 @F28@ FAM
+1 HUSB @I38@
+1 CHIL @I39@
+0 @F29@ FAM
+1 HUSB @I39@
+1 CHIL @I40@
+0 TRLR

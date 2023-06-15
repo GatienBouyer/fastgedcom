@@ -53,7 +53,7 @@ if person > "NOTE":
 	print("Note:", (person > "NOTE").payload_with_cont)
 
 if person > "CHR":
-	# Note that several other tags exist for religious events 
+	# Note that several other tags exist for religious events
 	print("Christening: yes")
 
 if person > "SOUR":
@@ -70,7 +70,7 @@ if person > "CHAN":
 # Familial informations - person's close relatives
 ###############################################################################
 
-from fastgedcom.family_links import FamilyLink
+from fastgedcom.family_link import FamilyLink
 
 linker = FamilyLink(document)
 

@@ -1,5 +1,5 @@
 from fastgedcom.base import FakeLine, IndiRef, Record, is_true
-from fastgedcom.family_links import FamilyLink
+from fastgedcom.family_link import FamilyLink
 from fastgedcom.helpers import format_name
 from fastgedcom.parser import strict_parse
 
