@@ -1,6 +1,6 @@
 from time import perf_counter
 
-from fastgedcom.base import FakeLine, IndiRef, Record, is_true
+from fastgedcom.base import FakeLine, IndiRef, Record
 from fastgedcom.family_link import FamilyLink
 from fastgedcom.helpers import extract_int_year, format_name
 from fastgedcom.parser import strict_parse
@@ -21,7 +21,7 @@ print(f"Time to parse: {end_time - start_time}")
 start_time = perf_counter()
 
 def nb_gen(indi: Record | FakeLine) -> int:
-	if not is_true(indi): return 1
+	if not indi: return 1
 	father, mother = families.get_parents(indi.tag)
 	return 1+max(nb_gen(father), nb_gen(mother))
 

@@ -3,7 +3,7 @@
 from collections import defaultdict
 
 from .base import (Document, FakeLine, FamRef, IndiRef, Record, TrueLine,
-                   fake_line, is_true)
+                   fake_line)
 
 
 class FamilyLink():
@@ -51,7 +51,7 @@ class FamilyLink():
 
 	def get_parent_family_ref(self, child: TrueLine | FakeLine) -> FamRef | None:
 		"""Return the family reference with the parents of the person."""
-		if not is_true(child): return None
+		if not child: return None
 		for sub_line in child.sub_lines:
 			if sub_line.tag == "FAMC":
 				if sub_line.payload == "@VOID@": return None
@@ -134,9 +134,9 @@ class FamilyLink():
 		Stepsiblings included."""
 		father, mother = self.get_parents(indi)
 		unions: list[Record] = []
-		if is_true(father):
+		if father:
 			unions.extend(self.unions.get(father.tag, []))
-		if is_true(mother):
+		if mother:
 			unions.extend(u for u in self.unions.get(mother.tag, [])
 				if u not in unions) # remove duplicates
 		return [sub_line.payload
@@ -172,9 +172,9 @@ class FamilyLink():
 		parent_fam = self.get_parent_family_ref(self.document.records[indi])
 		father, mother = self.get_parents(indi)
 		unions: list[Record] = []
-		if is_true(father):
+		if father:
 			unions.extend(self.unions.get(father.tag, []))
-		if is_true(mother):
+		if mother:
 			unions.extend(self.unions.get(mother.tag, []))
 		stepsiblings: list[IndiRef] = []
 		for fam in unions:
@@ -213,8 +213,7 @@ class FamilyLink():
 		last_parents = [indi]
 		for _ in range(ascent):
 			last_parents = parents
-			parents = [p.tag for i in parents for p in self.get_parents(i)
-				if is_true(p)]
+			parents = [p.tag for i in parents for p in self.get_parents(i) if p]
 		children = parents
 		for k in range(descent):
 			children = [c for i in children for c in self.get_children_ref(i)

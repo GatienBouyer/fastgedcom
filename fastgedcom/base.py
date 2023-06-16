@@ -1,6 +1,6 @@
 """Classes and types for the data structure used to represent a gedcom."""
 
-from typing import Iterator, Literal, TypeAlias, TypeGuard
+from typing import Iterator, Literal, TypeAlias
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
@@ -42,10 +42,9 @@ class Line(ABC):
 	Implementations are :py:class:`.TrueLine` and :py:class:`.FakeLine`,
 	see these classes for more information.
 	"""
-	@property
 	@abstractmethod
-	def exists(self) -> bool: 
-		"""Is True if it is a :py:class:`.TrueLine`,
+	def __bool__(self) -> bool:
+		"""True if it is a :py:class:`.TrueLine`,
 		False if it is a :py:class:`.FakeLine`."""
 		...
 
@@ -107,20 +106,17 @@ class FakeLine(Line):
 	The class behave like a :py:class:`.TrueLine`
 	(It has the same methods), but the payload is empty.
 
-	To differenciate a :py:class:`.FakeLine` from a
-	:py:class:`.TrueLine` a simple boolean test is enough:
-	:code:`if line: line.payload`. However to tell typecheckers that after
-	the test, the type is narrowed, you should use the :py:func:`is_true`
-	function or the :py:attr:`exists` attribute. In general, the use of
-	:py:meth:`get_sub_line_payload` (or `>=`) and then to check if the
-	string is empty, is generally preferable.
+	To differentiate a :py:class:`.FakeLine` from a
+	:py:class:`.TrueLine` a simple boolean test is enough.
 	"""
 
 	payload = "" # pyright: ignore[reportGeneralTypeIssues]
 	payload_with_cont = "" # pyright: ignore[reportGeneralTypeIssues]
 	sub_lines: list['TrueLine'] = []
 
-	exists: Literal[False] = False
+	def __bool__(self) -> Literal[False]:
+		"""Return False."""
+		return False
 
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		return []
@@ -143,10 +139,6 @@ class FakeLine(Line):
 	def __repr__(self) -> str:
 		"""Return the string representation of the class."""
 		return f"<{self.__class__.__qualname__}>"
-
-	def __bool__(self) -> bool:
-		"""Return False."""
-		return False
 
 	def __eq__(self, value: object) -> bool:
 		return isinstance(value, FakeLine)
@@ -185,7 +177,9 @@ class TrueLine(Line):
 	"""List of the sub-lines, i.e. the next-level lines that are part
 	of this structure."""
 
-	exists:Literal[True] = True
+	def __bool__(self) -> Literal[True]:
+		"""Return True."""
+		return True
 
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
@@ -253,7 +247,7 @@ class Document():
 		"""Iterate on the lines of level 0
 		(the records, the header, and the TRLR line)."""
 		return iter(self.records.values())
-	
+
 	def __contains__(self, identifier: XRef) -> bool:
 		"""Return True if the identifier refers to an existing record."""
 		return identifier in self.records
@@ -281,10 +275,3 @@ class Document():
 fake_line = FakeLine()
 """:py:class:`.FakeLine` instance returned by functions.
 Used to avoid having multiple unnecessary instances of :py:class:`.FakeLine`."""
-
-
-def is_true(line: TrueLine | FakeLine) -> TypeGuard[TrueLine]:
-	"""Return true when the given ``line`` is a :py:class:`.TrueLine`,
-	false when the given ``line`` is a :py:class:`.FakeLine`.
-	Usefull when using a typechecker."""
-	return bool(line)

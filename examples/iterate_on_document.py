@@ -1,4 +1,4 @@
-from fastgedcom.base import FakeLine, IndiRef, Record, is_true
+from fastgedcom.base import FakeLine, IndiRef, Record
 from fastgedcom.family_link import FamilyLink
 from fastgedcom.helpers import format_name
 from fastgedcom.parser import strict_parse
@@ -24,7 +24,7 @@ print("Number of records:", sum(1 for _ in iter(document)))
 ###############################################################################
 
 def nb_ancestral_gen(indi: Record | FakeLine) -> int:
-	if not is_true(indi): return 1
+	if not indi: return 1
 	father, mother = families.get_parents(indi.tag)
 	return 1+max(nb_ancestral_gen(father), nb_ancestral_gen(mother))
 

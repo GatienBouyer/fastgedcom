@@ -22,17 +22,15 @@ The syntax is flexible and permissive. If you don't like magic operator overload
 
 It supports gedcom files encoded in UTF-8 (with and without BOM), UTF-16 (also named UNICODE), ANSI, and ANSEL.
 
-If a field is missing, you will get a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) containing an empty string. This reduces the boiler plate code, but you can still check the nature of the data.
+If a field is missing, you will get a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) containing an empty string. This reduces the boiler plate code. You can differentiate [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) and [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine) with a simple boolean check.
 ```python
-from fastgedcom.base import is_true
 
 indi = document["@I13@"]
-if not (indi > "DEAT"): # Not compliant with type checkers
+death = indi > "DEAT"
+if not death:
 	print("No DEAT field. The person is alive")
-if not is_true(indi > "DEAT"): # Compliant with type checkers
-	print("No DEAT field. The person is alive")
-else: # Can continue anyway
-	print("Death date:", format_date((indi > "DEAT") >= "DATE"))
+# Can continue anyway
+print("Death date:", format_date((indi > "DEAT") >= "DATE"))
 ```
 
 Typehints for salvation! Autocompletion and type checking make development so much easier.

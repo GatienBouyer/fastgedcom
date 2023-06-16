@@ -4,7 +4,7 @@ from typing import Iterator, overload
 from datetime import datetime, time
 from enum import StrEnum
 
-from .base import FakeLine, TrueLine, is_true
+from .base import FakeLine, TrueLine
 
 
 def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
@@ -19,7 +19,7 @@ def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
 
 def get_source(line: TrueLine | FakeLine) -> str:
 	"""Return the gedcom text equivalent for the line and its sub-lines."""
-	if not is_true(line): return ""
+	if not line: return ""
 	text = str(line) + "\n"
 	for sub_line in get_all_sub_lines(line):
 		text += str(sub_line) + "\n"
@@ -124,7 +124,7 @@ def format_date(date: str) -> str:
 	* :py:attr:`FROM` is removed.
 	* :py:attr:`TO` is removed.
 	* :py:attr:`BET_AND` is replaced by `--`.
-	* :py:attr:`FROM_TO` is replaced by `--`.	
+	* :py:attr:`FROM_TO` is replaced by `--`.
 	"""
 	date = remove_trailing_zeros(date)
 	if date[:4]=='BET ' and 'AND' in date:
@@ -226,7 +226,7 @@ def to_datetime(date: str, default: datetime | None = None) -> datetime:
 		except ValueError as e:
 			err = e
 	if default is not None: return default
-	if err is not None: raise err 
+	if err is not None: raise err
 	raise ValueError(f"Fail to parse {date} as a date")
 
 def to_datetime_range(
@@ -234,7 +234,7 @@ def to_datetime_range(
 		default: datetime | None = None,
 	) -> tuple[datetime, datetime]:
 	"""Convert the payload of DATE lines to datetime objects.
-	
+
 	If default is provided, return default on failure.
 	Otherwise, raise ValueError on failure.
 
