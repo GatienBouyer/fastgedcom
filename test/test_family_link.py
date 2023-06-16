@@ -1,13 +1,15 @@
 import unittest
 from pathlib import Path
 
-from fastgedcom.base import fake_line
+from fastgedcom.base import fake_line, Document
 from fastgedcom.family_link import FamilyLink
 from fastgedcom.parser import strict_parse
 
 gedcom_file = Path(__file__).parent / "test_data" / "relatives.ged"
 
 class TestFamilyLink(unittest.TestCase):
+	document: Document
+	linker: FamilyLink
 
 	@classmethod
 	def setUpClass(cls) -> None:
@@ -96,6 +98,13 @@ class TestFamilyLink(unittest.TestCase):
 		all_siblings = self.linker.get_relatives_ref("@I7@", 0, 1)
 		self.assertCountEqual(all_siblings, ["@I6@", "@I41@"])
 
+	def test_get_by_degree(self) -> None:
+		# based on https://heirbase.com/degrees_of_kinship_chart/
+		self.assertCountEqual(self.linker.get_by_degree_ref("@I1@", 0), ["@I1@"])
+		self.assertCountEqual(self.linker.get_by_degree_ref("@I1@", 1), ["@I6@", "@I7@", "@I41@", "@I2@", "@I3@"])
+		self.assertCountEqual(self.linker.get_by_degree_ref("@I1@", 4), ["@I17@", "@I24@", "@I28@", "@I21@"])
+		self.assertCountEqual(self.linker.get_by_degree_ref("@I1@", 7), ["@I27@", "@I31@", "@I36@"])
+		self.assertCountEqual(self.linker.get_by_degree_ref("@I1@", 11), ["@I40@"])
 
 if __name__ == '__main__':
 	unittest.main()

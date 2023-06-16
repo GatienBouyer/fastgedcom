@@ -202,16 +202,16 @@ class FamilyLink():
 		return self.document.records[self.get_spouse_in_fam_ref(indi, fam)]
 
 	def traverse_ref(self, indi: IndiRef,
-			ascend: int = 0, descent: int = 0
+			ascent: int = 0, descent: int = 0
 			) -> list[IndiRef]:
 		"""
 		Recursively traverse the parents of the person and then their children.
 
-		The degree of kinship is equal to the sum `ascend` + `descent`.
+		The degree of kinship is equal to the sum `ascent` + `descent`.
 		"""
 		parents = [indi]
 		last_parents = [indi]
-		for _ in range(ascend):
+		for _ in range(ascent):
 			last_parents = parents
 			parents = [p.tag for i in parents for p in self.get_parents(i)
 				if is_true(p)]
@@ -219,20 +219,20 @@ class FamilyLink():
 		for k in range(descent):
 			children = [c for i in children for c in self.get_children_ref(i)
 				if c not in last_parents]
-			if k == 0 and ascend == 1: # remove duplicates
+			if k == 0 and ascent == 1: # remove duplicates
 				children = list(set(children))
 		return children
 
 	def traverse(self, indi: IndiRef,
-			ascend: int = 0, descent: int = 0
+			ascent: int = 0, descent: int = 0
 			) -> list[Record]:
 		"""
 		Recursively traverse the parents of the person and then their children.
 
-		The degree of kinship is equal to the sum `ascend` + `descent`.
+		The degree of kinship is equal to the sum `ascent` + `descent`.
 		"""
 		return [self.document.records[r]
-			for r in self.traverse_ref(indi, ascend, descent)]
+			for r in self.traverse_ref(indi, ascent, descent)]
 
 	def get_relatives_ref(self, indi: IndiRef,
 			generation_diff: int = 0, collateral_diff: int = 0
@@ -270,3 +270,15 @@ class FamilyLink():
 		else: pos_gen = 0 ; neg_gen = -generation_diff
 		return self.traverse(indi,
 			pos_gen + collateral_diff, neg_gen + collateral_diff)
+
+	def get_by_degree_ref(self, indi: IndiRef, degree: int) -> list[IndiRef]:
+		"""Return relatives having that degree of kinship with the person."""
+		return [p for ascent in range(degree+1) for descent in range(degree+1)
+			for p in self.traverse_ref(indi, ascent,descent)
+			if ascent + descent == degree]
+
+	def get_by_degree(self, indi: IndiRef, degree: int) -> list[Record]:
+		"""Return relatives having that degree of kinship with the person."""
+		return [p for ascent in range(degree+1) for descent in range(degree+1)
+			for p in self.traverse(indi, ascent, descent)
+			if ascent + descent == degree]

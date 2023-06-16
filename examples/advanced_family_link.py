@@ -1,4 +1,5 @@
 from fastgedcom.family_link import FamilyLink
+from fastgedcom.helpers import format_name
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")
@@ -43,3 +44,19 @@ second_cousins = linker.traverse(person_id, 3, 3)
 
 oncles_and_aunts = linker.traverse(person_id, 2, 1)
 nephews_and_nieces = linker.traverse(person_id, 1, 2)
+
+
+###############################################################################
+# Usage of FamilyLink.get_by_degree()
+###############################################################################
+
+person_name = format_name(document[person_id] >= 'NAME')
+
+print(f"People with a kinship degree of 3 with {person_name},",
+	"i.e. nieces and nephews, aunts and uncles,"
+	"great-grandparents, and great-grandchildren:"
+)
+
+print(", ".join(
+	format_name(p >= "NAME") for p in linker.get_by_degree(person_id, 3)
+))
