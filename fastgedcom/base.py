@@ -271,6 +271,11 @@ class Document():
 	"""Alias for :py:meth:`get_record` to shorten the syntax
 	by using the [] operator."""
 
+	def __eq__(self, __value: object) -> bool:
+		if not isinstance(__value, Document):
+			return False
+		return self.records == __value.records
+
 
 fake_line = FakeLine()
 """:py:class:`.FakeLine` instance returned by functions.
