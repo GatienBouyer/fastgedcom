@@ -1,7 +1,9 @@
 import unittest
 from typing import Iterable
+from io import StringIO
 from pathlib import Path
 
+from fastgedcom.base import TrueLine
 from fastgedcom.helpers import get_all_sub_lines
 from fastgedcom.parser import guess_encoding, parse
 
@@ -10,6 +12,7 @@ file_utf8_bom = Path(__file__).parent / "test_data" / "in_utf8_bom.ged"
 file_ansi =  Path(__file__).parent / "test_data" / "in_ansi.ged"
 file_ansel =  Path(__file__).parent / "test_data" / "in_ansel.ged"
 file_unicode =  Path(__file__).parent / "test_data" / "in_unicode.ged"
+file_iso8859_1 = Path(__file__).parent / "test_data" / "in_iso8859-1.ged"
 
 class TestParser(unittest.TestCase):
 	def _test_parsing(self, lines_to_parse: Iterable[str], expected_number_of_lines: int) -> None:
@@ -59,14 +62,14 @@ class TestParser(unittest.TestCase):
 			file_unicode: "utf-16",
 			file_ansi: "ansi",
 			file_ansel: "gedcom",
+			file_iso8859_1: "iso8859-1",
 		}
 		for filename, encoding in pairs.items():
 			guess = guess_encoding(filename)
 			guess_lower = guess.lower() if guess else None
-			self.assertEqual(guess_lower, encoding)
+			self.assertEqual(guess_lower, encoding, f"File: {filename}")
 
 	def test_string_io_parsing(self) -> None:
-		from io import StringIO
 		stream = StringIO("0 HEAD\n1 GEDC\n2 VERS 5.5\n1 CHAR UTF-8\n0 @I1@ INDI\n1 NAME éàç /ÉÀÇ/\n2 SURN ÉÀÇ\n2 GIVN éàç\n1 SEX M")
 		self._test_parsing(stream, 9)
 	
@@ -83,6 +86,31 @@ class TestParser(unittest.TestCase):
 		1 SEX M
 		"""
 		self._test_parsing(text.strip().splitlines(), 9)
+
+	def test_warnings(self) -> None:
+		from fastgedcom.parser import (CharacterInsteadOfLineWarning,
+		                               DuplicateXRefWarning, EmptyLineWarning,
+		                               LevelInconsistencyWarning,
+		                               LevelParsingWarning, LineParsingWarning)
+		d, ws = parse("O HEAD\n0 TRLR")
+		self.assertTrue(d == parse(StringIO(""))[0])
+		self.assertTrue(any(isinstance(w, CharacterInsteadOfLineWarning) for w in ws))
+		d, ws = parse(StringIO("0 HEAD\n0 @I1@ INDI\n\n0 TRLR"))
+		self.assertTrue(d == parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 TRLR"))[0])
+		self.assertTrue(any(isinstance(w, EmptyLineWarning) for w in ws))
+		d, ws = parse(StringIO("1 CHAR UTF-8\n0 TRLR"))
+		self.assertTrue(d.records == {"TRLR":TrueLine(0, "TRLR", "")})
+		self.assertTrue(any(isinstance(w, LevelInconsistencyWarning) for w in ws))
+		d, ws = parse(StringIO("0 HEAD\n1 NOTE foo\nbar\n0 TRLR"))
+		self.assertTrue(d == parse(StringIO("0 HEAD\n1 NOTE foo\n0 TRLR"))[0])
+		self.assertTrue(any(isinstance(w, LineParsingWarning) for w in ws))
+		d, ws = parse(StringIO("0 HEAD\n1 NOTE foo\nbar baz\n0 TRLR"))
+		self.assertTrue(d == parse(StringIO("0 HEAD\n1 NOTE foo\n0 TRLR"))[0])
+		self.assertTrue(any(isinstance(w, LevelParsingWarning) for w in ws))
+		d, ws = parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 @I1@ INDI\n0 TRLR"))
+		self.assertTrue(d == parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 TRLR"))[0])
+		self.assertTrue(any(isinstance(w, DuplicateXRefWarning) for w in ws))
+
 
 if __name__ == '__main__':
 	unittest.main()

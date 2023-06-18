@@ -127,8 +127,8 @@ def guess_encoding(file: str | Path) -> str | None:
 	"""
 	try:
 		with open(file, "r", encoding="utf-8-sig") as f:
-			f.read()
-	except UnicodeDecodeError: pass
+			if "�" in f.read(): raise UnicodeError
+	except UnicodeError: pass
 	else: return "utf-8-sig"
 	try:
 		with open(file, "r", encoding=None) as f:
@@ -136,11 +136,11 @@ def guess_encoding(file: str | Path) -> str | None:
 				if line.startswith("1 CHAR "):
 					if "ansel" in line.lower(): return "gedcom"
 					return line[7:-1] # tested with "ansi"
-	except UnicodeDecodeError: pass
+	except UnicodeError: pass
 	try:
 		with open(file, "r", encoding="utf-16") as f:
-			f.read()
-	except UnicodeDecodeError: pass
+			if "�" in f.read(): raise UnicodeError
+	except UnicodeError: pass
 	else: return "utf-16"
 	return None
 
