@@ -1,10 +1,11 @@
 import unittest
 from datetime import UTC, datetime
 
+from fastgedcom.base import TrueLine
 from fastgedcom.helpers import (DateType, add_time, extract_int_year,
                                 extract_year, format_date, get_date_type,
-                                remove_trailing_zeros, to_datetime,
-                                to_datetime_range)
+                                line_to_datetime, remove_trailing_zeros,
+                                to_datetime, to_datetime_range)
 
 
 class TestDateHelpers(unittest.TestCase):
@@ -32,13 +33,14 @@ class TestDateHelpers(unittest.TestCase):
 		self.assertEqual(format_date('BEF Mar 2001 BCE'), '< Mar -2001')
 		self.assertEqual(format_date('BET 2001 AND 2002'), '2001 -- 2002')
 		self.assertEqual(format_date('BET 22 May 67 AND 1 Apr 67'), '22 May 67 -- 1 Apr 67')
-		self.assertEqual(format_date('BET 62 BC AND 64 BC'), '-62 -- -64')
+		self.assertEqual(format_date('FROM 62 BC TO 64 BC'), '-62 -- -64')
 		self.assertEqual(format_date("FROM 16 Feb 1546/1547"), "16 Feb 1546/1547")
 
 	def test_format_date_stability(self) -> None:
 		dates = ('22 Mar 2001', '2001', '12 Fev 67 BCE', 'ABT 22 Mar 2001',
 		         'ABT Mar 2001', 'ABT 2000 BCE', '67 BCE', 'BEF Mar 2001 BCE',
-				 'BET 2001 AND 2002', 'BET 22 May 67 AND 1 Apr 67', '16 Feb 1546/1547')
+		         'BET 2001 AND 2002', 'BET 22 May 67 AND 1 Apr 67',
+		         'FROM 62 BC TO 64 BC', '16 Feb 1546/1547')
 		for date in dates:
 			self.assertEqual(format_date(format_date(date)), format_date(date))
 
@@ -84,6 +86,7 @@ class TestDateHelpers(unittest.TestCase):
 		self.assertRaises(ValueError, to_datetime, '67 BCE')
 		self.assertRaises(ValueError, to_datetime, 'BEF Mar 2001')
 		self.assertRaises(ValueError, to_datetime, 'BET 2001 AND 2002')
+		self.assertRaises(ValueError, to_datetime, 'FROM 1 Jan 2001 TO 31 Dec 2002')
 		self.assertRaises(ValueError, to_datetime, "FROM 16 Feb 1546/1547")
 
 	def test_to_datetime_range(self) -> None:
@@ -94,10 +97,11 @@ class TestDateHelpers(unittest.TestCase):
 		self.assertRaises(ValueError, to_datetime_range, '12 Fev 67 BCE')
 		self.assertRaises(ValueError, to_datetime_range, 'ABT 22 Mar 2001')
 		self.assertRaises(ValueError, to_datetime_range, 'ABT 2001')
-		self.assertRaises(ValueError, to_datetime, '67 BCE')
-		self.assertRaises(ValueError, to_datetime, 'BEF Mar 2001')
+		self.assertRaises(ValueError, to_datetime_range, '67 BCE')
+		self.assertRaises(ValueError, to_datetime_range, 'BEF Mar 2001')
 		self.assertEqual(to_datetime_range('BET 2001 AND 2002'), (datetime(2001, 1, 1), datetime(2002, 1, 1)))
 		self.assertEqual(to_datetime_range('BET 22 May 67 AND 1 Apr 67'), (datetime(67, 5, 22), datetime(67, 4, 1)))
+		self.assertEqual(to_datetime_range('FROM 1 Jan 2001 TO 31 Dec 2002'), (datetime(2001, 1, 1), datetime(2002, 12, 31)))
 		self.assertRaises(ValueError, to_datetime_range, 'BET 62 BC AND 64 BC')
 		self.assertRaises(ValueError, to_datetime_range, "FROM 16 Feb 1546/1547")
 
@@ -109,6 +113,24 @@ class TestDateHelpers(unittest.TestCase):
 		self.assertEqual(
 			add_time(datetime(1234, 12, 13), "14:15:16.123456Z"),
 			datetime(1234, 12, 13, 14, 15, 16, 123456, UTC)
+		)
+
+	
+	def test_line_to_datetime(self) -> None:
+		change_dt = TrueLine(1, "CHAN", "", [
+			TrueLine(2, "DATE", "20 May 2023",
+				[TrueLine(3, "TIME", "20:51:21")])
+		])
+		self.assertEqual(
+			line_to_datetime(change_dt > "DATE"),
+			datetime(2023, 5, 20, 20, 51, 21)
+		)
+		date = TrueLine(1, "BIRT", "", [
+			TrueLine(2, "DATE", "20 May 2023")
+		])
+		self.assertEqual(
+			line_to_datetime(date > "DATE"),
+			datetime(2023, 5, 20)
 		)
 	
 	def test_get_date_type(self) -> None:

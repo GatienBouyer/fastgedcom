@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from fastgedcom.base import fake_line, Document
+from fastgedcom.base import Document, fake_line
 from fastgedcom.family_link import FamilyLink
 from fastgedcom.parser import strict_parse
 
@@ -20,6 +20,10 @@ class TestFamilyLink(unittest.TestCase):
 		self.assertEqual(
 			self.linker.get_parent_family(self.document.records["@I1@"]),
 			self.document.records["@F1@"]
+		)
+		self.assertEqual(
+			self.linker.get_parent_family(self.document.records["@I21@"]),
+			fake_line
 		)
 
 	def test_get_parents(self) -> None:

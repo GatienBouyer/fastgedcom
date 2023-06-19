@@ -5,7 +5,10 @@ from pathlib import Path
 
 from fastgedcom.base import TrueLine
 from fastgedcom.helpers import get_all_sub_lines
-from fastgedcom.parser import guess_encoding, parse
+from fastgedcom.parser import (CharacterInsteadOfLineWarning,
+                               DuplicateXRefWarning, EmptyLineWarning,
+                               LevelInconsistencyWarning, LevelParsingWarning,
+                               LineParsingWarning, guess_encoding, parse)
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
 file_utf8_bom = Path(__file__).parent / "test_data" / "in_utf8_bom.ged"
@@ -88,10 +91,6 @@ class TestParser(unittest.TestCase):
 		self._test_parsing(text.strip().splitlines(), 9)
 
 	def test_warnings(self) -> None:
-		from fastgedcom.parser import (CharacterInsteadOfLineWarning,
-		                               DuplicateXRefWarning, EmptyLineWarning,
-		                               LevelInconsistencyWarning,
-		                               LevelParsingWarning, LineParsingWarning)
 		d, ws = parse("O HEAD\n0 TRLR")
 		self.assertTrue(d == parse(StringIO(""))[0])
 		self.assertTrue(any(isinstance(w, CharacterInsteadOfLineWarning) for w in ws))

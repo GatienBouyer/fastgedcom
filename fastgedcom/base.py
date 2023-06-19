@@ -46,13 +46,11 @@ class Line(ABC):
 	def __bool__(self) -> bool:
 		"""True if it is a :py:class:`.TrueLine`,
 		False if it is a :py:class:`.FakeLine`."""
-		...
 
 	@property
 	@abstractmethod
 	def payload(self) -> str:
 		"""See the description of :py:class:`.TrueLine` class."""
-		...
 
 	@property
 	@abstractmethod
@@ -60,13 +58,11 @@ class Line(ABC):
 		"""The content of this gedcom field, namely the payload combined
 		with all CONT sub-lines payload as a new line, and
 		with all CONC sub-lines payload as a space."""
-		...
 
 	@abstractmethod
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		"""Return the all sub-lines having the given :any:`tag`.
 		An empty list if no line matches."""
-		...
 
 	def __rshift__(self, tag: str) -> list['TrueLine']:
 		"""Alias for :py:meth:`get_sub_lines` to shorten the syntax
@@ -77,7 +73,6 @@ class Line(ABC):
 	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
 		"""Return the first sub-line having the given :any:`tag`.
 		A :py:class:`.FakeLine` if no line matches."""
-		...
 
 	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
 		"""Alias for :py:meth:`get_sub_line` to shorten the syntax
@@ -88,7 +83,6 @@ class Line(ABC):
 	def get_sub_line_payload(self, tag: str) -> str:
 		"""Return the payload of the first sub-line having the given
 		:any:`tag`. An empty string if no line matches."""
-		...
 
 	def __ge__(self, tag: str) -> str:
 		"""Alias for :py:meth:`get_sub_line_payload` to shorten the syntax
@@ -207,6 +201,7 @@ class TrueLine(Line):
 
 	def __str__(self) -> str:
 		"""Return the gedcom representation of the line (sub-lines excluded)."""
+		if not self.payload: return f"{self.level} {self.tag}"
 		return f"{self.level} {self.tag} {self.payload}"
 
 	def __repr__(self) -> str:

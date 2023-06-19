@@ -219,15 +219,14 @@ def to_datetime(date: str, default: datetime | None = None) -> datetime:
 	if year and 0 < year < 1000:
 		four_digits_year = f"{year:04}"
 		date = date.replace(str(year), four_digits_year)
-	err: ValueError | None = None
+	err = ValueError(f"Fail to parse {date} as a date")
 	for fmt in ("%d %b %Y", "%d %b %Y", "%b %Y", "%Y"):
 		try:
 			return datetime.strptime(date, fmt)
 		except ValueError as e:
 			err = e
 	if default is not None: return default
-	if err is not None: raise err
-	raise ValueError(f"Fail to parse {date} as a date")
+	raise err
 
 def to_datetime_range(
 		date: str,
