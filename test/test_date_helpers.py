@@ -1,5 +1,6 @@
 import unittest
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from sys import version
 
 from fastgedcom.base import TrueLine
 from fastgedcom.helpers import (DateType, add_time, extract_int_year,
@@ -105,6 +106,7 @@ class TestDateHelpers(unittest.TestCase):
 		self.assertRaises(ValueError, to_datetime_range, 'BET 62 BC AND 64 BC')
 		self.assertRaises(ValueError, to_datetime_range, "FROM 16 Feb 1546/1547")
 
+	@unittest.skipIf(version<"3.11", "The utc timezone mark 'Z' isn't supported")
 	def test_add_time(self) -> None:
 		self.assertEqual(
 			add_time(datetime(1234, 12, 13), "14:15:16"),
@@ -112,10 +114,9 @@ class TestDateHelpers(unittest.TestCase):
 		)
 		self.assertEqual(
 			add_time(datetime(1234, 12, 13), "14:15:16.123456Z"),
-			datetime(1234, 12, 13, 14, 15, 16, 123456, UTC)
+			datetime(1234, 12, 13, 14, 15, 16, 123456, timezone.utc)
 		)
 
-	
 	def test_line_to_datetime(self) -> None:
 		change_dt = TrueLine(1, "CHAN", "", [
 			TrueLine(2, "DATE", "20 May 2023",
@@ -132,7 +133,7 @@ class TestDateHelpers(unittest.TestCase):
 			line_to_datetime(date > "DATE"),
 			datetime(2023, 5, 20)
 		)
-	
+
 	def test_get_date_type(self) -> None:
 		self.assertEqual(get_date_type(""), None)
 		self.assertEqual(get_date_type("AFT 2000"), DateType.AFT)

@@ -2,7 +2,7 @@
 
 from typing import Iterator, overload
 from datetime import datetime, time
-from enum import StrEnum
+from enum import Enum
 
 from .base import FakeLine, TrueLine
 
@@ -44,7 +44,7 @@ def extract_name_parts(name: str) ->tuple[str, str]:
 	surname = name[first+1:second]
 	return given_name.strip(), surname.strip()
 
-class DateType(StrEnum):
+class DateType(Enum):
 	"""Date modifiers allowed by the Gedcom specifications.
 	They can appear in payload of DATE lines."""
 
