@@ -1,13 +1,11 @@
 """Utilitary functions to sort, format, or extract information."""
 
-from typing import Iterator
+from typing import Iterator, overload
+from datetime import datetime, time
+from enum import StrEnum
 
-from .base import FakeLine, Record, TrueLine, is_true
+from .base import FakeLine, TrueLine
 
-MINIMAL_DATE = -99999
-"""Default year when sorting dates.
-Used when the dates cannot be convert to an integer using
-:py:func:`.extract_int_year`."""
 
 def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
 	"""Recursively iterate on :py:class:`.TrueLine` of higher level.
@@ -19,9 +17,9 @@ def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
 		yield line
 		lines = line.sub_lines + lines
 
-def get_source_infos(line: TrueLine | FakeLine) -> str:
+def get_source(line: TrueLine | FakeLine) -> str:
 	"""Return the gedcom text equivalent for the line and its sub-lines."""
-	if not is_true(line): return ""
+	if not line: return ""
 	text = str(line) + "\n"
 	for sub_line in get_all_sub_lines(line):
 		text += str(sub_line) + "\n"
@@ -46,6 +44,59 @@ def extract_name_parts(name: str) ->tuple[str, str]:
 	surname = name[first+1:second]
 	return given_name.strip(), surname.strip()
 
+class DateType(StrEnum):
+	"""Date modifiers allowed by the Gedcom specifications.
+	They can appear in payload of DATE lines."""
+
+	BC = "{date} BC"
+	"""Date before Christ. Old version from Gedcom5."""
+
+	BCE = "{date} BCE"
+	"""Date before common era. New version from Gedcom7."""
+
+	ABT = "ABT {date}"
+	"""About date."""
+
+	EST = "EST {date}"
+	"""Estimated date."""
+
+	CAL = "CAL {date}"
+	"""Calculated date."""
+
+	BEF = "BEF {date}"
+	"""Before date."""
+
+	AFT = "AFT {date}"
+	"""After date."""
+
+	TO = "TO {date}"
+	"""To date. Not prefixed by :py:attr:`FROM`."""
+
+	FROM = "FROM {date}"
+	"""From date. Not followed by :py:attr:`TO`."""
+
+	BET_AND = "BET {date1} AND {date2}"
+	"""Between date1 and date2."""
+
+	FROM_TO = "FROM {date1} TO {date2}"
+	"""From date1 to date2."""
+
+def get_date_type(date: str) -> DateType | None:
+	"""Return the modifier used by DATE line payloads.
+	If no modifier is recognized, return None.
+	Ignore :py:attr:`BC` and :py:attr:`BCE` and return None,
+	because these modifiers can be combined with the others."""
+	if date[:4]=='ABT ': return DateType.ABT
+	if date[:4]=='CAL ': return DateType.CAL
+	if date[:4]=='EST ': return DateType.EST
+	if date[:4]=='BEF ': return DateType.BEF
+	if date[:4]=='AFT ': return DateType.AFT
+	if date[:4]=='BET ' and 'AND' in date: return DateType.BET_AND
+	if date[:5]=='FROM ' and 'TO' in date: return DateType.FROM_TO
+	if date[:5]=='FROM ': return DateType.FROM
+	if date[:3]=='TO ': return DateType.TO
+	return None
+
 def remove_trailing_zeros(date: str) -> str:
 	"""Removes useless 0 prefixing numbers."""
 	k = 0
@@ -63,17 +114,17 @@ def format_date(date: str) -> str:
 
 	Replacements:
 
-	* 'd BC' standing for before christ is replaced by '-d',
-	* 'd BCE' or before common era with '-d',
-	* 'ABT d' stading for about is replaced by '~ d',
-	* 'EST d' stading for estimated is replaced by '~ d',
-	* 'CAL d' stading for calculated is replaced by '~ d',
-	* 'BEF d' standing for before is replaced by '< d',
-	* 'AFT d' standing for after is replaced by '> d',
-	* 'BET d AND d' standing for between is replaced by 'd -- d',
-	* 'FROM d TO d' is replace by 'd -- d',
-	* 'FROM d' is replaced by 'd',
-	* 'TO d' is replaced by 'd'.
+	* :py:attr:`BC` is replaced by `-`.
+	* :py:attr:`BCE` is replaced by `-`.
+	* :py:attr:`ABT` is replaced by `~`.
+	* :py:attr:`EST` is replaced by `~`.
+	* :py:attr:`CAL` is replaced by `~`.
+	* :py:attr:`BEF` is replaced by `<`.
+	* :py:attr:`AFT` is replaced by `>`.
+	* :py:attr:`FROM` is removed.
+	* :py:attr:`TO` is removed.
+	* :py:attr:`BET_AND` is replaced by `--`.
+	* :py:attr:`FROM_TO` is replaced by `--`.
 	"""
 	date = remove_trailing_zeros(date)
 	if date[:4]=='BET ' and 'AND' in date:
@@ -82,7 +133,7 @@ def format_date(date: str) -> str:
 		return format_date(date1) + ' -- ' + format_date(date2)
 	elif date[:5]=='FROM ' and 'TO' in date:
 		date = date[5:]
-		date1, date2 = date.split(' AND ', 1)
+		date1, date2 = date.split(' TO ', 1)
 		return format_date(date1) + ' -- ' + format_date(date2)
 	if date[-3:] == ' BC' or date[-4:] == ' BCE':
 		date_parts = date.split(' ')
@@ -101,8 +152,9 @@ def format_date(date: str) -> str:
 def extract_year(date: str) -> str:
 	"""Format the payload of DATE lines.
 
-	Keep the context of the date: '-', '~', '<', '>' and '--'.
-	To extract year but not the context, use :py:func:`.extract_int_year`.
+	Keep the context of the date, i.e. replacements produced by
+	:py:func:`format_date`. To extract the year but not the context,
+	use :py:func:`.extract_int_year`.
 
 	Remove the day and the month if present.
 	The parameter is the DATE payload or the formatted date string.
@@ -124,14 +176,18 @@ def extract_year(date: str) -> str:
 	if '>' in formated_date: year = '> '+year
 	return year
 
-def extract_int_year(date: str) -> float | None:
-	"""Format the payload of DATE lines.
-	Return the year of the date as an integer.
+@overload
+def extract_int_year(date: str) -> float | None: ...
+@overload
+def extract_int_year(date: str, default: float) -> float: ...
 
-	Keep the context: A date BCE returns a negative number.
-	For a date range of type `between` or `from-to`, this function
-	returns the median number of the range, hence the float type.
-	Return None on failure."""
+def extract_int_year(date: str, default: float | None = None) -> float | None:
+	"""Format the payload of DATE lines.
+	Return the year of the date as an integer. On failure, return the default.
+
+	A :py:attr:`BCE` date returns a negative number. For :py:attr:`BET_AND` and
+	:py:attr:`FROM_TO` date types, this function returns the median number of
+	the range, hence the float type."""
 	year = extract_year(date)
 	if ' -- ' in year:
 		str_year1, str_year2 = year.split(' -- ', 1)
@@ -141,25 +197,74 @@ def extract_int_year(date: str) -> float | None:
 		elif year2 is None: return year1
 		return (year1 + year2) / 2
 	year_without_context = ''.join(filter(lambda c: c.isdecimal() or c=='-', year))
-	if year_without_context == "": return None
+	if year_without_context == "": return default
 	return int(year_without_context)
 
+def to_datetime(date: str, default: datetime | None = None) -> datetime:
+	"""Convert the payload of DATE lines to datetime object.
 
-def sorting_key_indi_birth(indi: Record) -> float:
-	"""Function that can be used to sort individuals by year of birth.
+	If default is provided, return default on failure.
+	Otherwise, raise ValueError on failure.
 
-	Usage:
-	:code:`sorted(individuals, key=sorting_key_indi_birth)`
-	"""
-	birth_year = extract_int_year((indi > "BIRT") >= "DATE")
-	return MINIMAL_DATE if birth_year is None else birth_year
+	If no day or month is specified, the first day and month are used.
 
-def sorting_key_union(family: Record) -> float:
-	"""Function that can be used to sort family by marriage date.
+	The returned date is more precise than :py:func:`.extract_int_year`, but
+	works less often. Infact, this method only works for positive dates
+	(i.e. not :py:attr:`BC`) and :py:attr:`ABT`, :py:attr:`CAL`, :py:attr:`EST`
+	date types. For :py:attr:`BET_AND` or :py:attr:`TO_FROM` date types, use the
+	:py:func:`.to_datetime_range` function. The :py:attr:`BEF` and :py:attr:`AFT`
+	date types are not supported."""
+	if date[:4] in ("ABT ", "CAL ", "EST "): date = date[4:]
+	year = extract_int_year(date)
+	if year and 0 < year < 1000:
+		four_digits_year = f"{year:04}"
+		date = date.replace(str(year), four_digits_year)
+	err = ValueError(f"Fail to parse {date} as a date")
+	for fmt in ("%d %b %Y", "%d %b %Y", "%b %Y", "%Y"):
+		try:
+			return datetime.strptime(date, fmt)
+		except ValueError as e:
+			err = e
+	if default is not None: return default
+	raise err
 
-	Usage:
-	:code:`sorted(unions, key=sorting_key_union)`
-	"""
-	marr_year = extract_int_year((family > "MARR") >= "DATE")
-	return MINIMAL_DATE if marr_year is None else marr_year
+def to_datetime_range(
+		date: str,
+		default: datetime | None = None,
+	) -> tuple[datetime, datetime]:
+	"""Convert the payload of DATE lines to datetime objects.
 
+	If default is provided, return default on failure.
+	Otherwise, raise ValueError on failure.
+
+	A case of failure is if the date types is not :py:attr:`BET_AND`,
+	or :py:attr:`FROM_TO`.
+
+	Call :py:func:`.to_datetime` on the first and second date."""
+	if date.startswith("BET ") and date.count(" AND ") == 1:
+		part1, part2 = date[4:].split(" AND ")
+	elif date.startswith("FROM ") and date.count(" TO ") == 1:
+		part1, part2 = date[5:].split(" TO ")
+	elif default is not None: return default, default
+	else: raise ValueError(f"Fail to parse {date} as a date range")
+	return to_datetime(part1, default), to_datetime(part2, default)
+
+def add_time(date: datetime, time_: str) -> datetime:
+	"""Parse the payload of TIME lines.
+	If the time is parsed, return the datetime with its time set.
+	Otherwise, return the datetime as it was.
+
+	Note: datetime is immutable, thus the presence of a returned value."""
+	try:
+		t = time.fromisoformat(time_)
+	except ValueError:
+		return date
+	return datetime.combine(date.date(), t)
+
+def line_to_datetime(
+		date: TrueLine | FakeLine,
+		default: datetime | None = None,
+	) -> datetime:
+	"""Convert DATE lines to datetime object using the payload and the TIME sub-line."""
+	dt = to_datetime(date.payload, default)
+	return add_time(dt, date >= "TIME")

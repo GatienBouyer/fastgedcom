@@ -1,17 +1,16 @@
 from time import perf_counter
 
-from fastgedcom.base import FakeLine, Record, is_true, IndiRef
+from fastgedcom.base import FakeLine, IndiRef, Record
+from fastgedcom.family_link import FamilyLink
 from fastgedcom.helpers import extract_int_year, format_name
-from fastgedcom.parser import guess_encoding, parse
-from fastgedcom.family_aid import FamilyAid
+from fastgedcom.parser import strict_parse
 
 gedcom_file = "../my_gedcom.ged"
 
 start_time = perf_counter()
 
-with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	gedcom, _ = parse(f)
-booster = FamilyAid(gedcom)
+gedcom = strict_parse(gedcom_file)
+families = FamilyLink(gedcom)
 
 end_time = perf_counter()
 
@@ -22,8 +21,8 @@ print(f"Time to parse: {end_time - start_time}")
 start_time = perf_counter()
 
 def nb_gen(indi: Record | FakeLine) -> int:
-	if not is_true(indi): return 1
-	father, mother = booster.get_parents(indi.tag)
+	if not indi: return 1
+	father, mother = families.get_parents(indi.tag)
 	return 1+max(nb_gen(father), nb_gen(mother))
 
 number_generations_above_root = nb_gen(gedcom["@I1@"])
@@ -38,7 +37,7 @@ print(f"Time to traverse parents: {end_time - start_time}")
 start_time = perf_counter()
 
 def nb_descendants_rec(parent: IndiRef) -> int:
-	children = booster.get_children_ref(parent)
+	children = families.get_children_ref(parent)
 	return len(children) + sum(nb_descendants_rec(child) for child in children)
 
 nb_descendants = nb_descendants_rec("@I1692@")
@@ -66,6 +65,5 @@ for individual in gedcom.get_records("INDI"):
 
 end_time = perf_counter()
 
-print(f"Oldest person: {format_name(oldest >= 'NAME')}")
-print(f"Age: {age_oldest}")
+print(f"Oldest person: {format_name(oldest >= 'NAME')}    Age: {age_oldest}")
 print(f"Time to traverse ages: {end_time - start_time}")

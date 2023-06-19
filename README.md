@@ -6,92 +6,49 @@ A lightweight tool to parse, browse and edit gedcom files.
 pip install fastgedcom
 ```
 
-Want to open a gedcom file?
-```python
-from fastgedcom.parser import guess_encoding, parse
-
-gedcom_file = "my_gedcom_file.ged"
-with open(gedcom_file, "r", encoding=guess_encoding(gedcom_file)) as f:
-	document, warnings = parse(f)
-
-if warnings: print(warnings) # in case of duplicate record reference
-```
-
-
+## Features
 Easy to write! Free choice of fields, data, and formatting.
 ```python
+from fastgedcom.parser import strict_parse
 from fastgedcom.helpers import format_date
+
+document = strict_parse("gedcom_file.ged")
 
 birth_date = (document["@I1@"] > "BIRT") >= "DATE"
 print(format_date(birth_date))
 ```
 
-A field is missing? FakeLine to the rescue. Like a TrueLine, but no error, no value, and no error handling code!
-```python
-from fastgedcom.base import is_true
+The syntax is flexible and permissive. If you don't like magic operator overloads, you can use standard methods!
 
-indi = document["@I1@"]
-death_date = (indi > "DEAT") >= "DATE"
-if death_date != "": print(format_date(death_date)) 
-if not is_true(indi): print("@I1@ was not even present!")
-```
+It supports gedcom files encoded in UTF-8 (with and without BOM), UTF-16 (also named UNICODE), ANSI, and ANSEL.
 
-Don't like magic operator overload? Use standard methods!
+If a field is missing, you will get a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) containing an empty string. This reduces the boiler plate code. You can differentiate [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) and [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine) with a simple boolean check.
 ```python
-indi = document.get_record("@I1@")
-surname = indi.get_sub_line("NAME").get_sub_line_payload("SURN")
+
+indi = document["@I13@"]
+death = indi > "DEAT"
+if not death:
+	print("No DEAT field. The person is alive")
+# Can continue anyway
+print("Death date:", format_date((indi > "DEAT") >= "DATE"))
 ```
 
 Typehints for salvation! Autocompletion and type checking make development so much easier.
-```python
-from fastgedcom.base import Document, FakeLine, IndiRef, Record, is_true
-from fastgedcom.helpers import format_name
 
-def print_infos(gedcom: Document, indi: IndiRef) -> None:
-	record = gedcom[indi]
-	if is_true(record): print_name(record)
+- There are only 3 main classes: [Document](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.Document), [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine), and [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine).
+- There are type aliases for code clarity: [Record](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.Record), [XRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.XRef), [IndiRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.IndiRef), [FamRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FamRef), and more.
 
-def print_name(record: Record | FakeLine) -> None:
-	print(format_name(record >= "NAME"))
+## Why FastGedcom ?
 
-print_infos(document, "@I1@")
-```
+FastGedcom's aim is to keep the code close to your gedcom files. So, you don't have to learn what FastGedcom does for you. The content of your gedcom file is what you get. The data processing is optional to best suit your needs.
 
-Iteration on families is fast. Save time!
-```python
-from fastgedcom.family_aid import FamilyAid
+The name **FastGedcom** doesn't just come from its ease of use. Getting relatives can be done quickly. That's what the [FamilyLink](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/family_link/index.html#fastgedcom.family_link.FamilyLink) class is all about. [Here](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) are the benchmark I used.
 
-booster = FamilyAid(document)
+## Documentation and examples
 
-def number_of_ascendants(indi: Record | FakeLine) -> int:
-	if not is_true(indi): return 1
-	father, mother = booster.get_parents(indi.tag)
-	return 1+max(number_of_ascendants(father), number_of_ascendants(mother))
-
-def number_of_descendants(indi: IndiRef) -> int:
-	children = booster.get_children_ref(indi)
-	return len(children) + sum(number_of_descendants(c) for c in children)
-
-print(max(number_of_ascendants(indi)
-	for indi in document.get_records("INDI")
-))
-print(max(number_of_descendants(indi.tag)
-	for indi in document.get_records("INDI")
-))
-```
-
-You want to see more? [Here are some examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)
+Want to see more code? [Here are some examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)
 
 The documentation of FastGedcom is available [here](https://fastgedcom.readthedocs.io/en/latest/) on ReadTheDocs.
-
-I promise you it is efficient! I [test it](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) and I use it.
-
-
-
-## Feature details
-
-- Supports reading of gedcom files encoded in UTF-8 with and without BOM, UTF-16 (also named UNICODE), ANSI, and ANSEL.
-- ~~Supports export of gedcom files encoded in UTF-8, UTF-16, and ANSI.~~
 
 ## Feedbacks
 

@@ -1,13 +1,13 @@
-"""Define the :py:class:`.FamilyAid` class used to bypass family records."""
+"""Define the :py:class:`.FamilyLink` class used to bypass family records."""
 
 from collections import defaultdict
 
 from .base import (Document, FakeLine, FamRef, IndiRef, Record, TrueLine,
-                   fake_line, is_true)
+                   fake_line)
 
 
-class FamilyAid():
-	"""Class with methods to easily get close relatives of someone.
+class FamilyLink():
+	"""Class with methods to easily get relatives of someone.
 
 	Methods ending in _ref (such as :py:meth:`.get_parent_family_ref`)
 	are called by their non-_ref counterparts (such as
@@ -26,9 +26,9 @@ class FamilyAid():
 		self.document = document
 		self.parents: dict[IndiRef, tuple[Record | FakeLine, Record | FakeLine]]
 		self.unions: defaultdict[IndiRef, list[Record]]
-		self._build_parents()
+		self._build_dicts()
 
-	def _build_parents(self) -> None:
+	def _build_dicts(self) -> None:
 		self.parents = dict()
 		self.unions = defaultdict(list)
 		for fam_record in self.document.records.values():
@@ -37,7 +37,7 @@ class FamilyAid():
 			father: FakeLine | TrueLine = fake_line
 			mother: FakeLine | TrueLine = fake_line
 			for line in fam_record.sub_lines:
-				if line.payload == "": continue
+				if line.payload == "@VOID@": continue
 				if line.tag == "CHIL":
 					children.append(line.payload)
 				elif line.tag == "HUSB":
@@ -51,10 +51,10 @@ class FamilyAid():
 
 	def get_parent_family_ref(self, child: TrueLine | FakeLine) -> FamRef | None:
 		"""Return the family reference with the parents of the person."""
-		if not is_true(child): return None
+		if not child: return None
 		for sub_line in child.sub_lines:
 			if sub_line.tag == "FAMC":
-				if sub_line.payload == "": return None
+				if sub_line.payload == "@VOID@": return None
 				return sub_line.payload
 		return None
 
@@ -77,7 +77,10 @@ class FamilyAid():
 		spouse1: IndiRef,
 		spouse2: IndiRef
 	) -> list[Record]:
-		"""Return the unions between the two people."""
+		"""Return the unions between the two people.
+
+		In most cases, there should be only one union, but
+		remarriage between the same two people could happen."""
 		spouse_fams = self.unions.get(spouse1, [])
 		return [fam
 			for fam in self.unions.get(spouse2, [])
@@ -88,7 +91,7 @@ class FamilyAid():
 		unions = self.unions.get(parent, [])
 		return [sub_line.payload
 			for fam in unions for sub_line in fam.sub_lines
-			if sub_line.tag == "CHIL" and sub_line.payload != ""]
+			if sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"]
 
 	def get_children(self, parent: IndiRef) -> list[Record]:
 		"""Return the children's records of a person."""
@@ -104,7 +107,7 @@ class FamilyAid():
 		unions = [fam for fam in self.unions.get(spouse2, []) if fam in fams]
 		return [sub_line.payload
 			for fam in unions for sub_line in fam.sub_lines
-			if sub_line.tag == "CHIL" and sub_line.payload != ""]
+			if sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"]
 
 	def get_children_with(self,
 		spouse1: IndiRef,
@@ -119,7 +122,7 @@ class FamilyAid():
 		return [sub_line.payload
 			for fam in self.unions.get(indi, []) for sub_line in fam.sub_lines
 			if (sub_line.tag in ("HUSB", "WIFE") and sub_line.payload != indi
-				and sub_line.payload != "")]
+				and sub_line.payload != "@VOID@")]
 
 	def get_spouses(self, indi: IndiRef) -> list[Record]:
 		"""Return the spouses' records of the person."""
@@ -131,14 +134,15 @@ class FamilyAid():
 		Stepsiblings included."""
 		father, mother = self.get_parents(indi)
 		unions: list[Record] = []
-		if is_true(father):
+		if father:
 			unions.extend(self.unions.get(father.tag, []))
-		if is_true(mother):
-			unions.extend(self.unions.get(mother.tag, []))
+		if mother:
+			unions.extend(u for u in self.unions.get(mother.tag, [])
+				if u not in unions) # remove duplicates
 		return [sub_line.payload
 			for fam in unions
 			for sub_line in fam.sub_lines
-			if (sub_line.tag == "CHIL" and sub_line.payload != ""
+			if (sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"
 				and sub_line.payload != indi)]
 
 	def get_all_siblings(self, indi: IndiRef) -> list[Record]:
@@ -153,7 +157,7 @@ class FamilyAid():
 		fam = self.get_parent_family(self.document.records[indi])
 		return [sub_line.payload
 			for sub_line in fam.sub_lines
-			if (sub_line.tag == "CHIL" and sub_line.payload != ""
+			if (sub_line.tag == "CHIL" and sub_line.payload != "@VOID@"
 				and sub_line.payload != indi)]
 
 	def get_siblings(self, indi: IndiRef) -> list[Record]:
@@ -168,16 +172,16 @@ class FamilyAid():
 		parent_fam = self.get_parent_family_ref(self.document.records[indi])
 		father, mother = self.get_parents(indi)
 		unions: list[Record] = []
-		if is_true(father):
+		if father:
 			unions.extend(self.unions.get(father.tag, []))
-		if is_true(mother):
+		if mother:
 			unions.extend(self.unions.get(mother.tag, []))
 		stepsiblings: list[IndiRef] = []
 		for fam in unions:
 			if fam.tag != parent_fam:
 				stepsiblings.extend(sub_line.payload
 					for sub_line in fam.sub_lines
-					if sub_line.tag == "CHIL" and sub_line.payload != "")
+					if sub_line.tag == "CHIL" and sub_line.payload != "@VOID@")
 		return stepsiblings
 
 	def get_stepsiblings(self, indi: IndiRef) -> list[Record]:
@@ -196,3 +200,84 @@ class FamilyAid():
 	def get_spouse_in_fam(self, indi: IndiRef, fam: Record) -> Record:
 		"""Return the spouse's record of the family that is not the person's."""
 		return self.document.records[self.get_spouse_in_fam_ref(indi, fam)]
+
+	def traverse_ref(self, indi: IndiRef,
+			ascent: int = 0, descent: int = 0
+			) -> list[IndiRef]:
+		"""
+		Recursively traverse the parents of the person and then their children.
+
+		The degree of kinship is equal to the sum `ascent` + `descent`.
+		"""
+		parents = [indi]
+		last_parents = [indi]
+		for _ in range(ascent):
+			last_parents = parents
+			parents = [p.tag for i in parents for p in self.get_parents(i) if p]
+		children = parents
+		for k in range(descent):
+			children = [c for i in children for c in self.get_children_ref(i)
+				if c not in last_parents]
+			if k == 0 and ascent == 1: # remove duplicates
+				children = list(set(children))
+		return children
+
+	def traverse(self, indi: IndiRef,
+			ascent: int = 0, descent: int = 0
+			) -> list[Record]:
+		"""
+		Recursively traverse the parents of the person and then their children.
+
+		The degree of kinship is equal to the sum `ascent` + `descent`.
+		"""
+		return [self.document.records[r]
+			for r in self.traverse_ref(indi, ascent, descent)]
+
+	def get_relatives_ref(self, indi: IndiRef,
+			generation_diff: int = 0, collateral_diff: int = 0
+			) -> list[IndiRef]:
+		"""Return relatives's references of the person.
+		See :py:meth:`get_relatives` for more details.
+		"""
+		if generation_diff >= 0: pos_gen = generation_diff ; neg_gen = 0
+		else: pos_gen = 0 ; neg_gen = -generation_diff
+		return self.traverse_ref(indi,
+			pos_gen + collateral_diff, neg_gen + collateral_diff)
+
+	def get_relatives(self, indi: IndiRef,
+			generation_diff: int = 0, collateral_diff: int = 0
+			) -> list[Record]:
+		"""Return relatives of the person.
+
+		`generation_diff` stand for generation difference:
+
+		* 1 parents, 2 grandparents, -1 children, -2 grand-children, ...
+
+		`collateral_diff` is used for same-generation difference:
+
+		* 1 sibling, 2 cousins, 3 grand-counsins, ...
+
+		The combinaison can be read as:
+
+		* (when generation_diff > 0) `collateral_diff` of `generation_diff`
+		* (when generation_diff < 0) `generation_diff` of `collateral_diff`
+
+		The `collateral_diff` must be strictly positive.
+		This function is a wrapper around :py:meth:`traverse`.
+		"""
+		if generation_diff >= 0: pos_gen = generation_diff ; neg_gen = 0
+		else: pos_gen = 0 ; neg_gen = -generation_diff
+		return self.traverse(indi,
+			pos_gen + collateral_diff, neg_gen + collateral_diff)
+
+	def get_by_degree_ref(self, indi: IndiRef, degree: int) -> list[IndiRef]:
+		"""Return relatives having that degree of kinship with the person."""
+		return [p for ascent in range(degree+1) for descent in range(degree+1)
+			for p in self.traverse_ref(indi, ascent,descent)
+			if ascent + descent == degree]
+
+	def get_by_degree(self, indi: IndiRef, degree: int) -> list[Record]:
+		"""Return relatives having that degree of kinship with the person."""
+		return [p for ascent in range(degree+1) for descent in range(degree+1)
+			for p in self.traverse(indi, ascent, descent)
+			if ascent + descent == degree]

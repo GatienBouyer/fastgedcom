@@ -1,6 +1,6 @@
 """Classes and types for the data structure used to represent a gedcom."""
 
-from typing import Iterator, Literal, TypeAlias, TypeGuard, Union
+from typing import Iterator, Literal, TypeAlias
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
@@ -42,12 +42,15 @@ class Line(ABC):
 	Implementations are :py:class:`.TrueLine` and :py:class:`.FakeLine`,
 	see these classes for more information.
 	"""
+	@abstractmethod
+	def __bool__(self) -> bool:
+		"""True if it is a :py:class:`.TrueLine`,
+		False if it is a :py:class:`.FakeLine`."""
 
 	@property
 	@abstractmethod
 	def payload(self) -> str:
 		"""See the description of :py:class:`.TrueLine` class."""
-		...
 
 	@property
 	@abstractmethod
@@ -55,13 +58,11 @@ class Line(ABC):
 		"""The content of this gedcom field, namely the payload combined
 		with all CONT sub-lines payload as a new line, and
 		with all CONC sub-lines payload as a space."""
-		...
 
 	@abstractmethod
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		"""Return the all sub-lines having the given :any:`tag`.
 		An empty list if no line matches."""
-		...
 
 	def __rshift__(self, tag: str) -> list['TrueLine']:
 		"""Alias for :py:meth:`get_sub_lines` to shorten the syntax
@@ -69,12 +70,11 @@ class Line(ABC):
 		return self.get_sub_lines(tag)
 
 	@abstractmethod
-	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
 		"""Return the first sub-line having the given :any:`tag`.
 		A :py:class:`.FakeLine` if no line matches."""
-		...
 
-	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
 		"""Alias for :py:meth:`get_sub_line` to shorten the syntax
 		by using the > operator."""
 		return self.get_sub_line(tag)
@@ -83,7 +83,6 @@ class Line(ABC):
 	def get_sub_line_payload(self, tag: str) -> str:
 		"""Return the payload of the first sub-line having the given
 		:any:`tag`. An empty string if no line matches."""
-		...
 
 	def __ge__(self, tag: str) -> str:
 		"""Alias for :py:meth:`get_sub_line_payload` to shorten the syntax
@@ -101,17 +100,17 @@ class FakeLine(Line):
 	The class behave like a :py:class:`.TrueLine`
 	(It has the same methods), but the payload is empty.
 
-	To differenciate a :py:class:`.FakeLine` from a
-	:py:class:`.TrueLine` a simple boolean test is enough:
-	:code:`if line: line.payload`. However to tell typecheckers that after
-	the test, the type is narrowed, you should use the :py:func:`is_true`
-	function. In general, the use of :py:meth:`get_sub_line_payload` (or ``>=``)
-	and then to check if the string is empty, is generally preferable.
+	To differentiate a :py:class:`.FakeLine` from a
+	:py:class:`.TrueLine` a simple boolean test is enough.
 	"""
 
-	payload = ""
-	payload_with_cont = ""
+	payload = "" # pyright: ignore[reportGeneralTypeIssues]
+	payload_with_cont = "" # pyright: ignore[reportGeneralTypeIssues]
 	sub_lines: list['TrueLine'] = []
+
+	def __bool__(self) -> Literal[False]:
+		"""Return False."""
+		return False
 
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		return []
@@ -119,10 +118,10 @@ class FakeLine(Line):
 	def __rshift__(self, tag: str) -> list['TrueLine']:
 		return self.get_sub_lines(tag)
 
-	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
 		return fake_line
 
-	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
 		return self.get_sub_line(tag)
 
 	def get_sub_line_payload(self, tag: str) -> str:
@@ -135,9 +134,8 @@ class FakeLine(Line):
 		"""Return the string representation of the class."""
 		return f"<{self.__class__.__qualname__}>"
 
-	def __bool__(self) -> bool:
-		"""Return False."""
-		return False
+	def __eq__(self, value: object) -> bool:
+		return isinstance(value, FakeLine)
 
 
 @dataclass(slots=True)
@@ -173,19 +171,23 @@ class TrueLine(Line):
 	"""List of the sub-lines, i.e. the next-level lines that are part
 	of this structure."""
 
+	def __bool__(self) -> Literal[True]:
+		"""Return True."""
+		return True
+
 	def get_sub_lines(self, tag: str) -> list['TrueLine']:
 		return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
 
 	def __rshift__(self, tag: str) -> list['TrueLine']:
 		return self.get_sub_lines(tag)
 
-	def get_sub_line(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
 		for sub_line in self.sub_lines:
 			if sub_line.tag == tag:
 				return sub_line
 		return fake_line
 
-	def __gt__(self, tag: str) -> Union['TrueLine', 'FakeLine']:
+	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
 		return self.get_sub_line(tag)
 
 	def get_sub_line_payload(self, tag: str) -> str:
@@ -199,6 +201,7 @@ class TrueLine(Line):
 
 	def __str__(self) -> str:
 		"""Return the gedcom representation of the line (sub-lines excluded)."""
+		if not self.payload: return f"{self.level} {self.tag}"
 		return f"{self.level} {self.tag} {self.payload}"
 
 	def __repr__(self) -> str:
@@ -236,14 +239,24 @@ class Document():
 		self.records = dict()
 
 	def __iter__(self) -> Iterator[Record]:
-		"""Iterate on the lines of level 0."""
+		"""Iterate on the lines of level 0
+		(the records, the header, and the TRLR line)."""
 		return iter(self.records.values())
 
+	def __contains__(self, identifier: XRef) -> bool:
+		"""Return True if the identifier refers to an existing record."""
+		return identifier in self.records
+
 	def get_records(self, record_type: str) -> Iterator[Record]:
-		"""Return an iterator over records of that ``record_type``."""
+		"""Return an iterator over records of that ``record_type``
+		(i.e. the :py:attr:`~.TrueLine.payload` of level 0 lines)."""
 		for record in self.records.values():
 			if record.payload == record_type:
 				yield record
+
+	__rshift__ = get_records
+	"""Alias for :py:meth:`get_records` to shorten the syntax
+	by using the >> operator."""
 
 	def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
 		"""Return the record under that ``identifier``."""
@@ -253,14 +266,12 @@ class Document():
 	"""Alias for :py:meth:`get_record` to shorten the syntax
 	by using the [] operator."""
 
+	def __eq__(self, __value: object) -> bool:
+		if not isinstance(__value, Document):
+			return False
+		return self.records == __value.records
+
 
 fake_line = FakeLine()
 """:py:class:`.FakeLine` instance returned by functions.
 Used to avoid having multiple unnecessary instances of :py:class:`.FakeLine`."""
-
-
-def is_true(line: Union[TrueLine, FakeLine]) -> TypeGuard[TrueLine]:
-	"""Return true when the given ``line`` is a :py:class:`.TrueLine`,
-	false when the given ``line`` is a :py:class:`.FakeLine`.
-	Usefull when using a typechecker."""
-	return bool(line)

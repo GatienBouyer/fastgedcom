@@ -75,6 +75,5 @@ for element in gedcom.records0("INDI"):
 
 end_time = perf_counter()
 assert(oldest)
-print(f"Oldest person: {oldest.name.format()}")
-print(f"Age: {age_oldest}")
+print(f"Oldest person: {oldest.name.format()}    Age: {age_oldest}")
 print(f"Time to traverse ages: {end_time - start_time}")

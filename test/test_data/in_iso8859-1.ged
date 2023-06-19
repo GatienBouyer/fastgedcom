@@ -1,0 +1,27 @@
+0 HEAD
+1 SOUR PAF
+2 NAME Personal Ancestral File
+2 VERS 5.2.18.0
+2 CORP The Church of Jesus Christ of Latter-day Saints
+3 ADDR 50 East North Temple Street
+4 CONT Salt Lake City, UT 84150
+4 CONT USA
+1 DEST Other
+1 DATE 20 May 2023
+2 TIME 20:52:04
+1 FILE _in_iso8859-1.ged
+1 GEDC
+2 VERS 5.5
+2 FORM LINEAGE-LINKED
+1 CHAR ISO8859-1
+1 LANG English
+0 @I1@ INDI
+1 NAME È‡Á /…¿«/
+2 SURN …¿«
+2 GIVN È‡Á
+1 SEX U
+1 _UID 8AF30D0BDE130F4E8964B9EACCAD53F6356E
+1 CHAN
+2 DATE 20 May 2023
+3 TIME 20:51:21
+0 TRLR
