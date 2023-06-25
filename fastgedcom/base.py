@@ -211,10 +211,11 @@ class TrueLine(Line):
 	@property
 	def payload_with_cont(self) -> str:
 		text = self.payload
-		for cont in self.get_sub_lines("CONT"):
-			text += '\n' + cont.payload
-		for conc in self.get_sub_lines("CONC"):
-			text += conc.payload
+		for sub_line in self.sub_lines:
+			if sub_line.tag == "CONT":
+				text += '\n' + sub_line.payload
+			elif sub_line.tag == "CONC":
+				text += sub_line.payload
 		return text
 
 

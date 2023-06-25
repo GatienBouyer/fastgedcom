@@ -37,6 +37,16 @@ class TestBase(unittest.TestCase):
 			TrueLine(1, "CONC", "at is split"),
 		])
 		self.assertEqual(note_line2.payload_with_cont, note_text2)
+		note_text3 = "This text is on several lines:\nTo present a very long text that is split.\n\nAnd a second one:\nAlso a very long sentence that is split."
+		note_line3 = TrueLine(1, "NOTE", "This text is on several lines:", [
+			TrueLine(1, "CONT", "To present a very long"),
+			TrueLine(1, "CONC", " text that is split."),
+			TrueLine(1, "CONT", ""),
+			TrueLine(1, "CONT", "And a second one:"),
+			TrueLine(1, "CONT", "Also a very long sent"),
+			TrueLine(1, "CONC", "ence that is split."),
+		])
+		self.assertEqual(note_line3.payload_with_cont, note_text3)
 
 
 if __name__ == '__main__':
