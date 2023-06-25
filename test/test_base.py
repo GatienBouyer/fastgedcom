@@ -33,8 +33,8 @@ class TestBase(unittest.TestCase):
 		self.assertEqual(note_line1.payload_with_cont, note_text1)
 		note_text2 = "This is a very long text that is split"
 		note_line2 = TrueLine(1, "NOTE", "This is a very", [
-			TrueLine(1, "CONC", "long text"),
-			TrueLine(1, "CONC", "that is split"),
+			TrueLine(1, "CONC", " long text th"),
+			TrueLine(1, "CONC", "at is split"),
 		])
 		self.assertEqual(note_line2.payload_with_cont, note_text2)
 

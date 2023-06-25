@@ -214,7 +214,7 @@ class TrueLine(Line):
 		for cont in self.get_sub_lines("CONT"):
 			text += '\n' + cont.payload
 		for conc in self.get_sub_lines("CONC"):
-			text += ' ' + conc.payload
+			text += conc.payload
 		return text
 
 
