@@ -60,6 +60,14 @@ class TestFamilyLink(unittest.TestCase):
 			self.linker.get_spouse_in_fam_ref("@I1@", self.document.records["@F2@"]),
 			"@I4@"
 		)
+		self.assertEqual(
+			self.linker.get_spouse_in_fam_ref("@I1@", self.document.records["@F10@"]),
+			None
+		)
+		self.assertEqual(
+			self.linker.get_spouse_in_fam_ref("@I6@", self.document.records["@F4@"]),
+			None
+		)
 
 	def test_get_children(self) -> None:
 		self.assertCountEqual(self.linker.get_children_ref("@I1@"), ["@I6@", "@I7@", "@I41@"])
