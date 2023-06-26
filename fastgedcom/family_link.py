@@ -190,16 +190,20 @@ class FamilyLink():
 		return [self.document.records[stepsibling]
 			for stepsibling in self.get_stepsiblings_ref(indi)]
 
-	def get_spouse_in_fam_ref(self, indi: IndiRef, fam: Record) -> IndiRef:
+	def get_spouse_in_fam_ref(self, indi: IndiRef, fam: Record) -> IndiRef | None:
 		"""Return the spouse's reference of the family that is not the person's."""
 		husban = fam >= "HUSB"
 		wife = fam >= "WIFE"
-		if wife == indi: return husban
-		return wife
+		if indi == wife and husban not in ("", "@VOID@"):
+			return husban
+		if indi == husban and wife not in ("", "@VOID@"):
+			return wife
+		return None
 
-	def get_spouse_in_fam(self, indi: IndiRef, fam: Record) -> Record:
+	def get_spouse_in_fam(self, indi: IndiRef, fam: Record) -> Record | FakeLine:
 		"""Return the spouse's record of the family that is not the person's."""
-		return self.document.records[self.get_spouse_in_fam_ref(indi, fam)]
+		spouse_ref = self.get_spouse_in_fam_ref(indi, fam)
+		return self.document.records[spouse_ref] if spouse_ref else fake_line
 
 	def traverse_ref(self, indi: IndiRef,
 			ascent: int = 0, descent: int = 0

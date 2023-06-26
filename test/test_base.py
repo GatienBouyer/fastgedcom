@@ -27,16 +27,26 @@ class TestBase(unittest.TestCase):
 	def test_payload_with_cont(self) -> None:
 		note_text1 = "This is a text\non several\nlines"
 		note_line1 = TrueLine(1, "NOTE", "This is a text", [
-			TrueLine(1, "CONT", "on several"),
-			TrueLine(1, "CONT", "lines"),
+			TrueLine(2, "CONT", "on several"),
+			TrueLine(2, "CONT", "lines"),
 		])
 		self.assertEqual(note_line1.payload_with_cont, note_text1)
 		note_text2 = "This is a very long text that is split"
 		note_line2 = TrueLine(1, "NOTE", "This is a very", [
-			TrueLine(1, "CONC", "long text"),
-			TrueLine(1, "CONC", "that is split"),
+			TrueLine(2, "CONC", " long text th"),
+			TrueLine(2, "CONC", "at is split"),
 		])
 		self.assertEqual(note_line2.payload_with_cont, note_text2)
+		note_text3 = "This text is on several lines:\nTo present a very long text that is split.\n\nAnd a second one:\nAlso a very long sentence that is split."
+		note_line3 = TrueLine(1, "NOTE", "This text is on several lines:", [
+			TrueLine(2, "CONT", "To present a very long"),
+			TrueLine(2, "CONC", " text that is split."),
+			TrueLine(2, "CONT", ""),
+			TrueLine(2, "CONT", "And a second one:"),
+			TrueLine(2, "CONT", "Also a very long sent"),
+			TrueLine(2, "CONC", "ence that is split."),
+		])
+		self.assertEqual(note_line3.payload_with_cont, note_text3)
 
 
 if __name__ == '__main__':

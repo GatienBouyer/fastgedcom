@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>FastGedcom demo</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<link rel="stylesheet" href="https://pyscript.net/releases/2023.03.1/pyscript.css" />
+	<script defer src="https://pyscript.net/releases/2023.03.1/pyscript.js"></script>
+	<script defer>
+		runPython = () => document.getElementById('runButton').dispatchEvent(new Event('click'));
+		clearOutputs = () => {
+			if (document.getElementById('repl-output').firstChild) {
+				document.getElementById('repl-output').firstChild.classList = [];
+				document.getElementById('repl-output').firstChild.innerHTML = '';
+			}
+			document.getElementById('terminal').firstChild.innerHTML = '';
+		}
+		clearAndRun = () => {clearOutputs(); runPython()};
+	</script>
+</head>
+
+<body>
+	<py-config>
+		packages = ["fastgedcom"]
+	</py-config>
+	<div>
+		<label for="gedcom-file-input">Select a gedcom file:</label>
+		<input py-input="use_file()" type="file" name="gedcom-file-input" id="gedcom-file-input">
+		<button onClick="clearAndRun()">Run script</button>
+	</div>
+	<div style="display: grid; grid-template-columns: 3fr 2fr;">
+		<div>
+			<py-script>
+import asyncio
+from fastgedcom.parser import parse
+def use_file():
+	file_input = Element("gedcom-file-input").element
+	f = next(iter(file_input.files))
+	async def get_text():
+		global gedcom
+		text = await f.text()
+		gedcom, warnings = parse(text.splitlines())
+		if warnings == []:
+			print("Parsing successful")
+		else:
+			print("Error on parsing - fail to load the file")
+	asyncio.ensure_future(get_text())
+			</py-script>
+			<py-repl id="repl" output="repl-output">
+from fastgedcom.helpers import *
+from fastgedcom.base import *
+from fastgedcom.family_link import FamilyLink
+
+linker = FamilyLink(gedcom)
+
+def get_name(person: Record) -> str:
+	return format_name(person >= "NAME")
+
+print("Longest name:", max((get_name(indi) for indi in gedcom >> "INDI"), key=len))
+
+def nb_ancestral_gen(indi: Record | FakeLine) -> int:
+	if not indi: return 1
+	father, mother = linker.get_parents(indi.tag)
+	return 1+max(nb_ancestral_gen(father), nb_ancestral_gen(mother))
+
+person = next(gedcom >> "INDI")
+print(f"Number of ancestral generation of {get_name(person)}:", nb_ancestral_gen(person))
+
+print("Siblings:", ", " .join(
+	(p > "NAME") >= "GIVN" for p in linker.get_siblings(person.tag)
+))
+
+print("Cousins:", ", ".join(get_name(p) for p in linker.traverse(person.tag, 2, 2)))
+			</py-repl>
+		</div>
+		<div>
+			<span>Output:</span>
+			<div id="repl-output"></div>
+			<span>Terminal:</span>
+			<style>pre.py-terminal {white-space: normal}</style>
+			<py-terminal id="terminal"></py-terminal>
+		</div>
+	</div>
+</body>
+
+</html>
