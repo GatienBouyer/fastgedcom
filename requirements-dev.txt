@@ -1,4 +1,0 @@
-mypy
-twine
-sphinx-rtd-theme
-sphinx-autoapi
