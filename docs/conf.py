@@ -13,4 +13,4 @@ extensions = [
 	'autoapi.extension',
 ]
 
-autoapi_dirs = ['../../fastgedcom']
+autoapi_dirs = ['../fastgedcom']
