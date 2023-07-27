@@ -2,6 +2,7 @@
 
 A lightweight tool to parse, browse and edit gedcom files.
 
+Install FastGedcom using pip from [its PyPI page](https://pypi.org/project/fastgedcom/):
 ```bash
 pip install fastgedcom
 ```
@@ -22,7 +23,7 @@ The syntax is flexible and permissive. If you don't like magic operator overload
 
 It supports gedcom files encoded in UTF-8 (with and without BOM), UTF-16 (also named UNICODE), ANSI, and ANSEL.
 
-If a field is missing, you will get a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) containing an empty string. This reduces the boiler plate code. You can differentiate [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) and [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine) with a simple boolean check.
+If a field is missing, you will get a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) containing an empty string. This help reducing the boiler plate code massively. And, you can differentiate a [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine) from a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) with a simple boolean check.
 ```python
 
 indi = document["@I13@"]
@@ -40,9 +41,9 @@ Typehints for salvation! Autocompletion and type checking make development so mu
 
 ## Why FastGedcom ?
 
-FastGedcom's aim is to keep the code close to your gedcom files. So, you don't have to learn what FastGedcom does for you. The content of your gedcom file is what you get. The data processing is optional to best suit your needs.
+FastGedcom's aim is to keep the code close to your gedcom files. So, you don't have to learn what FastGedcom does, the data you have, is the data you get. The content of the gedcom file is unchanged. The data processing is optional to best suit your needs. FastGedcom is more of a starting point of your data processing than a all-round full-featured librairy.
 
-The name **FastGedcom** doesn't just come from its ease of use. Getting relatives can be done quickly. That's what the [FamilyLink](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/family_link/index.html#fastgedcom.family_link.FamilyLink) class is all about. [Here](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) are the benchmark I used.
+The name **FastGedcom** doesn't just come from its ease of use. Parsing is really fast. And, for getting the relatives of a person as fast as possible, there is the [FamilyLink](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/family_link/index.html#fastgedcom.family_link.FamilyLink) class. [Here](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks) are the benchmark I used.
 
 ## Documentation and examples
 
@@ -50,9 +51,9 @@ Want to see more code? [Here are some examples](https://github.com/GatienBouyer/
 
 The documentation of FastGedcom is available [here](https://fastgedcom.readthedocs.io/en/latest/) on ReadTheDocs.
 
-## Feedbacks
+## Feedback
 
-Feedbacks are welcome, and they will be greatly appreciated!
+Feedback are welcome, and they will be greatly appreciated!
 
 If you like this project, consider putting a star on [Github](https://github.com/GatienBouyer/fastgedcom), thank you!
 
