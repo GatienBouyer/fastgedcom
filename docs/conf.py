@@ -3,8 +3,8 @@
 project = 'FastGedcom'
 copyright = '2023, GatienBouyer'
 author = 'GatienBouyer'
-release = '0.0'
-version = '0.0.7'
+release = '1.0'
+version = '1.0.0'
 
 html_theme = 'sphinx_rtd_theme'
 
