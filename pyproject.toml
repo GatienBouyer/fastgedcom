@@ -1,6 +1,6 @@
 [project]
 name = "fastgedcom"
-version = "0.0.7"
+version = "1.0.0"
 description = "A lightweight tool to parse, browse and edit gedcom files."
 keywords = ["fastgedcom", "gedcom", "parser", "genealogy"]
 authors = [
@@ -19,7 +19,7 @@ classifiers = [
 	"Topic :: Sociology :: Genealogy",
 	"Intended Audience :: Developers",
 	"Operating System :: OS Independent",
-	"Development Status :: 3 - Alpha",
+	"Development Status :: 5 - Production/Stable",
 ]
 
 [project.urls]

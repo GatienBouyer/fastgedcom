@@ -76,7 +76,7 @@ class TestParser(unittest.TestCase):
 		stream = StringIO("0 HEAD\n1 GEDC\n2 VERS 5.5\n1 CHAR UTF-8\n0 @I1@ INDI\n1 NAME éàç /ÉÀÇ/\n2 SURN ÉÀÇ\n2 GIVN éàç\n1 SEX M")
 		self._test_parsing(stream, 9)
 	
-	def test_test_parsing(self) -> None:
+	def test_text_parsing(self) -> None:
 		text = """
 		0 HEAD
 		1 GEDC
