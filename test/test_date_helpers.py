@@ -108,12 +108,14 @@ class TestDateHelpers(unittest.TestCase):
         self.assertRaises(ValueError, to_datetime_range, 'BET 62 BC AND 64 BC')
         self.assertRaises(ValueError, to_datetime_range, "FROM 16 Feb 1546/1547")
 
-    @unittest.skipIf(version < "3.11", "The utc timezone mark 'Z' isn't supported")
     def test_add_time(self) -> None:
         self.assertEqual(
             add_time(datetime(1234, 12, 13), "14:15:16"),
             datetime(1234, 12, 13, 14, 15, 16)
         )
+
+    @unittest.skipIf(version < "3.11", "The utc timezone mark 'Z' isn't supported")
+    def test_add_time_UTC(self) -> None:
         self.assertEqual(
             add_time(datetime(1234, 12, 13), "14:15:16.123456Z"),
             datetime(1234, 12, 13, 14, 15, 16, 123456, timezone.utc)
