@@ -8,7 +8,7 @@ from typing import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-import ansel  # type: ignore[import]
+import ansel  # type: ignore[import-untyped]
 
 from .base import Document, TrueLine, XRef
 

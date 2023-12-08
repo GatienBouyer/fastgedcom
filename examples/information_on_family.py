@@ -1,6 +1,5 @@
-from fastgedcom.helpers import get_source
 from fastgedcom.helpers import (
-    extract_name_parts, extract_year, format_date, format_name
+    extract_name_parts, extract_year, format_date, format_name, get_source
 )
 from fastgedcom.parser import strict_parse
 

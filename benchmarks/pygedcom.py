@@ -1,7 +1,9 @@
 from time import perf_counter
 
-from pygedcom import GedcomParser
-from pygedcom.elements.rootElements.individual import GedcomIndividual
+from pygedcom import GedcomParser  # type: ignore
+from pygedcom.elements.rootElements.individual import (  # type: ignore
+    GedcomIndividual
+)
 
 from fastgedcom.helpers import extract_int_year, format_name
 

@@ -1,9 +1,10 @@
-from fastgedcom.helpers import extract_int_year
 from typing import cast
 from time import perf_counter
 
-from ged4py import GedcomReader
-from ged4py.model import Individual
+from ged4py import GedcomReader  # type: ignore
+from ged4py.model import Individual  # type: ignore
+
+from fastgedcom.helpers import extract_int_year
 
 gedcom_file = "../my_gedcom.ged"
 

@@ -1,7 +1,8 @@
-from fastgedcom.helpers import extract_int_year
 from time import perf_counter
 
-from gedcom import Individual, parse_fp
+from gedcom import Individual, parse_fp  # type: ignore
+
+from fastgedcom.helpers import extract_int_year
 
 gedcom_file = "../my_gedcom.ged"
 

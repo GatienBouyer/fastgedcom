@@ -1,7 +1,7 @@
-from fastgedcom.family_link import FamilyLink
 from datetime import datetime
 
 from fastgedcom.base import IndiRef, Record
+from fastgedcom.family_link import FamilyLink
 from fastgedcom.helpers import (
     extract_int_year, extract_name_parts, format_date, format_name,
     get_all_sub_lines, line_to_datetime

@@ -1,8 +1,9 @@
-from fastgedcom.parser import (
-    DuplicateXRefWarning, EmptyLineWarning, LineParsingWarning, ParsingError
-)
 from io import StringIO
-from fastgedcom.parser import guess_encoding, parse, strict_parse
+
+from fastgedcom.parser import (
+    DuplicateXRefWarning, EmptyLineWarning, LineParsingWarning, ParsingError,
+    guess_encoding, parse, strict_parse
+)
 
 file_pathname = "../my_gedcom.ged"
 

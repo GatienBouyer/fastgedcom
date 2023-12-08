@@ -10,7 +10,7 @@ pip install fastgedcom
 ## Why choosing FastGedcom?
 
 - FastGedcom has less methods, which make it easier to work with.
-- FastGedcom has a linear syntax, if blocks are less needed. 
+- FastGedcom has a linear syntax, if blocks are less needed.
 - FastGedcom is shorter to write with the use of operator overloading. (optional)
 - FastGedcom has a faster parsing.
 
@@ -57,7 +57,7 @@ if death_date[1]:
 ## Features
 
 ### The least abstraction from gedcom with free choice of formatting
-There is a lot of genealogy software out there, and every one of them have its own tags and formats to write information. With the FastGedcom approach, you can easily adapt your code to your gedcom files. 
+There is a lot of genealogy software out there, and every one of them have its own tags and formats to write information. With the FastGedcom approach, you can easily adapt your code to your gedcom files.
 
 ```python
 from fastgedcom.parser import strict_parse
