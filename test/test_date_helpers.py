@@ -3,10 +3,11 @@ from datetime import datetime, timezone
 from sys import version
 
 from fastgedcom.base import TrueLine
-from fastgedcom.helpers import (DateType, add_time, extract_int_year,
-                                extract_year, format_date, get_date_type,
-                                line_to_datetime, remove_trailing_zeros,
-                                to_datetime, to_datetime_range)
+from fastgedcom.helpers import (
+    DateType, add_time, extract_int_year, extract_year, format_date,
+    get_date_type, line_to_datetime, remove_trailing_zeros, to_datetime,
+    to_datetime_range
+)
 
 
 class TestDateHelpers(unittest.TestCase):

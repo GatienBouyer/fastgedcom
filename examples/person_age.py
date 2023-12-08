@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 
 from fastgedcom.base import Record
-from fastgedcom.helpers import (DateType, extract_int_year, get_date_type,
-                                to_datetime, to_datetime_range)
+from fastgedcom.helpers import (
+    DateType, extract_int_year, get_date_type, to_datetime, to_datetime_range
+)
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")

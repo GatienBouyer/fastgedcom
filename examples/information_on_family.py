@@ -1,5 +1,6 @@
-from fastgedcom.helpers import (extract_name_parts, extract_year, format_date,
-                                format_name)
+from fastgedcom.helpers import (
+    extract_name_parts, extract_year, format_date, format_name
+)
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")

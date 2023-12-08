@@ -30,6 +30,7 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
 	"mypy",
+	"isort",
 	"build",
 	"twine",
 	"sphinx-rtd-theme",
@@ -39,3 +40,7 @@ dev = [
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+multi_line_output = 5
+force_to_top = "typing"

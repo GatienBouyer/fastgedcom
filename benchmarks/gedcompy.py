@@ -1,6 +1,6 @@
 from time import perf_counter
 
-from gedcom import parse_fp, Individual
+from gedcom import Individual, parse_fp
 
 gedcom_file = "../my_gedcom.ged"
 

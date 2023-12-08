@@ -1,8 +1,9 @@
 from time import perf_counter
 
-from fastgedcom.helpers import extract_int_year, format_name
 from pygedcom import GedcomParser
 from pygedcom.elements.rootElements.individual import GedcomIndividual
+
+from fastgedcom.helpers import extract_int_year, format_name
 
 gedcom_file = "../my_gedcom.ged"
 

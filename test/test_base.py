@@ -1,8 +1,8 @@
 import unittest
-
-from fastgedcom.parser import strict_parse
-from fastgedcom.base import TrueLine
 from pathlib import Path
+
+from fastgedcom.base import TrueLine
+from fastgedcom.parser import strict_parse
 
 gedcom_file = Path(__file__).parent / "test_data" / "relatives.ged"
 

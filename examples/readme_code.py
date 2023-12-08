@@ -1,5 +1,5 @@
-from fastgedcom.parser import strict_parse
 from fastgedcom.helpers import format_date
+from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")
 

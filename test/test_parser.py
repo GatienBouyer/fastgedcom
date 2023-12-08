@@ -5,10 +5,11 @@ from pathlib import Path
 
 from fastgedcom.base import TrueLine
 from fastgedcom.helpers import get_all_sub_lines
-from fastgedcom.parser import (CharacterInsteadOfLineWarning,
-                               DuplicateXRefWarning, EmptyLineWarning,
-                               LevelInconsistencyWarning, LevelParsingWarning,
-                               LineParsingWarning, guess_encoding, parse)
+from fastgedcom.parser import (
+    CharacterInsteadOfLineWarning, DuplicateXRefWarning, EmptyLineWarning,
+    LevelInconsistencyWarning, LevelParsingWarning, LineParsingWarning,
+    guess_encoding, parse
+)
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
 file_utf8_bom = Path(__file__).parent / "test_data" / "in_utf8_bom.ged"

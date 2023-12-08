@@ -2,8 +2,9 @@
 
 from collections import defaultdict
 
-from .base import (Document, FakeLine, FamRef, IndiRef, Record, TrueLine,
-                   fake_line)
+from .base import (
+    Document, FakeLine, FamRef, IndiRef, Record, TrueLine, fake_line
+)
 
 
 class FamilyLink():

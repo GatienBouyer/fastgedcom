@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from fastgedcom.base import IndiRef, Record
-from fastgedcom.helpers import (extract_int_year, extract_name_parts,
-                                format_date, format_name, get_all_sub_lines,
-                                line_to_datetime)
+from fastgedcom.helpers import (
+    extract_int_year, extract_name_parts, format_date, format_name,
+    get_all_sub_lines, line_to_datetime
+)
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")

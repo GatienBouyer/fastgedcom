@@ -58,9 +58,9 @@ gedcom_with_empty_lines = """
 """
 document, warnings = parse(gedcom_with_empty_lines.splitlines())
 
-from fastgedcom.parser import (ParsingError,
-                               DuplicateXRefWarning, EmptyLineWarning,
-                               LineParsingWarning)
+from fastgedcom.parser import (
+    DuplicateXRefWarning, EmptyLineWarning, LineParsingWarning, ParsingError
+)
 
 for warning in warnings:
 	if isinstance(warning, EmptyLineWarning):

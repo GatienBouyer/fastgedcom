@@ -60,7 +60,7 @@ age_oldest = 0.0
 for element in gedcom.get_root_child_elements():
 	if not isinstance(element, IndividualElement): continue
 	birth_date, *_ = element.get_birth_data()
-	death_date, *_ = element.get_death_data()
+	death_date, *_ = element.get_death_data() # TODO use get_death_year
 	birth_year = extract_int_year(birth_date)
 	death_year = extract_int_year(death_date)
 	if birth_year is None or death_year is None: continue

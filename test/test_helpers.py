@@ -1,8 +1,9 @@
 import unittest
 
 from fastgedcom.base import TrueLine
-from fastgedcom.helpers import (extract_name_parts, format_name,
-                                get_all_sub_lines, get_source)
+from fastgedcom.helpers import (
+    extract_name_parts, format_name, get_all_sub_lines, get_source
+)
 from fastgedcom.parser import parse
 
 
