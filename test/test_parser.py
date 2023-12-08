@@ -2,6 +2,7 @@ import unittest
 from typing import Iterable
 from io import StringIO
 from pathlib import Path
+from sys import platform
 
 from fastgedcom.base import TrueLine
 from fastgedcom.helpers import get_all_sub_lines
@@ -43,6 +44,7 @@ class TestParser(unittest.TestCase):
         with open(file_unicode, "r", encoding="utf-16") as f:
             self._test_parsing(f, 27)
 
+    @unittest.skipUnless(platform.startswith("win"), "requires Windows")
     def test_parsing_ansi(self) -> None:
         with open(file_ansi, "r", encoding="ansi") as f:
             self._test_parsing(f, 27)
@@ -65,10 +67,11 @@ class TestParser(unittest.TestCase):
             file_utf8: "utf-8-sig",
             file_utf8_bom: "utf-8-sig",
             file_unicode: "utf-16",
-            file_ansi: "ansi",
             file_ansel: "gedcom",
             file_iso8859_1: "iso8859-1",
         }
+        if platform.startswith("win"):
+            pairs[file_ansi] = "ansi"
         for filename, encoding in pairs.items():
             guess = guess_encoding(filename)
             guess_lower = guess.lower() if guess else None
