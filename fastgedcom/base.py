@@ -37,185 +37,186 @@ or a non-existing one."""
 
 
 class Line(ABC):
-	"""Abstract base class for gedcom lines.
+    """Abstract base class for gedcom lines.
 
-	Implementations are :py:class:`.TrueLine` and :py:class:`.FakeLine`,
-	see these classes for more information.
-	"""
-	@abstractmethod
-	def __bool__(self) -> bool:
-		"""True if it is a :py:class:`.TrueLine`,
-		False if it is a :py:class:`.FakeLine`."""
+    Implementations are :py:class:`.TrueLine` and :py:class:`.FakeLine`,
+    see these classes for more information.
+    """
+    @abstractmethod
+    def __bool__(self) -> bool:
+        """True if it is a :py:class:`.TrueLine`,
+        False if it is a :py:class:`.FakeLine`."""
 
-	@property
-	@abstractmethod
-	def payload(self) -> str:
-		"""See the description of :py:class:`.TrueLine` class."""
+    @property
+    @abstractmethod
+    def payload(self) -> str:
+        """See the description of :py:class:`.TrueLine` class."""
 
-	@property
-	@abstractmethod
-	def payload_with_cont(self) -> str:
-		"""The content of this gedcom field, namely the payload combined
-		with all CONT and CONC sub-lines."""
+    @property
+    @abstractmethod
+    def payload_with_cont(self) -> str:
+        """The content of this gedcom field, namely the payload combined
+        with all CONT and CONC sub-lines."""
 
-	@abstractmethod
-	def get_sub_lines(self, tag: str) -> list['TrueLine']:
-		"""Return the all sub-lines having the given :any:`tag`.
-		An empty list if no line matches."""
+    @abstractmethod
+    def get_sub_lines(self, tag: str) -> list['TrueLine']:
+        """Return the all sub-lines having the given :any:`tag`.
+        An empty list if no line matches."""
 
-	def __rshift__(self, tag: str) -> list['TrueLine']:
-		"""Alias for :py:meth:`get_sub_lines` to shorten the syntax
-		by using the >> operator."""
-		return self.get_sub_lines(tag)
+    def __rshift__(self, tag: str) -> list['TrueLine']:
+        """Alias for :py:meth:`get_sub_lines` to shorten the syntax
+        by using the >> operator."""
+        return self.get_sub_lines(tag)
 
-	@abstractmethod
-	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
-		"""Return the first sub-line having the given :any:`tag`.
-		A :py:class:`.FakeLine` if no line matches."""
+    @abstractmethod
+    def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
+        """Return the first sub-line having the given :any:`tag`.
+        A :py:class:`.FakeLine` if no line matches."""
 
-	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
-		"""Alias for :py:meth:`get_sub_line` to shorten the syntax
-		by using the > operator."""
-		return self.get_sub_line(tag)
+    def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
+        """Alias for :py:meth:`get_sub_line` to shorten the syntax
+        by using the > operator."""
+        return self.get_sub_line(tag)
 
-	@abstractmethod
-	def get_sub_line_payload(self, tag: str) -> str:
-		"""Return the payload of the first sub-line having the given
-		:any:`tag`. An empty string if no line matches."""
+    @abstractmethod
+    def get_sub_line_payload(self, tag: str) -> str:
+        """Return the payload of the first sub-line having the given
+        :any:`tag`. An empty string if no line matches."""
 
-	def __ge__(self, tag: str) -> str:
-		"""Alias for :py:meth:`get_sub_line_payload` to shorten the syntax
-		by using the >= operator."""
-		return self.get_sub_line_payload(tag)
+    def __ge__(self, tag: str) -> str:
+        """Alias for :py:meth:`get_sub_line_payload` to shorten the syntax
+        by using the >= operator."""
+        return self.get_sub_line_payload(tag)
 
 
 class FakeLine(Line):
-	"""Dummy line for syntactic sugar.
+    """Dummy line for syntactic sugar.
 
-	It allows the chaining of method calls. See these `examples
-	<https://github.com/GatienBouyer/fastgedcom/tree/main/examples>`_
-	for the usage of chaining.
+    It allows the chaining of method calls. See these `examples
+    <https://github.com/GatienBouyer/fastgedcom/tree/main/examples>`_
+    for the usage of chaining.
 
-	The class behave like a :py:class:`.TrueLine`
-	(It has the same methods), but the payload is empty.
+    The class behave like a :py:class:`.TrueLine`
+    (It has the same methods), but the payload is empty.
 
-	To differentiate a :py:class:`.FakeLine` from a
-	:py:class:`.TrueLine` a simple boolean test is enough.
-	"""
+    To differentiate a :py:class:`.FakeLine` from a
+    :py:class:`.TrueLine` a simple boolean test is enough.
+    """
 
-	payload = "" # pyright: ignore[reportGeneralTypeIssues]
-	payload_with_cont = "" # pyright: ignore[reportGeneralTypeIssues]
-	sub_lines: list['TrueLine'] = []
+    payload = ""  # pyright: ignore[reportGeneralTypeIssues]
+    payload_with_cont = ""  # pyright: ignore[reportGeneralTypeIssues]
+    sub_lines: list['TrueLine'] = []
 
-	def __bool__(self) -> Literal[False]:
-		"""Return False."""
-		return False
+    def __bool__(self) -> Literal[False]:
+        """Return False."""
+        return False
 
-	def get_sub_lines(self, tag: str) -> list['TrueLine']:
-		return []
+    def get_sub_lines(self, tag: str) -> list['TrueLine']:
+        return []
 
-	def __rshift__(self, tag: str) -> list['TrueLine']:
-		return self.get_sub_lines(tag)
+    def __rshift__(self, tag: str) -> list['TrueLine']:
+        return self.get_sub_lines(tag)
 
-	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
-		return fake_line
+    def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
+        return fake_line
 
-	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
-		return self.get_sub_line(tag)
+    def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
+        return self.get_sub_line(tag)
 
-	def get_sub_line_payload(self, tag: str) -> str:
-		return ""
+    def get_sub_line_payload(self, tag: str) -> str:
+        return ""
 
-	def __ge__(self, tag: str) -> str:
-		return self.get_sub_line_payload(tag)
+    def __ge__(self, tag: str) -> str:
+        return self.get_sub_line_payload(tag)
 
-	def __repr__(self) -> str:
-		"""Return the string representation of the class."""
-		return f"<{self.__class__.__qualname__}>"
+    def __repr__(self) -> str:
+        """Return the string representation of the class."""
+        return f"<{self.__class__.__qualname__}>"
 
-	def __eq__(self, value: object) -> bool:
-		return isinstance(value, FakeLine)
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, FakeLine)
 
 
 @dataclass(slots=True)
 class TrueLine(Line):
-	"""Represent a line of a gedcom document.
+    """Represent a line of a gedcom document.
 
-	Contain the :py:attr:`sub-lines` of the gedcom structure.
+    Contain the :py:attr:`sub-lines` of the gedcom structure.
 
-	This class uses the simplified ``Level Tag Payload`` format, instead of
-	the normalized ``Level [Xref] Tag [LineVal]`` format. In the simplified
-	format, the :py:attr:`tag` is either the normalized Tag or the optional
-	Xref. Hence, the :py:attr:`payload` is the LineVal - when the Xref is not
-	present - or the normalized Tag plus the LineVal (generally an empty
-	string) - when the Xref is present. The Payload can be an empty string. As
-	for the :py:attr:`level`, it matches the definition of the gedcom standard.
-	"""
+    This class uses the simplified ``Level Tag Payload`` format, instead of
+    the normalized ``Level [Xref] Tag [LineVal]`` format. In the simplified
+    format, the :py:attr:`tag` is either the normalized Tag or the optional
+    Xref. Hence, the :py:attr:`payload` is the LineVal - when the Xref is not
+    present - or the normalized Tag plus the LineVal (generally an empty
+    string) - when the Xref is present. The Payload can be an empty string. As
+    for the :py:attr:`level`, it matches the definition of the gedcom standard.
+    """
 
-	level: int
-	"""The line level defined by the gedcom standard."""
+    level: int
+    """The line level defined by the gedcom standard."""
 
-	tag: str | XRef
-	"""The cross-reference identified if it is a :py:const:`Record`,
-	or the tag - as defined in the gedcom standard - defining the structure
-	type."""
+    tag: str | XRef
+    """The cross-reference identified if it is a :py:const:`Record`,
+    or the tag - as defined in the gedcom standard - defining the structure
+    type."""
 
-	payload: str
-	"""The payload of the structure, also called content or value.
-	Warning: Multi-line payloads are split into several lines according to the
-	gedcom standard. Use the :py:attr:`payload_with_cont` property to get the
-	complete multi-line payloads."""
+    payload: str
+    """The payload of the structure, also called content or value.
+    Warning: Multi-line payloads are split into several lines according to the
+    gedcom standard. Use the :py:attr:`payload_with_cont` property to get the
+    complete multi-line payloads."""
 
-	sub_lines: list['TrueLine'] = field(default_factory=list)
-	"""List of the sub-lines, i.e. the next-level lines that are part
-	of this structure."""
+    sub_lines: list['TrueLine'] = field(default_factory=list)
+    """List of the sub-lines, i.e. the next-level lines that are part
+    of this structure."""
 
-	def __bool__(self) -> Literal[True]:
-		"""Return True."""
-		return True
+    def __bool__(self) -> Literal[True]:
+        """Return True."""
+        return True
 
-	def get_sub_lines(self, tag: str) -> list['TrueLine']:
-		return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
+    def get_sub_lines(self, tag: str) -> list['TrueLine']:
+        return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
 
-	def __rshift__(self, tag: str) -> list['TrueLine']:
-		return self.get_sub_lines(tag)
+    def __rshift__(self, tag: str) -> list['TrueLine']:
+        return self.get_sub_lines(tag)
 
-	def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
-		for sub_line in self.sub_lines:
-			if sub_line.tag == tag:
-				return sub_line
-		return fake_line
+    def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
+        for sub_line in self.sub_lines:
+            if sub_line.tag == tag:
+                return sub_line
+        return fake_line
 
-	def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
-		return self.get_sub_line(tag)
+    def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
+        return self.get_sub_line(tag)
 
-	def get_sub_line_payload(self, tag: str) -> str:
-		for sub_line in self.sub_lines:
-			if sub_line.tag == tag:
-				return sub_line.payload
-		return ""
+    def get_sub_line_payload(self, tag: str) -> str:
+        for sub_line in self.sub_lines:
+            if sub_line.tag == tag:
+                return sub_line.payload
+        return ""
 
-	def __ge__(self, tag: str) -> str:
-		return self.get_sub_line_payload(tag)
+    def __ge__(self, tag: str) -> str:
+        return self.get_sub_line_payload(tag)
 
-	def __str__(self) -> str:
-		"""Return the gedcom representation of the line (sub-lines excluded)."""
-		if not self.payload: return f"{self.level} {self.tag}"
-		return f"{self.level} {self.tag} {self.payload}"
+    def __str__(self) -> str:
+        """Return the gedcom representation of the line (sub-lines excluded)."""
+        if not self.payload:
+            return f"{self.level} {self.tag}"
+        return f"{self.level} {self.tag} {self.payload}"
 
-	def __repr__(self) -> str:
-		"""Return the string representation of the class."""
-		return f"<{self.__class__.__qualname__} {self.level} {self.tag} {self.payload} -> {len(self.sub_lines)}>"
+    def __repr__(self) -> str:
+        """Return the string representation of the class."""
+        return f"<{self.__class__.__qualname__} {self.level} {self.tag} {self.payload} -> {len(self.sub_lines)}>"
 
-	@property
-	def payload_with_cont(self) -> str:
-		text = self.payload
-		for sub_line in self.sub_lines:
-			if sub_line.tag == "CONT":
-				text += '\n' + sub_line.payload
-			elif sub_line.tag == "CONC":
-				text += sub_line.payload
-		return text
+    @property
+    def payload_with_cont(self) -> str:
+        text = self.payload
+        for sub_line in self.sub_lines:
+            if sub_line.tag == "CONT":
+                text += '\n' + sub_line.payload
+            elif sub_line.tag == "CONC":
+                text += sub_line.payload
+        return text
 
 
 Record: TypeAlias = TrueLine
@@ -223,53 +224,53 @@ Record: TypeAlias = TrueLine
 
 
 class Document():
-	"""Store all the information of the gedcom document.
+    """Store all the information of the gedcom document.
 
-	All records (level 0 lines) are directly accessible via the
-	:py:attr:`records` dictionnary and the other lines level are
-	accessible via :py:attr:`.TrueLine.sub_lines`."""
+    All records (level 0 lines) are directly accessible via the
+    :py:attr:`records` dictionnary and the other lines level are
+    accessible via :py:attr:`.TrueLine.sub_lines`."""
 
-	records: dict[XRef, Record]
-	"""Dictionnary of records, accessible via :py:meth:`get_records` or
-	:py:meth:`__getitem__`. Access it directly to raise KeyError instead
-	of getting a :py:class:`.FakeLine`. Usefull when you a pretty sure of
-	the Record existing in the document."""
+    records: dict[XRef, Record]
+    """Dictionnary of records, accessible via :py:meth:`get_records` or
+    :py:meth:`__getitem__`. Access it directly to raise KeyError instead
+    of getting a :py:class:`.FakeLine`. Usefull when you a pretty sure of
+    the Record existing in the document."""
 
-	def __init__(self) -> None:
-		self.records = dict()
+    def __init__(self) -> None:
+        self.records = dict()
 
-	def __iter__(self) -> Iterator[Record]:
-		"""Iterate on the lines of level 0
-		(the records, the header, and the TRLR line)."""
-		return iter(self.records.values())
+    def __iter__(self) -> Iterator[Record]:
+        """Iterate on the lines of level 0
+        (the records, the header, and the TRLR line)."""
+        return iter(self.records.values())
 
-	def __contains__(self, identifier: XRef) -> bool:
-		"""Return True if the identifier refers to an existing record."""
-		return identifier in self.records
+    def __contains__(self, identifier: XRef) -> bool:
+        """Return True if the identifier refers to an existing record."""
+        return identifier in self.records
 
-	def get_records(self, record_type: str) -> Iterator[Record]:
-		"""Return an iterator over records of that ``record_type``
-		(i.e. the :py:attr:`~.TrueLine.payload` of level 0 lines)."""
-		for record in self.records.values():
-			if record.payload == record_type:
-				yield record
+    def get_records(self, record_type: str) -> Iterator[Record]:
+        """Return an iterator over records of that ``record_type``
+        (i.e. the :py:attr:`~.TrueLine.payload` of level 0 lines)."""
+        for record in self.records.values():
+            if record.payload == record_type:
+                yield record
 
-	__rshift__ = get_records
-	"""Alias for :py:meth:`get_records` to shorten the syntax
-	by using the >> operator."""
+    __rshift__ = get_records
+    """Alias for :py:meth:`get_records` to shorten the syntax
+    by using the >> operator."""
 
-	def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
-		"""Return the record under that ``identifier``."""
-		return self.records.get(identifier, fake_line)
+    def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
+        """Return the record under that ``identifier``."""
+        return self.records.get(identifier, fake_line)
 
-	__getitem__ = get_record
-	"""Alias for :py:meth:`get_record` to shorten the syntax
-	by using the [] operator."""
+    __getitem__ = get_record
+    """Alias for :py:meth:`get_record` to shorten the syntax
+    by using the [] operator."""
 
-	def __eq__(self, __value: object) -> bool:
-		if not isinstance(__value, Document):
-			return False
-		return self.records == __value.records
+    def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, Document):
+            return False
+        return self.records == __value.records
 
 
 fake_line = FakeLine()

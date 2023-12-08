@@ -31,6 +31,7 @@ classifiers = [
 dev = [
 	"mypy",
 	"isort",
+	"autopep8",
 	"build",
 	"twine",
 	"sphinx-rtd-theme",
@@ -44,3 +45,6 @@ build-backend = "setuptools.build_meta"
 [tool.isort]
 multi_line_output = 5
 force_to_top = "typing"
+
+[tool.autopep8]
+max_line_length = 120

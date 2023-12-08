@@ -53,10 +53,10 @@ nephews_and_nieces = linker.traverse(person_id, 1, 2)
 person_name = format_name(document[person_id] >= 'NAME')
 
 print(f"People with a kinship degree of 3 with {person_name},",
-	"i.e. nieces and nephews, aunts and uncles,"
-	"great-grandparents, and great-grandchildren:"
-)
+      "i.e. nieces and nephews, aunts and uncles,"
+      "great-grandparents, and great-grandchildren:"
+      )
 
 print(", ".join(
-	format_name(p >= "NAME") for p in linker.get_by_degree(person_id, 3)
+    format_name(p >= "NAME") for p in linker.get_by_degree(person_id, 3)
 ))
