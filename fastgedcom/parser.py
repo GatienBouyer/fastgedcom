@@ -126,42 +126,43 @@ def parse(lines: Iterable[str]) -> tuple[Document, list[ParsingWarning]]:
 def guess_encoding(file: str | Path) -> str | None:
     """Return the guessed encoding of the ``file``. None if unknown.
 
-    No proper detection of the encoding of a file is ever possible.
-
-    This function is based on the following guidelines:
+    This function is based on the following GEDCOM guidelines:
 
     A gedcom should precise its encoding in the header under the tag CHAR.
     However, indication of that field are often misleading. For example:
-    ANSEL refers to the gedcom version of the ansel charset.
-    The BOM mark is never mention and isn't automatically detected by Python.
-    UNICODE is not recognized by Python and should be manually set to UTF-16.
+    ANSEL refers to the gedcom version of the ansel charset. The use of a BOM
+    mark is recommended, but its presence is not stated in the CHAR field,
+    and is not automatically detected by Python. The value of UNICODE refers
+    to UTF-16, but Python doesn't have this alias out of the box.
     """
-    try:
-        with open(file, "r", encoding="utf-8-sig") as f:
-            if "�" in f.read():
-                raise UnicodeError
-    except UnicodeError:
-        pass
-    else:
+    # check BOM mark to deduce UTF family encodings
+    # see http://unicode.org/faq/utf_bom.html#bom4
+    with open(file, "rb") as f:
+        first_bytes = f.read(4)
+    if first_bytes[:3] == b"\xef\xbb\xbf":
+        # UTF-8
+        # The presence of the BOM mark must be specified.
+        # With "utf-8-sig, Python removes the BOM mark when reading the file.
         return "utf-8-sig"
-    try:
-        with open(file, "r", encoding=None) as f:
-            for line in f:
-                if line.startswith("1 CHAR "):
-                    if "ansel" in line.lower():
-                        return "gedcom"
-                    return line[7:-1]  # tested with "ansi"
-    except UnicodeError:
-        pass
-    try:
-        with open(file, "r", encoding="utf-16") as f:
-            if "�" in f.read():
-                raise UnicodeError
-    except UnicodeError:
-        pass
-    else:
-        return "utf-16"
+    if first_bytes[:2] == b"\xff\xfe":
+        # UTF-16, little-endian
+        # With "utf_16", Python removes the BOM mark when reading the file.
+        return "utf_16"
+    if first_bytes[:2] == b"\xfe\xff":
+        # UTF-16, big-endian
+        # With "utf_16", Python removes the BOM mark when reading the file.
+        return "utf_16"
+    if first_bytes == b"\xff\xfe\x00\x00":
+        # UTF-32, little-endian
+        # With "utf_32", Python removes the BOM mark when reading the file.
+        return "utf_32"
+    if first_bytes == b"\x00\x00\xfe\xff":
+        # UTF-32, big-endian
+        # With "utf_32", Python removes the BOM mark when reading the file.
+        return "utf_32"
+    # Try non-utf encodings and loog at the 0 HEAD > 1 CHAR gedcom field
     encodings = (
+        "utf-8",
         "ansel",
         "iso8859-1",
     )
@@ -170,10 +171,10 @@ def guess_encoding(file: str | Path) -> str | None:
             with open(file, "r", encoding=encoding) as f:
                 for line in f:
                     if line.startswith("1 CHAR "):
-                        guess = line[7:-1]
-                        if guess.lower() == "ansel":
+                        stated_encoding = line[7:-1].lower()
+                        if stated_encoding == "ansel":
                             return "gedcom"
-                        return guess
+                        return stated_encoding
         except UnicodeError:
             pass
     return None
