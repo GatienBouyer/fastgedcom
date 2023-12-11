@@ -1,5 +1,5 @@
-from fastgedcom.parser import strict_parse
 from fastgedcom.helpers import format_date
+from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")
 
@@ -10,6 +10,6 @@ print(format_date(birth_date))
 indi = document["@I13@"]
 death = indi > "DEAT"
 if not death:
-	print("No DEAT field. The person is alive")
+    print("No DEAT field. The person is alive")
 # Can continue anyway
 print("Death date:", format_date(death >= "DATE"))

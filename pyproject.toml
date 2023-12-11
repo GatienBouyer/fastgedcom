@@ -8,7 +8,7 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT License"}
-requires-python = ">=3.10" 
+requires-python = ">=3.10"
 dependencies = [
 	"ansel>=1.0.0",
 ]
@@ -30,6 +30,8 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
 	"mypy",
+	"isort",
+	"autopep8",
 	"build",
 	"twine",
 	"sphinx-rtd-theme",
@@ -39,3 +41,10 @@ dev = [
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+multi_line_output = 5
+force_to_top = "typing"
+
+[tool.autopep8]
+max_line_length = 120

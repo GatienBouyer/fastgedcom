@@ -20,10 +20,13 @@ print(f"Time to parse: {end_time - start_time}")
 
 start_time = perf_counter()
 
+
 def nb_gen(indi: Record | FakeLine) -> int:
-	if not indi: return 1
-	father, mother = families.get_parents(indi.tag)
-	return 1+max(nb_gen(father), nb_gen(mother))
+    if not indi:
+        return 1
+    father, mother = families.get_parents(indi.tag)
+    return 1+max(nb_gen(father), nb_gen(mother))
+
 
 number_generations_above_root = nb_gen(gedcom["@I1@"])
 
@@ -36,9 +39,11 @@ print(f"Time to traverse parents: {end_time - start_time}")
 
 start_time = perf_counter()
 
+
 def nb_descendants_rec(parent: IndiRef) -> int:
-	children = families.get_children_ref(parent)
-	return len(children) + sum(nb_descendants_rec(child) for child in children)
+    children = families.get_children_ref(parent)
+    return len(children) + sum(nb_descendants_rec(child) for child in children)
+
 
 nb_descendants = nb_descendants_rec("@I1692@")
 
@@ -55,13 +60,14 @@ start_time = perf_counter()
 oldest = next(gedcom.get_records("INDI"))
 age_oldest = 0.0
 for individual in gedcom.get_records("INDI"):
-	birth_year = extract_int_year((individual > "BIRT") >= "DATE")
-	death_year = extract_int_year((individual > "DEAT") >= "DATE")
-	if birth_year is None or death_year is None: continue
-	age = death_year - birth_year
-	if age > age_oldest:
-		oldest = individual
-		age_oldest = age
+    birth_year = extract_int_year((individual > "BIRT") >= "DATE")
+    death_year = extract_int_year((individual > "DEAT") >= "DATE")
+    if birth_year is None or death_year is None:
+        continue
+    age = death_year - birth_year
+    if age > age_oldest:
+        oldest = individual
+        age_oldest = age
 
 end_time = perf_counter()
 
