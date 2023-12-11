@@ -18,6 +18,17 @@ file_ansi = Path(__file__).parent / "test_data" / "in_ansi.ged"
 file_ansel = Path(__file__).parent / "test_data" / "in_ansel.ged"
 file_unicode = Path(__file__).parent / "test_data" / "in_unicode.ged"
 file_iso8859_1 = Path(__file__).parent / "test_data" / "in_iso8859-1.ged"
+text_in_file = """
+0 HEAD
+1 GEDC
+2 VERS 5.5
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME éàç /ÉÀÇ/
+2 SURN ÉÀÇ
+2 GIVN éàç
+1 SEX M
+"""
 
 
 class TestParser(unittest.TestCase):
@@ -69,9 +80,8 @@ class TestParser(unittest.TestCase):
             file_unicode: "utf-16",
             file_ansel: "gedcom",
             file_iso8859_1: "iso8859-1",
+            file_ansi: "ansi",
         }
-        if platform.startswith("win"):
-            pairs[file_ansi] = "ansi"
         for filename, encoding in pairs.items():
             guess = guess_encoding(filename)
             guess_lower = guess.lower() if guess else None
@@ -83,18 +93,7 @@ class TestParser(unittest.TestCase):
         self._test_parsing(stream, 9)
 
     def test_text_parsing(self) -> None:
-        text = """
-		0 HEAD
-		1 GEDC
-		2 VERS 5.5
-		1 CHAR UTF-8
-		0 @I1@ INDI
-		1 NAME éàç /ÉÀÇ/
-		2 SURN ÉÀÇ
-		2 GIVN éàç
-		1 SEX M
-		"""
-        self._test_parsing(text.strip().splitlines(), 9)
+        self._test_parsing(text_in_file.strip().splitlines(), 9)
 
     def test_warnings(self) -> None:
         d, ws = parse("O HEAD\n0 TRLR")

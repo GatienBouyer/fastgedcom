@@ -161,6 +161,21 @@ def guess_encoding(file: str | Path) -> str | None:
         pass
     else:
         return "utf-16"
+    encodings = (
+        "ansel",
+        "iso8859-1",
+    )
+    for encoding in encodings:
+        try:
+            with open(file, "r", encoding=encoding) as f:
+                for line in f:
+                    if line.startswith("1 CHAR "):
+                        guess = line[7:-1]
+                        if guess.lower() == "ansel":
+                            return "gedcom"
+                        return guess
+        except UnicodeError:
+            pass
     return None
 
 
