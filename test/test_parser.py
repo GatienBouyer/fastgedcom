@@ -75,9 +75,9 @@ class TestParser(unittest.TestCase):
 
     def test_guess_parsing(self) -> None:
         pairs = {
-            file_utf8: "utf-8-sig",
+            file_utf8: "utf-8",
             file_utf8_bom: "utf-8-sig",
-            file_unicode: "utf-16",
+            file_unicode: "utf_16",
             file_ansel: "gedcom",
             file_iso8859_1: "iso8859-1",
             file_ansi: "ansi",
