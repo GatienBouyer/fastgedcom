@@ -126,14 +126,14 @@ def parse(lines: Iterable[str]) -> tuple[Document, list[ParsingWarning]]:
 def guess_encoding(file: str | Path) -> str | None:
     """Return the guessed encoding of the ``file``. None if unknown.
 
-    This function is based on the following GEDCOM guidelines:
-
     A gedcom should precise its encoding in the header under the tag CHAR.
-    However, indication of that field are often misleading. For example:
-    ANSEL refers to the gedcom version of the ansel charset. The use of a BOM
-    mark is recommended, but its presence is not stated in the CHAR field,
-    and is not automatically detected by Python. The value of UNICODE refers
-    to UTF-16, but Python doesn't have this alias out of the box.
+
+    However, indication of that field are often misleading or incomplete.
+    For example:
+    - ANSEL refers to the gedcom version of the ansel charset.
+    - The use of a BOM mark is recommended, but not stated,
+    and not automatically handled by Python.
+    - UNICODE refers to UTF-16.
     """
     # check BOM mark to deduce UTF family encodings
     # see http://unicode.org/faq/utf_bom.html#bom4
@@ -184,7 +184,7 @@ def strict_parse(file: str | Path) -> Document:
     """Open and parse the gedcom file.
     Return the :py:class:`.Document` representing the gedcom file.
 
-    Raise :py:exc:`.ParsingError` when a error occurs in the parsing process.
+    Raise :py:exc:`.ParsingError` when an error occurs in the parsing process.
     Raise :py:exc:`.NothingParsed` when the input is empty or isn't gedcom.
     """
     with open(file, "r", encoding=guess_encoding(file)) as f:
@@ -193,5 +193,4 @@ def strict_parse(file: str | Path) -> Document:
         raise ParsingError(warnings)
     if len(document.records) == 0:
         raise NothingParsed()
-
     return document
