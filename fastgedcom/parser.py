@@ -8,11 +8,15 @@ from typing import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-import ansel  # type: ignore[import-untyped]
+try:
+    import ansel  # type: ignore[import-untyped]
+except ImportError as e:
+    IS_ANSEL_INSTALLED = False
+else:
+    IS_ANSEL_INSTALLED = True
+    ansel.register()
 
 from .base import Document, TrueLine, XRef
-
-ansel.register()
 
 
 class ParsingError(Exception):
@@ -163,10 +167,12 @@ def guess_encoding(file: str | Path) -> str | None:
     # Try non-utf encodings and loog at the 0 HEAD > 1 CHAR gedcom field
     encodings = (
         "utf-8",
-        "ansel",
+        "ansel" if IS_ANSEL_INSTALLED else None,
         "iso8859-1",
     )
     for encoding in encodings:
+        if encoding is None:
+            continue
         try:
             with open(file, "r", encoding=encoding) as f:
                 for line in f:

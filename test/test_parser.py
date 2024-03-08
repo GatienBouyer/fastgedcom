@@ -7,9 +7,9 @@ from sys import platform
 from fastgedcom.base import TrueLine
 from fastgedcom.helpers import get_all_sub_lines
 from fastgedcom.parser import (
-    CharacterInsteadOfLineWarning, DuplicateXRefWarning, EmptyLineWarning,
-    LevelInconsistencyWarning, LevelParsingWarning, LineParsingWarning,
-    guess_encoding, parse
+    IS_ANSEL_INSTALLED, CharacterInsteadOfLineWarning, DuplicateXRefWarning,
+    EmptyLineWarning, LevelInconsistencyWarning, LevelParsingWarning,
+    LineParsingWarning, guess_encoding, parse
 )
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
@@ -55,11 +55,12 @@ class TestParser(unittest.TestCase):
         with open(file_unicode, "r", encoding="utf-16") as f:
             self._test_parsing(f, 27)
 
-    @unittest.skipUnless(platform.startswith("win"), "requires Windows")
+    @unittest.skipUnless(platform.startswith("win"), "The ansi encoding is only available on Windows")
     def test_parsing_ansi(self) -> None:
         with open(file_ansi, "r", encoding="ansi") as f:
             self._test_parsing(f, 27)
 
+    @unittest.skipUnless(IS_ANSEL_INSTALLED, "The ansel package isn't installed")
     def test_parsing_ansel(self) -> None:
         with open(file_ansel, "r", encoding="gedcom") as f:
             g, w = parse(f)
