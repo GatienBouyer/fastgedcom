@@ -101,7 +101,7 @@ Autocompletion and type checking make development so much easier.
 
 FastGedcom's aim is to keep the code close to your gedcom files. So, you don't have to learn what FastGedcom does. The data you have is the data you get. The content of the gedcom file is unchanged and there is no abstraction. Hence, the learning curve of the library is faster than the alternatives. The data processing is optional to best suit your needs. FastGedcom is more of a starting point for your data processing than a feature-rich library.
 
-The name **FastGedcom** doesn't just come from its ease of use. Parsing is the fastest among Python libraries. Especially for parsing and getting the relatives of a person, the [FamilyLink](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/family_link/index.html#fastgedcom.family_link.FamilyLink) class is build for this purpose. Here are the [benchmarks](https://github.com/GatienBouyer/fastgedcom/tree/main/benchmarks).
+The name **FastGedcom** doesn't just come from its ease of use. Parsing is the fastest among Python libraries. Especially for parsing and getting the relatives of a person, the [FamilyLink](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/family_link/index.html#fastgedcom.family_link.FamilyLink) class is build for this purpose. Here are the [benchmarks](https://github.com/GatienBouyer/benchmark-python-gedcom).
 
 ## Documentation and examples
 
