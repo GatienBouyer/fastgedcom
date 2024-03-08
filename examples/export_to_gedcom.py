@@ -15,16 +15,17 @@ minimal_gedcom, _ = parse(minimal_gedcom_text.splitlines())
 
 
 def save(document: Document) -> str:
-	text = ""
-	for record in document:
-		record_gedcom = get_source(record)
-		text += record_gedcom
-	return text
+    text = ""
+    for record in document:
+        record_gedcom = get_source(record)
+        text += record_gedcom
+    return text
+
 
 gedcom_to_save = save(minimal_gedcom)
 
-assert(gedcom_to_save == minimal_gedcom_text)
+assert (gedcom_to_save == minimal_gedcom_text)
 
 # Gedcom standards recommends the UTF-8 with BOM encoding for new gedcom.
 with open(file_pathname, "w", encoding="utf-8-sig") as f:
-	f.write(gedcom_to_save)
+    f.write(gedcom_to_save)

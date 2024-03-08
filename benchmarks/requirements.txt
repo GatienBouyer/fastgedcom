@@ -1,5 +1,0 @@
-# fastgedcom -> use source files directly
-ged4py
-# python-gedcom -> package name gedcom conflicting
-# gedcompy -> package name gedcom conflicting
-pygedcom

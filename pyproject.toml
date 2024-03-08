@@ -1,6 +1,6 @@
 [project]
 name = "fastgedcom"
-version = "1.0.0"
+version = "1.1.0"
 description = "A lightweight tool to parse, browse and edit gedcom files."
 keywords = ["fastgedcom", "gedcom", "parser", "genealogy"]
 authors = [
@@ -8,14 +8,14 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT License"}
-requires-python = ">=3.10" 
+requires-python = ">=3.10"
 dependencies = [
-	"ansel>=1.0.0",
 ]
 classifiers = [
 	"License :: OSI Approved :: MIT License",
 	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
 	"Topic :: Sociology :: Genealogy",
 	"Intended Audience :: Developers",
 	"Operating System :: OS Independent",
@@ -30,12 +30,24 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
 	"mypy",
+	"isort",
+	"autopep8",
 	"build",
 	"twine",
 	"sphinx-rtd-theme",
 	"sphinx-autoapi",
 ]
+ansel = [
+	"ansel>=1.0.0",
+]
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+multi_line_output = 5
+force_to_top = "typing"
+
+[tool.autopep8]
+max_line_length = 120

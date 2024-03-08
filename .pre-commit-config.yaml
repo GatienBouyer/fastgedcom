@@ -1,0 +1,35 @@
+# Configuration file for the pre-commit tool
+# It is used to run tests on CI and on your machine
+#
+# installation: pip install pre-commit
+#
+# setup: pre-commit install
+#
+# Now tests will be run automatically at each commit
+# Or you can run the tests with: pre-commit run -a
+#
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-toml
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: "v2.0.4"
+    hooks:
+      - id: autopep8
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.7.0"
+    hooks:
+      - id: mypy
+        args: ["--strict"]
+        additional_dependencies: ["ansel"]
