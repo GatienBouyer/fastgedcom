@@ -6,6 +6,10 @@ Install FastGedcom using pip from [its PyPI page](https://pypi.org/project/fastg
 ```bash
 pip install fastgedcom
 ```
+To install the Ansel codecs use the following command. It enables the use of the Ansel text encoding often used for gedcom files.
+```bash
+pip install fastgedcom[ansel]
+```
 
 ## Why choosing FastGedcom?
 
