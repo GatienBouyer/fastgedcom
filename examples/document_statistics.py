@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 from fastgedcom.base import Document, TrueLine
-from fastgedcom.helpers import get_all_sub_lines
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")
@@ -27,7 +26,7 @@ print("Number of families:", nb_records_per_type["FAM"])
 if nb_records_per_type["INDI"] != 0:
     total_nb_lines_indi = 0
     for indi in document >> "INDI":
-        total_nb_lines_indi += sum(1 for _ in get_all_sub_lines(indi))
+        total_nb_lines_indi += sum(1 for _ in indi.get_all_sub_lines())
     print("Average number of lines per INDI record:",
           total_nb_lines_indi / nb_records_per_type["INDI"])
 

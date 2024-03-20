@@ -5,7 +5,6 @@ from pathlib import Path
 from sys import platform
 
 from fastgedcom.base import TrueLine
-from fastgedcom.helpers import get_all_sub_lines
 from fastgedcom.parser import (
     IS_ANSEL_INSTALLED, CharacterInsteadOfLineWarning, DuplicateXRefWarning,
     EmptyLineWarning, LevelInconsistencyWarning, LevelParsingWarning,
@@ -40,7 +39,7 @@ class TestParser(unittest.TestCase):
         assert indi
         name = indi.get_sub_line_payload("NAME")
         self.assertEqual(name, "éàç /ÉÀÇ/")
-        nb_lines = len(g.records) + sum(1 for r in g for _ in get_all_sub_lines(r))
+        nb_lines = len(g.records) + sum(1 for r in g for _ in r.get_all_sub_lines())
         self.assertEqual(nb_lines, expected_number_of_lines)
 
     def test_parsing_utf8(self) -> None:
@@ -71,7 +70,7 @@ class TestParser(unittest.TestCase):
             name = indi.get_sub_line_payload("NAME")
             ansel_name = b'\xe2e\xe1a\xf0c /\xe2E\xe1A\xf0C/'.decode("gedcom")
             self.assertEqual(name, ansel_name)
-            nb_lines = len(g.records) + sum(1 for r in g for _ in get_all_sub_lines(r))
+            nb_lines = len(g.records) + sum(1 for r in g for _ in r.get_all_sub_lines())
             self.assertEqual(nb_lines, 27)
 
     def test_guess_parsing(self) -> None:

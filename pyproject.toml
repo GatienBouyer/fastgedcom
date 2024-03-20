@@ -1,6 +1,6 @@
 [project]
 name = "fastgedcom"
-version = "1.1.0"
+version = "1.1.1"
 description = "A lightweight tool to parse, browse and edit gedcom files."
 keywords = ["fastgedcom", "gedcom", "parser", "genealogy"]
 authors = [
@@ -51,3 +51,6 @@ force_to_top = "typing"
 
 [tool.autopep8]
 max_line_length = 120
+
+[tool.mypy]
+strict = true

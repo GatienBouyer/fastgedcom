@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 from fastgedcom.base import TrueLine
 from fastgedcom.helpers import (
@@ -22,19 +23,23 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(extract_name_parts("Gatien ... /BOUYER / ***"), ("Gatien ... ***", "BOUYER"))
 
     def test_sub_rec_recursive(self) -> None:
-        surn = TrueLine(2, "SURN", "BOUYER", [])
-        givn = TrueLine(2, "GIVN", "Gatien", [])
-        name = TrueLine(1, "NAME", "Gatien /BOUYER/", [surn, givn])
-        sex = TrueLine(1, "SEX", "M", [])
-        indi = TrueLine(0, "@I1@", "INDI", [name, sex])
-        all_recs = list(get_all_sub_lines(indi))
-        self.assertListEqual(all_recs, [name, surn, givn, sex])
+        with warnings.catch_warnings(record=True) as w:
+            surn = TrueLine(2, "SURN", "BOUYER", [])
+            givn = TrueLine(2, "GIVN", "Gatien", [])
+            name = TrueLine(1, "NAME", "Gatien /BOUYER/", [surn, givn])
+            sex = TrueLine(1, "SEX", "M", [])
+            indi = TrueLine(0, "@I1@", "INDI", [name, sex])
+            all_recs = list(get_all_sub_lines(indi))
+            self.assertListEqual(all_recs, [name, surn, givn, sex])
+            self.assertTrue(issubclass(w[0].category, DeprecationWarning))
 
     def test_get_source(self) -> None:
-        header = "0 HEAD\n1 GEDC\n2 VERS 5.5\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n"
-        doc, _ = parse(header.splitlines())
-        self.assertEqual(get_source(doc["HEAD"]), header)
-        self.assertEqual(get_source(doc["@@"]), "")
+        with warnings.catch_warnings(record=True) as w:
+            header = "0 HEAD\n1 GEDC\n2 VERS 5.5\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n"
+            doc, _ = parse(header.splitlines())
+            self.assertEqual(get_source(doc["HEAD"]), header)
+            self.assertEqual(get_source(doc["@@"]), "")
+            self.assertTrue(issubclass(w[0].category, DeprecationWarning))
 
 
 if __name__ == '__main__':

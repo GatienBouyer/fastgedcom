@@ -13,19 +13,21 @@ pip install fastgedcom[ansel]
 
 ## Why choosing FastGedcom?
 
-- FastGedcom has less methods, which make it easier to work with.
-- FastGedcom has a linear syntax, if blocks are less needed.
+- FastGedcom is fast.
+- FastGedcom has type annotations.
+- FastGedcom has less methods than the alternatives, which make it easier to work with.
+- FastGedcom has a linear syntax, if/else and try/except blocks are less needed.
 - FastGedcom is shorter to write with the use of operator overloading. (optional)
-- FastGedcom has a faster parsing.
 
+Comparison:
 <table>
 	<tr>
 		<th>Gedcom file</th>
 		<th>FastGedcom</th>
-		<th>Other Libraries</th>
+		<th>python-gedcom</th>
 	</tr>
 	<tr>
-		<td><pre><code>
+		<td><pre lang="gedcom"><code>
 0 HEAD
 0 @I1@ INDI
 1 NAME John Doe
@@ -34,34 +36,37 @@ pip install fastgedcom[ansel]
 1 DEAT
 2 DATE 2 Feb 2081
 0 TRLR
-		</code></pre</td>
-		<td><pre><code>
-# Faster parsing
+		</code></pre></td>
+		<td><pre lang="python3"><code>
 document = strict_parse("my-file.ged")
 person = document["@I1@"]
-# No if chain!
-death = person.get_sub_line("DEAT")
-date = death.get_sub_line("DATE")
-print(date.payload)
-# Prints None if the field is missing
+# use ">" to get a sub-line
+death = person > "DEAT"
+# use ">=" to get a sub-line value
+date = death >= "DATE"
+print(date)
+# Prints "" if the field is missing
 		</code></pre></td>
-		<td><pre><code>
-# With the python-gedcom library
-document = Parser("my-file.ged")
-person = document.get_element_dictionary()["@I1@"]
+		<td><pre lang="python3"><code>
+document = Parser()
+document.parse_file("my-file.ged")
+records = document.get_element_dictionary()
+person = records["@I1@"]
 death_data = person.get_death_data()
-if death_date[1]:
-	date = death_date[1]
-	if date:
-		print(date)
+# data is (date, place, sources)
+date = death_data[0]
+print(date)
 		</code></pre></td>
 	</tr>
 </table>
 
 ## Features
 
-### The least abstraction from gedcom with free choice of formatting
-There is a lot of genealogy software out there, and every one of them have its own tags and formats to write information. With the FastGedcom approach, you can easily adapt your code to your gedcom files.
+### Multi-encoding support
+It supports a broad set of encoding for gedcom files such as UTF-8 (with and without BOM), UTF-16 (also named UNICODE), ANSI, and ANSEL.
+
+### Kept closed from gedcom with free choice of formatting
+There is a lot of genealogy software out there, and every one of them have its own tags and formats to write information. With the FastGedcom approach, you can easily adapt your code to your gedcom files. You have to choose how do you want to parse and format the values. You can use non-standard field, for example the "_AKA" field (standing for Also Known As).
 
 ```python
 from fastgedcom.parser import strict_parse
@@ -69,26 +74,43 @@ from fastgedcom.helpers import extract_name_parts
 
 document = strict_parse("gedcom_file.ged")
 
-name = document["@I1@"] >= "NAME"
-print(name) # Unformatted
+person = document["@I1@"]
+name = person >= "NAME"
+print(name)  # Unformatted string such as "John /Doe/"
+
 given_name, surname = extract_name_parts(name)
-print(f"{given_name.capitalize()} {surname.upper()}")
+print(f"{given_name.capitalize()} {surname.upper()}")  # Would be "John DOE"
+
+alias = person > "NAME" >= "_AKA"
+print(f"a.k.a: {alias}")  # Could be "Johnny" or ""
 ```
 
-### Multi-encoding support
-It supports gedcom files encoded in UTF-8 (with and without BOM), UTF-16 (also named UNICODE), ANSI, and ANSEL.
-
-### This Option paradigm replaces the if blocks:
+### The Option paradigm replaces the if blocks:
 If a field is missing, you will get a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) containing an empty string. This helps reduce the boilerplate code massively. And, you can differentiate a [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine) from a [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine) with a simple boolean check.
-```python
 
+```python
 indi = document["@I13@"]
 
 # You can access the date of death, whether the person is deceased or not.
 date = (indi > "DEAT") >= "DATE"
 
-# You choose the formatting of the date
-print("Death date:", format_date(date))
+# The date of death or an empty string
+print("Death date:", date)
+```
+
+Another example:
+
+```python
+for indi in document:
+    line = indi > "_UID"
+    if line:  # Check if field _UID exists to avoid ValueError in list.remove()
+        indi.sub_lines.remove(line)
+
+# Get the Document as a gedcom string to write it into a file
+gedcom_without_uids = document.get_source()
+
+with open("./gedcom_without_uids.ged", "w", encoding="utf-8-sig") as f:
+    f.write(gedcom_without_uids)
 ```
 
 ### Typehints for salvation!
@@ -96,6 +118,26 @@ Autocompletion and type checking make development so much easier.
 
 - There are only 3 main classes: [Document](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.Document), [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine), and [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine).
 - There are type aliases for code clarity: [Record](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.Record), [XRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.XRef), [IndiRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.IndiRef), [FamRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FamRef), and more.
+
+```python
+from fastgedcom.base import Record, FakeLine
+from fastgedcom.family_link import FamilyLink
+
+# For fast and easy family lookups
+families = FamilyLink(document)
+
+
+def nb_anc_gen(indi: Record | FakeLine) -> int:
+    """Return the count of ancestral generation of the given person."""
+    if not indi:
+        return 1
+    father, mother = families.get_parents(indi.tag)
+    return 1+max(nb_anc_gen(father), nb_anc_gen(mother))
+
+
+root = document["@I1@"]
+number_generations_above_root = nb_anc_gen(root)
+```
 
 ## Why it is called FastGedcom?
 
