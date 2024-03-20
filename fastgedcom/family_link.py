@@ -76,7 +76,7 @@ class FamilyLink():
 
     def get_unions(self, spouse: IndiRef) -> list[Record]:
         """Return the unions of the person."""
-        return [fam for fam in self.unions.get(spouse, [])]
+        return self.unions.get(spouse, [])
 
     def get_unions_with(self,
                         spouse1: IndiRef,
