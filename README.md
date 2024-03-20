@@ -19,6 +19,7 @@ pip install fastgedcom[ansel]
 - FastGedcom has a linear syntax, if/else and try/except blocks are less needed.
 - FastGedcom is shorter to write with the use of operator overloading. (optional)
 
+Comparison:
 <table>
 	<tr>
 		<th>Gedcom file</th>
@@ -26,7 +27,7 @@ pip install fastgedcom[ansel]
 		<th>python-gedcom</th>
 	</tr>
 	<tr>
-		<td><pre><code>
+		<td><pre lang="gedcom"><code>
 0 HEAD
 0 @I1@ INDI
 1 NAME John Doe
@@ -35,8 +36,8 @@ pip install fastgedcom[ansel]
 1 DEAT
 2 DATE 2 Feb 2081
 0 TRLR
-		</code></pre</td>
-		<td><pre><code>
+		</code></pre></td>
+		<td><pre lang="python3"><code>
 document = strict_parse("my-file.ged")
 person = document["@I1@"]
 # use ">" to get a sub-line
@@ -46,7 +47,7 @@ date = death >= "DATE"
 print(date)
 # Prints "" if the field is missing
 		</code></pre></td>
-		<td><pre><code>
+		<td><pre lang="python3"><code>
 document = Parser()
 document.parse_file("my-file.ged")
 records = document.get_element_dictionary()
