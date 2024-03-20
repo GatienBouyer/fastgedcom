@@ -8,15 +8,15 @@ from typing import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+from .base import Document, TrueLine, XRef
+
 try:
-    import ansel  # type: ignore[import-untyped]
-except ImportError as e:
+    import ansel  # type: ignore
+except ImportError:
     IS_ANSEL_INSTALLED = False
 else:
     IS_ANSEL_INSTALLED = True
     ansel.register()
-
-from .base import Document, TrueLine, XRef
 
 
 class ParsingError(Exception):
