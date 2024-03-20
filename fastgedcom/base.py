@@ -58,6 +58,11 @@ class Line(ABC):
         """The content of this gedcom field, namely the payload combined
         with all CONT and CONC sub-lines."""
 
+    @property
+    @abstractmethod
+    def sub_lines(self) -> list['TrueLine']:
+        """See the description of :py:class:`.TrueLine` class."""
+
     @abstractmethod
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         """Return all sub-lines having the given :any:`tag`.
@@ -88,6 +93,25 @@ class Line(ABC):
         by using the >= operator."""
         return self.get_sub_line_payload(tag)
 
+    def get_all_sub_lines(self) -> Iterator['TrueLine']:
+        """Recursively iterate on sub-lines.
+        All lines under the given line are returned. The order is preserved
+        as in the gedcom file, sub-sub-lines come before siblings lines."""
+        lines = list(self.sub_lines)
+        while len(lines) > 0:
+            line = lines.pop(0)
+            yield line
+            lines = line.sub_lines + lines
+
+    def get_source(self) -> str:
+        """Return the gedcom text equivalent for the line and its sub-lines."""
+        if not self:
+            return ""
+        text = str(self) + "\n"
+        for sub_line in self.get_all_sub_lines():
+            text += str(sub_line) + "\n"
+        return text
+
 
 class FakeLine(Line):
     """Dummy line for syntactic sugar.
@@ -105,7 +129,7 @@ class FakeLine(Line):
 
     payload = ""  # pyright: ignore[reportGeneralTypeIssues]
     payload_with_cont = ""  # pyright: ignore[reportGeneralTypeIssues]
-    sub_lines: list['TrueLine'] = []
+    sub_lines = []  # pyright: ignore[reportGeneralTypeIssues]
 
     def __bool__(self) -> Literal[False]:
         """Return False."""
