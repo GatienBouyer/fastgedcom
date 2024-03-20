@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from fastgedcom.base import TrueLine
-from fastgedcom.parser import strict_parse
+from fastgedcom.parser import parse, strict_parse
 
 gedcom_file = Path(__file__).parent / "test_data" / "relatives.ged"
 
@@ -48,6 +48,12 @@ class TestBase(unittest.TestCase):
             TrueLine(2, "CONC", "ence that is split."),
         ])
         self.assertEqual(note_line3.payload_with_cont, note_text3)
+
+    def test_document_to_gedcom(self) -> None:
+        source = "0 HEAD\n1 GEDC\n2 VERS 5.5\n1 CHAR UTF-8\n0 TRLR\n"
+        doc, _ = parse(source.splitlines())
+        output = doc.get_source()
+        self.assertEqual(source, output)
 
 
 if __name__ == '__main__':
