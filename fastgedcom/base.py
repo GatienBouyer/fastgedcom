@@ -60,7 +60,7 @@ class Line(ABC):
 
     @abstractmethod
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
-        """Return the all sub-lines having the given :any:`tag`.
+        """Return all sub-lines having the given :any:`tag`.
         An empty list if no line matches."""
 
     def __rshift__(self, tag: str) -> list['TrueLine']:

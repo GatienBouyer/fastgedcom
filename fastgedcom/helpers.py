@@ -309,6 +309,10 @@ def line_to_datetime(
     date: TrueLine | FakeLine,
     default: datetime | None = None,
 ) -> datetime:
-    """Convert DATE lines to datetime object using the payload and the TIME sub-line."""
+    """Convert DATE lines to datetime object using the payload and the TIME sub-line.
+
+    If default is provided, return default on date parsing failure.
+    Otherwise, raise ValueError on failure.
+    """
     dt = to_datetime(date.payload, default)
     return add_time(dt, date >= "TIME")
