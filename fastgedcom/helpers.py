@@ -1,5 +1,5 @@
 """Utilitary functions to sort, format, or extract information."""
-
+import warnings
 from typing import Iterator, overload
 from datetime import datetime, time
 from enum import Enum
@@ -8,24 +8,23 @@ from .base import FakeLine, TrueLine
 
 
 def get_all_sub_lines(line: TrueLine) -> Iterator[TrueLine]:
-    """Recursively iterate on :py:class:`.TrueLine` of higher level.
+    """/!\\ DEPRECATED /!\\ use the method :py:meth:`Line.get_all_sub_lines` instead.
+
+    Recursively iterate on :py:class:`.TrueLine` of higher level.
     All lines under the given line are returned. The order is preserved
     as in the gedcom file, sub-lines come before siblings lines."""
-    lines = list(line.sub_lines)
-    while len(lines) > 0:
-        line = lines.pop(0)
-        yield line
-        lines = line.sub_lines + lines
+    warnings.warn("Use the Line.get_all_sub_lines method instead of function in fastgedcom.helpers",
+                  DeprecationWarning, stacklevel=2)
+    return line.get_all_sub_lines()
 
 
 def get_source(line: TrueLine | FakeLine) -> str:
-    """Return the gedcom text equivalent for the line and its sub-lines."""
-    if not line:
-        return ""
-    text = str(line) + "\n"
-    for sub_line in get_all_sub_lines(line):
-        text += str(sub_line) + "\n"
-    return text
+    """/!\\ DEPRECATED /!\\ use the method :py:meth:`Line.get_source` instead.
+
+    Return the gedcom text equivalent for the line and its sub-lines."""
+    warnings.warn("Use the Line.get_source method instead of function in fastgedcom.helpers",
+                  DeprecationWarning, stacklevel=2)
+    return line.get_source()
 
 
 def format_name(name: str) -> str:

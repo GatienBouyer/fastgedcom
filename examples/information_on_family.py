@@ -1,5 +1,5 @@
 from fastgedcom.helpers import (
-    extract_name_parts, extract_year, format_date, format_name, get_source
+    extract_name_parts, extract_year, format_date, format_name
 )
 from fastgedcom.parser import strict_parse
 
@@ -55,12 +55,3 @@ if family > "DIV":
 
 for event in family >> "EVEN":
     print("Event:", event >= 'TYPE')
-
-
-###############################################################################
-# Raw gedcom information
-###############################################################################
-
-
-print("Original gedcom data:")
-print(get_source(family))
