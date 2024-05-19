@@ -148,14 +148,6 @@ def guess_encoding(file: str | Path) -> str | None:
         # The presence of the BOM mark must be specified.
         # With "utf-8-sig, Python removes the BOM mark when reading the file.
         return "utf-8-sig"
-    if first_bytes[:2] == b"\xff\xfe":
-        # UTF-16, little-endian
-        # With "utf_16", Python removes the BOM mark when reading the file.
-        return "utf_16"
-    if first_bytes[:2] == b"\xfe\xff":
-        # UTF-16, big-endian
-        # With "utf_16", Python removes the BOM mark when reading the file.
-        return "utf_16"
     if first_bytes == b"\xff\xfe\x00\x00":
         # UTF-32, little-endian
         # With "utf_32", Python removes the BOM mark when reading the file.
@@ -164,6 +156,14 @@ def guess_encoding(file: str | Path) -> str | None:
         # UTF-32, big-endian
         # With "utf_32", Python removes the BOM mark when reading the file.
         return "utf_32"
+    if first_bytes[:2] == b"\xff\xfe":
+        # UTF-16, little-endian
+        # With "utf_16", Python removes the BOM mark when reading the file.
+        return "utf_16"
+    if first_bytes[:2] == b"\xfe\xff":
+        # UTF-16, big-endian
+        # With "utf_16", Python removes the BOM mark when reading the file.
+        return "utf_16"
     # Try non-utf encodings and loog at the 0 HEAD > 1 CHAR gedcom field
     encodings = (
         "utf-8",
