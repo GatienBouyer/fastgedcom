@@ -1,4 +1,5 @@
-"""Define the :py:class:`.FamilyLink` class used to bypass family records."""
+"""Define the :py:class:`.FamilyLink` class used to bypass family records
+and ease the access to relatives."""
 
 from collections import defaultdict
 
@@ -10,28 +11,30 @@ from .base import (
 class FamilyLink():
     """Class with methods to easily get relatives of someone.
 
-    Methods ending in _ref (such as :py:meth:`.get_parent_family_ref`)
+    Methods ending in _ref (such as :py:meth:`.get_children_ref`)
     are called by their non-_ref counterparts (such as
-    :py:meth:`.get_parent_family`). Use the first set of methods when
+    :py:meth:`.get_children`). Use the first set of methods when
     you need performance. Use the second set of methods for convenience.
 
-    The class uses 2 dictionnaries to speed up the process.
-    The `parents` dictionnary is used to get the parents of someone
+    The class uses 2 dictionnaries to store family relations:
+
+    - The `parents` dictionnary is used to get the parents of someone
     (via the FAMC of the person).
-    The `unions` dictionnary is used to get the spouses or children
+    - The `unions` dictionnary is used to get the spouses or children
     (via the FAMS of the person).
-    Not all methods use those dictionnaries.
+    Not all methods use those dictionnaries,
+    for example the get_parent_family_ref doesn't.
     """
 
     def __init__(self, document: Document) -> None:
         self.document = document
-        self.parents: dict[IndiRef, tuple[Record | FakeLine, Record | FakeLine]]
-        self.unions: defaultdict[IndiRef, list[Record]]
+        self.parents: dict[IndiRef, tuple[Record | FakeLine, Record | FakeLine]] = dict()
+        self.unions: defaultdict[IndiRef, list[Record]] = defaultdict(list)
         self._build_dicts()
 
     def _build_dicts(self) -> None:
-        self.parents = dict()
-        self.unions = defaultdict(list)
+        self.parents.clear()
+        self.unions.clear()
         for fam_record in self.document.records.values():
             if fam_record.payload != "FAM":
                 continue
@@ -273,7 +276,9 @@ class FamilyLink():
         The combinaison can be read as:
 
         * (when generation_diff > 0) `collateral_diff` of `generation_diff`
+            * examples: siblings of parents, cousings of grandparents
         * (when generation_diff < 0) `generation_diff` of `collateral_diff`
+            * examples: children of cousins, grand-children of siblings
 
         The `collateral_diff` must be strictly positive.
         This function is a wrapper around :py:meth:`traverse`.

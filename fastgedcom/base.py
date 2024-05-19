@@ -55,8 +55,13 @@ class Line(ABC):
     @property
     @abstractmethod
     def payload_with_cont(self) -> str:
-        """The content of this gedcom field, namely the payload combined
-        with all CONT and CONC sub-lines."""
+        """Return the multi-line payload into a single string.
+
+        Multi-line payloads are split into several :py:class:`Line` as written
+        in the original gedcom file. The corresponding sub-lines are with the
+        tags CONC and CONT. There are gathered into a single string by
+        concatenation of the different payload of each line. A newline is
+        added for the concatenation of sub-lines with the CONT tag."""
 
     @property
     @abstractmethod
@@ -66,7 +71,7 @@ class Line(ABC):
     @abstractmethod
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         """Return all sub-lines having the given :any:`tag`.
-        An empty list if no line matches."""
+        Return an empty list if no line matches."""
 
     def __rshift__(self, tag: str) -> list['TrueLine']:
         """Alias for :py:meth:`get_sub_lines` to shorten the syntax
@@ -76,7 +81,7 @@ class Line(ABC):
     @abstractmethod
     def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
         """Return the first sub-line having the given :any:`tag`.
-        A :py:class:`.FakeLine` if no line matches."""
+        Return a :py:class:`.FakeLine` if no line matches."""
 
     def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
         """Alias for :py:meth:`get_sub_line` to shorten the syntax
@@ -86,7 +91,7 @@ class Line(ABC):
     @abstractmethod
     def get_sub_line_payload(self, tag: str) -> str:
         """Return the payload of the first sub-line having the given
-        :any:`tag`. An empty string if no line matches."""
+        :any:`tag`. Return an empty string if no line matches."""
 
     def __ge__(self, tag: str) -> str:
         """Alias for :py:meth:`get_sub_line_payload` to shorten the syntax
@@ -165,11 +170,15 @@ class FakeLine(Line):
 class TrueLine(Line):
     """Represent a line of a gedcom document.
 
-    Contain the :py:attr:`sub-lines` of the gedcom structure.
+    Contain the :py:attr:`sub-lines` of the gedcom structure to form a recursive
+    representation of the gedcom file.
 
-    This class uses the simplified ``Level Tag Payload`` format, instead of
-    the normalized ``Level [Xref] Tag [LineVal]`` format. In the simplified
-    format, the :py:attr:`tag` is either the normalized Tag or the optional
+    This class uses the simplified format, instead of the normalized
+    ``Level [Xref] Tag [LineVal]`` format.
+
+    The format of a gedcom line: ``Level Tag Payload``.
+
+    In the simplified format, the :py:attr:`tag` is either the normalized Tag or the optional
     Xref. Hence, the :py:attr:`payload` is the LineVal - when the Xref is not
     present - or the normalized Tag plus the LineVal (generally an empty
     string) - when the Xref is present. The Payload can be an empty string. As
@@ -180,14 +189,15 @@ class TrueLine(Line):
     """The line level defined by the gedcom standard."""
 
     tag: str | XRef
-    """The cross-reference identified if it is a :py:const:`Record`,
-    or the tag - as defined in the gedcom standard - defining the structure
-    type."""
+    """The cross-reference identifier for level 0 line (also called record identifier),
+    or the tag defining the information and the structure of the data."""
 
     payload: str
     """The payload of the structure, also called content or value.
-    Warning: Multi-line payloads are split into several lines according to the
-    gedcom standard. Use the :py:attr:`payload_with_cont` property to get the
+
+    Warning: Multi-line payloads are split into several :py:class:`Line` as
+    written in the original gedcom file. The corresponding sub-lines are with
+    the tags CONC and CONT. Use the :py:attr:`payload_with_cont` property to get the
     complete multi-line payloads."""
 
     sub_lines: list['TrueLine'] = field(default_factory=list)
@@ -251,7 +261,7 @@ class Document():
     """Store all the information of the gedcom document.
 
     All records (level 0 lines) are directly accessible via the
-    :py:attr:`records` dictionnary and the other lines level are
+    :py:attr:`records` dictionnary and the other lines are
     accessible via :py:attr:`.TrueLine.sub_lines`."""
 
     records: dict[XRef, Record]
@@ -264,8 +274,8 @@ class Document():
         self.records = dict()
 
     def __iter__(self) -> Iterator[Record]:
-        """Iterate on the lines of level 0
-        (the records, the header, and the TRLR line)."""
+        """Iterate on the lines of level 0:
+        the records, the header, and the TRLR line."""
         return iter(self.records.values())
 
     def __contains__(self, identifier: XRef) -> bool:
@@ -273,8 +283,8 @@ class Document():
         return identifier in self.records
 
     def get_records(self, record_type: str) -> Iterator[Record]:
-        """Return an iterator over records of that ``record_type``
-        (i.e. the :py:attr:`~.TrueLine.payload` of level 0 lines)."""
+        """Return an iterator over records of that ``record_type``.
+        The type is the payload of level 0 lines: INDI, FAM, etc.."""
         for record in self.records.values():
             if record.payload == record_type:
                 yield record
