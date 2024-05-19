@@ -1,23 +1,26 @@
 # FastGedcom
 
-A lightweight tool to parse, browse and edit gedcom files.
+A lightweight tool to easily parse, browse and edit gedcom files.
 
 Install FastGedcom using pip from [its PyPI page](https://pypi.org/project/fastgedcom/):
 ```bash
 pip install fastgedcom
 ```
-To install the Ansel codecs use the following command. It enables the use of the Ansel text encoding often used for gedcom files.
+To install the Ansel codec use the following command. It enables the use of the Ansel text encoding often used for gedcom files.
 ```bash
 pip install fastgedcom[ansel]
 ```
 
-## Why choosing FastGedcom?
+## Highlights of FastGedcom
 
-- FastGedcom is fast.
-- FastGedcom has type annotations.
-- FastGedcom has less methods than the alternatives, which make it easier to work with.
-- FastGedcom has a linear syntax, if/else and try/except blocks are less needed.
-- FastGedcom is shorter to write with the use of operator overloading. (optional)
+- FastGedcom is **easy** to write.
+- FastGedcom has **type annotations**.
+- FastGedcom has a **[documentation](https://fastgedcom.readthedocs.io/en/latest/)**, **[code examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)**.
+- FastGedcom has **[unit tests](https://github.com/GatienBouyer/fastgedcom/tree/main/test)**.
+- FastGedcom has **less methods** than the alternatives, which make it easy to learn.
+- FastGedcom is **concise** thanks to operator overloads. (**optional**)
+- FastGedcom has a **linear** syntax, if/else and try/except blocks are less needed.
+- Last but not least, FastGedcom is **fast**. Go to [benchmarks](https://github.com/GatienBouyer/benchmark-python-gedcom).
 
 Comparison:
 <table>
@@ -117,7 +120,7 @@ with open("./gedcom_without_uids.ged", "w", encoding="utf-8-sig") as f:
 Autocompletion and type checking make development so much easier.
 
 - There are only 3 main classes: [Document](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.Document), [TrueLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.TrueLine), and [FakeLine](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FakeLine).
-- There are type aliases for code clarity: [Record](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.Record), [XRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.XRef), [IndiRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.IndiRef), [FamRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FamRef), and more.
+- There are type aliases for code clarity and code documentation: [Record](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.Record), [XRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.XRef), [IndiRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.IndiRef), [FamRef](https://fastgedcom.readthedocs.io/en/latest/autoapi/fastgedcom/base/index.html#fastgedcom.base.FamRef), and more.
 
 ```python
 from fastgedcom.base import Record, FakeLine

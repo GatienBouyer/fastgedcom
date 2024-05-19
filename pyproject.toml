@@ -1,7 +1,7 @@
 [project]
 name = "fastgedcom"
 version = "1.1.1"
-description = "A lightweight tool to parse, browse and edit gedcom files."
+description = "A lightweight tool to easily parse, browse and edit gedcom files."
 keywords = ["fastgedcom", "gedcom", "parser", "genealogy"]
 authors = [
 	{name="Gatien Bouyer", email="gatien.bouyer.dev@gmail.com"},
