@@ -228,10 +228,12 @@ class FamilyLink():
             parents = [p.tag for i in parents for p in self.get_parents(i) if p]
         children = parents
         for k in range(descent):
-            children = [c for i in children for c in self.get_children_ref(i)
-                        if c not in last_parents]
-            if k == 0 and ascent == 1:  # remove duplicates
-                children = list(set(children))
+            children = [c for i in children for c in self.get_children_ref(i)]
+            if k == 0:
+                # prevent going back toward indi
+                children = [c for c in children if c not in last_parents]
+                if ascent == 1:  # prevent duplication of siblings
+                    children = list(set(children))
         return children
 
     def traverse(self, indi: IndiRef,
