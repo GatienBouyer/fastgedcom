@@ -3,12 +3,14 @@ from typing import Iterable
 from io import StringIO
 from pathlib import Path
 from sys import platform
+from unittest.mock import mock_open, patch
 
 from fastgedcom.base import TrueLine
 from fastgedcom.parser import (
     IS_ANSEL_INSTALLED, CharacterInsteadOfLineWarning, DuplicateXRefWarning,
     EmptyLineWarning, LevelInconsistencyWarning, LevelParsingWarning,
-    LineParsingWarning, guess_encoding, parse
+    LineParsingWarning, MalformedError, NothingParsedError, guess_encoding,
+    parse, strict_parse
 )
 
 file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
@@ -17,8 +19,7 @@ file_ansi = Path(__file__).parent / "test_data" / "in_ansi.ged"
 file_ansel = Path(__file__).parent / "test_data" / "in_ansel.ged"
 file_unicode = Path(__file__).parent / "test_data" / "in_unicode.ged"
 file_iso8859_1 = Path(__file__).parent / "test_data" / "in_iso8859-1.ged"
-text_in_file = """
-0 HEAD
+text_in_file = """0 HEAD
 1 GEDC
 2 VERS 5.5
 1 CHAR UTF-8
@@ -95,6 +96,12 @@ class TestParser(unittest.TestCase):
     def test_text_parsing(self) -> None:
         self._test_parsing(text_in_file.strip().splitlines(), 9)
 
+    def test_strict_parse(self) -> None:
+        with patch('fastgedcom.parser.open') as open_mock:
+            mock_open(open_mock, text_in_file)
+            document = strict_parse("fake file for mock")
+            self.assertEqual(document["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
+
     def test_warnings(self) -> None:
         d, ws = parse("O HEAD\n0 TRLR")
         self.assertTrue(d == parse(StringIO(""))[0])
@@ -120,6 +127,16 @@ class TestParser(unittest.TestCase):
         d, ws = parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 @I1@ INDI\n0 TRLR"))
         self.assertTrue(d == parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 TRLR"))[0])
         self.assertTrue(any(isinstance(w, DuplicateXRefWarning) for w in ws))
+
+    def test_strict_parse_errors(self) -> None:
+        with patch('fastgedcom.parser.open') as open_mock:
+            mock_open(open_mock, "")
+            self.assertRaises(NothingParsedError, strict_parse, "fake path for mock")
+
+            mock_open(open_mock, "0 HEAD\n0 @I1@ INDI\n0 @I1@ INDI\n0 TRLR")
+            with self.assertRaises(MalformedError) as cm:
+                strict_parse("fake path for mock")
+            self.assertTrue(any(isinstance(w, DuplicateXRefWarning) for w in cm.exception.warnings))
 
 
 if __name__ == '__main__':

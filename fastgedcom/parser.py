@@ -19,14 +19,6 @@ else:
     ansel.register()
 
 
-class ParsingError(Exception):
-    """Error raise by :py:func:`.strict_parse`."""
-
-
-class NothingParsed(ParsingError):
-    """Raised by :py:func:`.strict_parse` when the resulting document is empty."""
-
-
 class ParsingWarning():
     """Base warning class."""
 
@@ -188,17 +180,31 @@ def guess_encoding(file: str | Path) -> str | None:
     return None
 
 
+class ParsingError(Exception):
+    """Error raise by :py:func:`.strict_parse`."""
+
+
+class NothingParsedError(ParsingError):
+    """Raised by :py:func:`.strict_parse` when the resulting document is empty."""
+
+
+@dataclass
+class MalformedError(ParsingError):
+    """Raised by :py:func:`.strict_parse` when there is warnings."""
+    warnings: list[ParsingWarning]
+
+
 def strict_parse(file: str | Path) -> Document:
     """Open and parse the gedcom file.
     Return the :py:class:`.Document` representing the gedcom file.
 
-    Raise :py:exc:`.ParsingError` when an error occurs in the parsing process.
     Raise :py:exc:`.NothingParsed` when the input is empty or isn't gedcom.
+    Raise :py:exc:`.MalformedError` when an error occurs in the parsing process.
     """
     with open(file, "r", encoding=guess_encoding(file)) as f:
         document, warnings = parse(f)
     if warnings:
-        raise ParsingError(warnings)
+        raise MalformedError(warnings)
     if len(document.records) == 0:
-        raise NothingParsed()
+        raise NothingParsedError()
     return document
