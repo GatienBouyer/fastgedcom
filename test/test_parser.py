@@ -105,6 +105,12 @@ class TestParser(unittest.TestCase):
         d, ws = parse(StringIO("1 CHAR UTF-8\n0 TRLR"))
         self.assertTrue(d.records == {"TRLR": TrueLine(0, "TRLR", "")})
         self.assertTrue(any(isinstance(w, LevelInconsistencyWarning) for w in ws))
+        d, ws = parse(StringIO("0 HEAD\n2 VERS 5.5\n0 TRLR"))
+        self.assertTrue(d.records == {
+            "HEAD": TrueLine(0, "HEAD", "", [TrueLine(2, "VERS", "5.5")]),
+            "TRLR": TrueLine(0, "TRLR", ""),
+        })
+        self.assertTrue(any(isinstance(w, LevelInconsistencyWarning) for w in ws))
         d, ws = parse(StringIO("0 HEAD\n1 NOTE foo\nbar\n0 TRLR"))
         self.assertTrue(d == parse(StringIO("0 HEAD\n1 NOTE foo\n0 TRLR"))[0])
         self.assertTrue(any(isinstance(w, LineParsingWarning) for w in ws))

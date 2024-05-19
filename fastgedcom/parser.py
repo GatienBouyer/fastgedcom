@@ -49,12 +49,14 @@ class DuplicateXRefWarning(ParsingWarning):
 class LevelInconsistencyWarning(ParsingWarning):
     """Warn about a line without correct parent line."""
     line_number: int
+    line_content: str
 
 
 @dataclass
 class LevelParsingWarning(ParsingWarning):
-    """Warn about an unparsable line level."""
+    """Warn about an unparsable line level. Failed to parse it to an integer."""
     line_number: int
+    line_content: str
 
 
 @dataclass
@@ -72,20 +74,18 @@ class CharacterInsteadOfLineWarning(ParsingWarning):
 
 
 def parse(lines: Iterable[str]) -> tuple[Document, list[ParsingWarning]]:
-    """Parse the text input to create the
+    """Parse the text input to create a
     :py:class:`.Document` object.
 
-    List of possible :py:class:`.ParsingWarning`:
-
-    * :py:class:`.LineParsingWarning`
-    * :py:class:`.DuplicateXRefWarning`
-    * :py:class:`.LevelInconsistencyWarning`
-    * :py:class:`.LevelParsingWarning`
-    * :py:class:`.EmptyLineWarning`
-    * :py:class:`.CharacterInsteadOfLineWarning`
-
+    When a malformed line is encountered, a warning is created
+    and we pass continue with the next line.
     Only :py:class:`.CharacterInsteadOfLineWarning` stops the parsing. If
     other warnings occur, the parsing continues with the next line.
+    For :py:class:`.LevelInconsistencyWarning`, the line is still inserted in the
+    tree.
+
+    Return the :py:class:`.Document` and the list of :py:class:`.ParsingWarning`
+    encountered.
     """
     document = Document()
     warnings: list[ParsingWarning] = []
@@ -109,7 +109,7 @@ def parse(lines: Iterable[str]) -> tuple[Document, list[ParsingWarning]]:
                 warnings.append(LineParsingWarning(line_number, line))
                 continue
         except ValueError:
-            warnings.append(LevelParsingWarning(line_number))
+            warnings.append(LevelParsingWarning(line_number, line))
             continue
         if parsed_line.level == 0:
             parent_lines = [parsed_line]
@@ -120,8 +120,10 @@ def parse(lines: Iterable[str]) -> tuple[Document, list[ParsingWarning]]:
             while parent_lines and parsed_line.level <= parent_lines[-1].level:
                 parent_lines.pop(-1)
             if len(parent_lines) == 0:
-                warnings.append(LevelInconsistencyWarning(line_number))
+                warnings.append(LevelInconsistencyWarning(line_number, line))
             else:
+                if (parent_lines[-1].level + 1 != parsed_line.level):
+                    warnings.append(LevelInconsistencyWarning(line_number, line))
                 parent_lines[-1].sub_lines.append(parsed_line)
                 parent_lines.append(parsed_line)
     return (document, warnings)
@@ -135,7 +137,7 @@ def guess_encoding(file: str | Path) -> str | None:
     However, indication of that field are often misleading or incomplete.
     For example:
     - ANSEL refers to the gedcom version of the ansel charset.
-    - The use of a BOM mark is recommended, but not stated,
+    - The use of a BOM mark is recommended but not stated,
     and not automatically handled by Python.
     - UNICODE refers to UTF-16.
     """
