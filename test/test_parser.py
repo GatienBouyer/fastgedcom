@@ -1,119 +1,191 @@
 import unittest
-from typing import Iterable
 from io import StringIO
 from pathlib import Path
 from sys import platform
+from unittest.mock import mock_open, patch
 
-from fastgedcom.base import TrueLine
 from fastgedcom.parser import (
     IS_ANSEL_INSTALLED, CharacterInsteadOfLineWarning, DuplicateXRefWarning,
     EmptyLineWarning, LevelInconsistencyWarning, LevelParsingWarning,
-    LineParsingWarning, guess_encoding, parse
+    LineParsingWarning, MalformedError, NothingParsedError, guess_encoding,
+    parse, strict_parse
 )
 
-file_utf8 = Path(__file__).parent / "test_data" / "in_utf8.ged"
-file_utf8_bom = Path(__file__).parent / "test_data" / "in_utf8_bom.ged"
-file_ansi = Path(__file__).parent / "test_data" / "in_ansi.ged"
-file_ansel = Path(__file__).parent / "test_data" / "in_ansel.ged"
-file_unicode = Path(__file__).parent / "test_data" / "in_unicode.ged"
-file_iso8859_1 = Path(__file__).parent / "test_data" / "in_iso8859-1.ged"
-text_in_file = """
-0 HEAD
+test_file_dir = Path(__file__).parent / "test_data"
+gedcom_file_data = """0 HEAD
+1 SOUR PAF
+2 NAME Personal Ancestral File
+2 VERS 5.2.18.0
+2 CORP The Church of Jesus Christ of Latter-day Saints
+3 ADDR 50 East North Temple Street
+4 CONT Salt Lake City, UT 84150
+4 CONT USA
+1 DEST Other
+1 DATE 20 May 2023
+2 TIME 20:52:04
+1 FILE _in_utf8.ged
 1 GEDC
 2 VERS 5.5
+2 FORM LINEAGE-LINKED
 1 CHAR UTF-8
+1 LANG English
 0 @I1@ INDI
 1 NAME éàç /ÉÀÇ/
 2 SURN ÉÀÇ
 2 GIVN éàç
-1 SEX M
+1 SEX U
+1 _UID 8AF30D0BDE130F4E8964B9EACCAD53F6356E
+1 CHAN
+2 DATE 20 May 2023
+3 TIME 20:51:21
+0 TRLR
 """
 
 
 class TestParser(unittest.TestCase):
-    def _test_parsing(self, lines_to_parse: Iterable[str], expected_number_of_lines: int) -> None:
-        g, w = parse(lines_to_parse)
+    def test_parsing(self) -> None:
+        g, w = parse(gedcom_file_data.splitlines())
         self.assertListEqual(w, [])
-        indi = g.get_record("@I1@")
-        self.assertIsNotNone(indi)
-        assert indi
-        name = indi.get_sub_line_payload("NAME")
-        self.assertEqual(name, "éàç /ÉÀÇ/")
-        nb_lines = len(g.records) + sum(1 for r in g for _ in r.get_all_sub_lines())
-        self.assertEqual(nb_lines, expected_number_of_lines)
+        self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
+        self.assertEqual(g.get_source(), gedcom_file_data)
 
     def test_parsing_utf8(self) -> None:
-        with open(file_utf8, "r", encoding="utf-8") as f:
-            self._test_parsing(f, 27)
+        encoding = "utf-8"
+        file = test_file_dir / "in_utf8.ged"
+        guess = guess_encoding(file)
+        self.assertEqual(guess, encoding)
+        with open(file, "r", encoding=encoding) as f:
+            g, w = parse(f)
+        self.assertListEqual(w, [])
+        self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
+        self.assertEqual(g.get_source(), gedcom_file_data)
 
     def test_parsing_utf8_bom(self) -> None:
-        with open(file_utf8_bom, "r", encoding="utf-8-sig") as f:
-            self._test_parsing(f, 27)
+        encoding = "utf-8-sig"
+        file = test_file_dir / "in_utf8_bom.ged"
+        guess = guess_encoding(file)
+        self.assertEqual(guess, encoding)
+        with open(file, "r", encoding=encoding) as f:
+            g, w = parse(f)
+        self.assertListEqual(w, [])
+        self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
 
     def test_parsing_unicode(self) -> None:
-        with open(file_unicode, "r", encoding="utf-16") as f:
-            self._test_parsing(f, 27)
-
-    @unittest.skipUnless(platform.startswith("win"), "The ansi encoding is only available on Windows")
-    def test_parsing_ansi(self) -> None:
-        with open(file_ansi, "r", encoding="ansi") as f:
-            self._test_parsing(f, 27)
-
-    @unittest.skipUnless(IS_ANSEL_INSTALLED, "The ansel package isn't installed")
-    def test_parsing_ansel(self) -> None:
-        with open(file_ansel, "r", encoding="gedcom") as f:
+        encoding = "utf_16"
+        file = test_file_dir / "in_unicode.ged"
+        guess = guess_encoding(file)
+        self.assertEqual(guess, encoding)
+        with open(file, "r", encoding=encoding) as f:
             g, w = parse(f)
-            self.assertListEqual(w, [])
-            indi = g.get_record("@I1@")
-            self.assertIsNotNone(indi)
-            assert (indi)
-            name = indi.get_sub_line_payload("NAME")
-            ansel_name = b'\xe2e\xe1a\xf0c /\xe2E\xe1A\xf0C/'.decode("gedcom")
-            self.assertEqual(name, ansel_name)
-            nb_lines = len(g.records) + sum(1 for r in g for _ in r.get_all_sub_lines())
-            self.assertEqual(nb_lines, 27)
+        self.assertListEqual(w, [])
+        self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
 
-    def test_guess_parsing(self) -> None:
-        pairs = {
-            file_utf8: "utf-8",
-            file_utf8_bom: "utf-8-sig",
-            file_unicode: "utf_16",
-            file_ansel: "gedcom",
-            file_iso8859_1: "iso8859-1",
-            file_ansi: "ansi",
-        }
-        for filename, encoding in pairs.items():
-            guess = guess_encoding(filename)
-            guess_lower = guess.lower() if guess else None
-            self.assertEqual(guess_lower, encoding, f"File: {filename}")
+    def test_parsing_ansi(self) -> None:
+        encoding = "ansi"
+        file = test_file_dir / "in_ansi.ged"
+        guess = guess_encoding(file)
+        self.assertEqual(guess, encoding)
+        if not platform.startswith("win"):
+            self.skipTest("The ansi encoding is only available on Windows")
+        with open(file, "r", encoding=encoding) as f:
+            g, w = parse(f)
+        self.assertListEqual(w, [])
+        self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
 
-    def test_string_io_parsing(self) -> None:
-        stream = StringIO(
-            "0 HEAD\n1 GEDC\n2 VERS 5.5\n1 CHAR UTF-8\n0 @I1@ INDI\n1 NAME éàç /ÉÀÇ/\n2 SURN ÉÀÇ\n2 GIVN éàç\n1 SEX M")
-        self._test_parsing(stream, 9)
+    def test_parsing_ansel(self) -> None:
+        encoding = "gedcom"
+        file = test_file_dir / "in_ansel.ged"
+        guess = guess_encoding(file)
+        self.assertEqual(guess, encoding)
+        if not IS_ANSEL_INSTALLED:
+            self.skipTest("The ansel package isn't installed")
+        with open(file, "r", encoding=encoding) as f:
+            g, w = parse(f)
+        self.assertListEqual(w, [])
+        name = g["@I1@"].get_sub_line_payload("NAME")
+        self.assertEqual(name, b'\xe2e\xe1a\xf0c /\xe2E\xe1A\xf0C/'.decode("gedcom"))
 
-    def test_text_parsing(self) -> None:
-        self._test_parsing(text_in_file.strip().splitlines(), 9)
+    def test_parsing_latin1(self) -> None:
+        encoding = "iso8859-1"
+        file = test_file_dir / "in_iso8859-1.ged"
+        guess = guess_encoding(file)
+        self.assertEqual(guess, encoding)
+        with open(file, "r", encoding=encoding) as f:
+            g, w = parse(f)
+        self.assertListEqual(w, [])
+        self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
 
-    def test_warnings(self) -> None:
-        d, ws = parse("O HEAD\n0 TRLR")
-        self.assertTrue(d == parse(StringIO(""))[0])
-        self.assertTrue(any(isinstance(w, CharacterInsteadOfLineWarning) for w in ws))
-        d, ws = parse(StringIO("0 HEAD\n0 @I1@ INDI\n\n0 TRLR"))
-        self.assertTrue(d == parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 TRLR"))[0])
-        self.assertTrue(any(isinstance(w, EmptyLineWarning) for w in ws))
-        d, ws = parse(StringIO("1 CHAR UTF-8\n0 TRLR"))
-        self.assertTrue(d.records == {"TRLR": TrueLine(0, "TRLR", "")})
-        self.assertTrue(any(isinstance(w, LevelInconsistencyWarning) for w in ws))
-        d, ws = parse(StringIO("0 HEAD\n1 NOTE foo\nbar\n0 TRLR"))
-        self.assertTrue(d == parse(StringIO("0 HEAD\n1 NOTE foo\n0 TRLR"))[0])
-        self.assertTrue(any(isinstance(w, LineParsingWarning) for w in ws))
-        d, ws = parse(StringIO("0 HEAD\n1 NOTE foo\nbar baz\n0 TRLR"))
-        self.assertTrue(d == parse(StringIO("0 HEAD\n1 NOTE foo\n0 TRLR"))[0])
-        self.assertTrue(any(isinstance(w, LevelParsingWarning) for w in ws))
-        d, ws = parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 @I1@ INDI\n0 TRLR"))
-        self.assertTrue(d == parse(StringIO("0 HEAD\n0 @I1@ INDI\n0 TRLR"))[0])
-        self.assertTrue(any(isinstance(w, DuplicateXRefWarning) for w in ws))
+    def test_parsing_string_io(self) -> None:
+        g, w = parse(StringIO(gedcom_file_data))
+        self.assertListEqual(w, [])
+        self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
+        self.assertEqual(g.get_source(), gedcom_file_data)
+
+    def test_strict_parse(self) -> None:
+        with patch('fastgedcom.parser.open') as open_mock:
+            mock_open(open_mock, gedcom_file_data)
+            g = strict_parse("fake file for mock")
+            self.assertEqual(g["@I1@"].get_sub_line_payload("NAME"), "éàç /ÉÀÇ/")
+            self.assertEqual(g.get_source(), gedcom_file_data)
+
+    def test_CharacterInsteadOfLineWarning(self) -> None:
+        g, w = parse("0 HEAD\n0 TRLR")
+        self.assertEqual(w, [CharacterInsteadOfLineWarning(1)])
+        self.assertEqual(g.records, {})
+
+    def test_EmptyLineWarning(self) -> None:
+        warn_gedcom = "0 HEAD\n\n0 TRLR"
+        good_gedcom = "0 HEAD\n0 TRLR"
+        g, w = parse(warn_gedcom.splitlines())
+        self.assertEqual(w, [EmptyLineWarning(2)])
+        self.assertEqual(g, parse(good_gedcom.splitlines())[0])
+
+    def test_LevelInconsistencyWarning_no_parent(self) -> None:
+        warn_gedcom = "1 CHAR UTF-8\n0 TRLR"
+        good_gedcom = "0 TRLR"
+        g, w = parse(warn_gedcom.splitlines())
+        self.assertEqual(w, [LevelInconsistencyWarning(1, "1 CHAR UTF-8")])
+        self.assertEqual(g, parse(good_gedcom.splitlines())[0])
+
+    def test_LevelInconsistencyWarning_wrong_parent(self) -> None:
+        warn_gedcom = "0 HEAD\n2 CHAR UTF-8\n0 TRLR"
+        good_gedcom = "0 HEAD\n2 CHAR UTF-8\n0 TRLR"
+        g, w = parse(warn_gedcom.splitlines())
+        self.assertEqual(w, [LevelInconsistencyWarning(2, "2 CHAR UTF-8")])
+        self.assertEqual(g, parse(good_gedcom.splitlines())[0])
+
+    def test_LineParsingWarning(self) -> None:
+        warn_gedcom = "0 HEAD\n1 NOTE foo\nbar\n0 TRLR"
+        good_gedcom = "0 HEAD\n1 NOTE foo\n0 TRLR"
+        g, w = parse(warn_gedcom.splitlines())
+        self.assertEqual(w, [LineParsingWarning(3, "bar")])
+        self.assertEqual(g, parse(good_gedcom.splitlines())[0])
+
+    def test_LevelParsingWarning(self) -> None:
+        warn_gedcom = "0 HEAD\n1 NOTE foo\nbar baz\n0 TRLR"
+        good_gedcom = "0 HEAD\n1 NOTE foo\n0 TRLR"
+        g, w = parse(warn_gedcom.splitlines())
+        self.assertEqual(w, [LevelParsingWarning(3, "bar baz")])
+        self.assertEqual(g, parse(good_gedcom.splitlines())[0])
+
+    def test_DuplicateXRefWarning(self) -> None:
+        warn_gedcom = "0 HEAD\n0 @I1@ INDI\n0 @I1@ INDI\n0 TRLR"
+        good_gedcom = "0 HEAD\n0 @I1@ INDI\n0 TRLR"
+        g, w = parse(warn_gedcom.splitlines())
+        self.assertEqual(w, [DuplicateXRefWarning("@I1@")])
+        self.assertEqual(g, parse(good_gedcom.splitlines())[0])
+
+    def test_NothingParsedError(self) -> None:
+        with patch('fastgedcom.parser.open') as open_mock:
+            mock_open(open_mock, "")
+            self.assertRaises(NothingParsedError, strict_parse, "fake path for mock")
+
+    def test_MalformedError(self) -> None:
+        with patch('fastgedcom.parser.open') as open_mock:
+            mock_open(open_mock, "0 HEAD\n0 @I1@ INDI\n0 @I1@ INDI\n0 TRLR")
+            with self.assertRaises(MalformedError) as cm:
+                strict_parse("fake path for mock")
+            self.assertEqual(cm.exception.warnings, [DuplicateXRefWarning("@I1@")])
 
 
 if __name__ == '__main__':
