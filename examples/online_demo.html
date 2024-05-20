@@ -54,23 +54,34 @@ from fastgedcom.family_link import FamilyLink
 linker = FamilyLink(gedcom)
 
 def get_name(person: Record) -> str:
-	return format_name(person >= "NAME")
-
-print("Longest name:", max((get_name(indi) for indi in gedcom >> "INDI"), key=len))
+    return format_name(person >= "NAME")
 
 def nb_ancestral_gen(indi: Record | FakeLine) -> int:
-	if not indi: return 1
-	father, mother = linker.get_parents(indi.tag)
-	return 1+max(nb_ancestral_gen(father), nb_ancestral_gen(mother))
+    if not indi: return 1
+    father, mother = linker.get_parents(indi.tag)
+    return 1+max(nb_ancestral_gen(father), nb_ancestral_gen(mother))
 
 person = next(gedcom >> "INDI")
-print(f"Number of ancestral generation of {get_name(person)}:", nb_ancestral_gen(person))
+print(f"Number of ancestral generations of {get_name(person)}:", nb_ancestral_gen(person))
 
-print("Siblings:", ", " .join(
-	(p > "NAME") >= "GIVN" for p in linker.get_siblings(person.tag)
-))
+def remove_uids() -> None:
+    for indi in gedcom:
+        line = indi > "_UID"
+        if line:  # Check if field _UID exists to avoid ValueError in list.remove()
+            indi.sub_lines.remove(line)
 
-print("Cousins:", ", ".join(get_name(p) for p in linker.traverse(person.tag, 2, 2)))
+remove_uids()
+
+def save_gedcom() -> None:
+    # Get the Document as a gedcom string to write it into a file
+    gedcom_without_uids = gedcom.get_source()
+    # Use the javascript API of Pyoide to export the file
+    import js
+    blob = js.Blob.new([gedcom_without_uids], {type : 'application/text'})
+    url = js.window.URL.createObjectURL(blob)
+    js.window.open(url)
+
+# save_gedcom()
 			</py-repl>
 		</div>
 		<div>
