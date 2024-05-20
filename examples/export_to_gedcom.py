@@ -14,6 +14,6 @@ minimal_gedcom, _ = parse(minimal_gedcom_text.splitlines())
 
 gedcom_to_save = minimal_gedcom.get_source()
 
-# Gedcom standards recommends the UTF-8 with BOM encoding for new gedcom.
+# The Gedcom standard recommends the UTF-8 with BOM encoding for new gedcom.
 with open(file_pathname, "w", encoding="utf-8-sig") as f:
     f.write(gedcom_to_save)

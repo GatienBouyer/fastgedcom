@@ -12,22 +12,18 @@ print("Information about", family.tag)
 # Family members
 ###############################################################################
 
-# prehemptive check
 husban_id = family >= "HUSB"
 if husban_id in document:
     husban = document.records[husban_id]
     print("Husban is", format_name(husban >= "NAME"))
 
-# after check, using FakeLine
-wife_id = family >= "WIFE"
-wife = document[wife_id]
-if wife:
+wife = document[family >= "WIFE"]
+if wife:  # would be a fake line if the wife isn't in the document
     print("Wife is", format_name(wife >= "NAME"))
 
-# no check, assuming the records exists (could raise KeyError)
 children_ids = [line.payload for line in family >> "CHIL"]
-children = [document.records[child_id] for child_id in children_ids]
-for k, child in enumerate(children):
+for k, child_id in enumerate(children_ids):
+    child = document[child_id]  # assume that the child is defined, otherwise raise KeyError
     first_name, surname = extract_name_parts(child >= "NAME")
     birth_year = extract_year((child > "BIRT") >= "DATE")
     print(f"Child n°{k} is {first_name} born in {birth_year}")

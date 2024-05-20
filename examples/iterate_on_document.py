@@ -19,7 +19,7 @@ print("Longest name:",
 # Iterate on all records
 ###############################################################################
 
-print("Number of records:", sum(1 for _ in iter(document)))
+print("Number of records:", sum(1 for _ in document))
 
 
 ###############################################################################
