@@ -12,10 +12,10 @@ print("Information about", family.tag)
 # Family members
 ###############################################################################
 
-husban_id = family >= "HUSB"
-if husban_id in document:
-    husban = document.records[husban_id]
-    print("Husban is", format_name(husban >= "NAME"))
+husband_id = family >= "HUSB"
+if husband_id in document:
+    husband = document.records[husband_id]
+    print("Husband is", format_name(husband >= "NAME"))
 
 wife = document[family >= "WIFE"]
 if wife:  # would be a fake line if the wife isn't in the document
