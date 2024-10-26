@@ -74,7 +74,7 @@ class TestTrueLine(unittest.TestCase):
         note_line3 = TrueLine(1, "NOTE", "This text is on several lines:", [
             TrueLine(2, "CONT", "To present a very long"),
             TrueLine(2, "CONC", " text that is split."),
-            TrueLine(2, "CONT", ""),
+            TrueLine(2, "CONT"),
             TrueLine(2, "CONT", "And a second one:"),
             TrueLine(2, "CONT", "Also a very long sent"),
             TrueLine(2, "CONC", "ence that is split."),
