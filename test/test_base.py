@@ -21,6 +21,14 @@ class TestTrueLine(unittest.TestCase):
         self.assertEqual(indi >> "FAMS", [fam1, fam2])
         self.assertEqual(indi >> "FAMC", [])
 
+    def test_iter_on_sublines(self) -> None:
+        name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
+        fam1 = TrueLine(1, "FAMS", "@F1@")
+        fam2 = TrueLine(1, "FAMS", "@F2@")
+        indi = TrueLine(0, "@I1@", "INDI", [fam1, name, fam2])
+        self.assertEqual(list(indi), [fam1, name, fam2])
+        self.assertEqual(list(TrueLine(0, "@I2@", "INDI")), [])
+
     def test_get_sub_line_payload(self) -> None:
         name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
         indi = TrueLine(0, "@I1@", "INDI", [name])
@@ -82,6 +90,9 @@ class TestFakeLine(unittest.TestCase):
     def test_get_sub_lines(self) -> None:
         self.assertEqual(fake_line.get_sub_lines("FAMS"), [])
         self.assertEqual(fake_line >> "FAMS", [])
+
+    def test_iter_on_sublines(self) -> None:
+        self.assertEqual(list(fake_line), [])
 
     def test_get_sub_line_payload(self) -> None:
         self.assertEqual(fake_line.get_sub_line_payload("NAME"), "")

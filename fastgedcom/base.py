@@ -68,6 +68,11 @@ class Line(ABC):
     def sub_lines(self) -> list['TrueLine']:
         """See the description of :py:class:`.TrueLine` class."""
 
+    def __iter__(self) -> Iterator['TrueLine']:
+        """Iterate on sub-lines, i.e. the next-level lines that are part
+        of this structure."""
+        return iter(self.sub_lines)
+
     @abstractmethod
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         """Return all sub-lines having the given :any:`tag`.
