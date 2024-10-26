@@ -308,11 +308,11 @@ class Document():
 
     def get_all_lines(self) -> Iterator[list[TrueLine]]:
         """Return an iterator over all lines of the document.
-        An element of the iterator is the sequence of lines to access the line
+        An element of the iterator is the sequence of lines
+        to access the last line of the list.
 
-        For example:
+        For example, given the following gedcom document::
 
-        Given the following gedcom document::
             0 @I1@ INDI
             1 NAME John /Doe/
             2 SURN Doe
@@ -322,8 +322,8 @@ class Document():
         [
             [<TrueLine 0 @I1@ INDI -> 1>],
             [<TrueLine 0 @I1@ INDI -> 1>, <TrueLine 1 NAME John /Doe/ -> 1>],
-            [<TrueLine 0 @I2@ INDI -> 1>, <TrueLine 1 NAME John /Doe/ -> 1>, <TrueLine 2 SURN Doe -> 0>],
-            [<TrueLine 0 @I1@ INDI -> 0>],
+            [<TrueLine 0 @I1@ INDI -> 1>, <TrueLine 1 NAME John /Doe/ -> 1>, <TrueLine 2 SURN Doe -> 0>],
+            [<TrueLine 0 @I2@ INDI -> 0>],
         ]
         """
         def all_lines_rec(path: list[TrueLine]) -> Iterator[list[TrueLine]]:
