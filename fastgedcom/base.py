@@ -197,7 +197,7 @@ class TrueLine(Line):
     """The cross-reference identifier for level 0 line (also called record identifier),
     or the tag defining the information and the structure of the data."""
 
-    payload: str
+    payload: str = ""
     """The payload of the structure, also called content or value.
 
     Warning: Multi-line payloads are split into several :py:class:`Line` as
