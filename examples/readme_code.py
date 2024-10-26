@@ -44,10 +44,10 @@ print("Death date:", date)
 ##############################################################################
 
 
-for indi in document:
-    line = indi > "_UID"
+for record in document:
+    line = record > "_UID"
     if line:  # Check if field _UID exists to avoid ValueError in list.remove()
-        indi.sub_lines.remove(line)
+        record.sub_lines.remove(line)
 
 # Get the Document as a gedcom string to write it into a file
 gedcom_without_uids = document.get_source()
@@ -63,13 +63,16 @@ with open("./gedcom_without_uids.ged", "w", encoding="utf-8-sig") as f:
 families = FamilyLink(document)
 
 
-def nb_anc_gen(indi: Record | FakeLine) -> int:
+def ancestral_generation_count(indi: Record | FakeLine) -> int:
     """Return the count of ancestral generation of the given person."""
     if not indi:
         return 1
     father, mother = families.get_parents(indi.tag)
-    return 1+max(nb_anc_gen(father), nb_anc_gen(mother))
+    return 1 + max(
+        ancestral_generation_count(father),
+        ancestral_generation_count(mother),
+    )
 
 
 root = document["@I1@"]
-number_generations_above_root = nb_anc_gen(root)
+number_generations_above_root = ancestral_generation_count(root)

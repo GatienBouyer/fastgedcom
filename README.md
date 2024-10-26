@@ -2,7 +2,7 @@
 
 A lightweight tool to easily parse, browse and edit gedcom files.
 
-Install FastGedcom using pip from [its PyPI page](https://pypi.org/project/fastgedcom/):
+Install FastGedcom using pip from [the PyPI repository](https://pypi.org/project/fastgedcom/):
 ```bash
 pip install fastgedcom
 ```
@@ -15,7 +15,8 @@ pip install fastgedcom[ansel]
 
 - FastGedcom is **easy** to write.
 - FastGedcom has **type annotations**.
-- FastGedcom has a **[documentation](https://fastgedcom.readthedocs.io/en/latest/)**, **[code examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)**.
+- FastGedcom has a **[documentation](https://fastgedcom.readthedocs.io/en/latest/)**.
+- FastGedcom has **[code examples](https://github.com/GatienBouyer/fastgedcom/tree/main/examples)**.
 - FastGedcom has **[unit tests](https://github.com/GatienBouyer/fastgedcom/tree/main/test)**.
 - FastGedcom has **less methods** than the alternatives, which make it easy to learn.
 - FastGedcom is **concise** thanks to operator overloads. (**optional**)
@@ -104,10 +105,10 @@ print("Death date:", date)
 Another example:
 
 ```python
-for indi in document:
-    line = indi > "_UID"
+for record in document:
+    line = record > "_UID"
     if line:  # Check if field _UID exists to avoid ValueError in list.remove()
-        indi.sub_lines.remove(line)
+        record.sub_lines.remove(line)
 
 # Get the Document as a gedcom string to write it into a file
 gedcom_without_uids = document.get_source()
@@ -130,16 +131,19 @@ from fastgedcom.family_link import FamilyLink
 families = FamilyLink(document)
 
 
-def nb_anc_gen(indi: Record | FakeLine) -> int:
-    """Return the count of ancestral generation of the given person."""
+def ancestral_generation_count(indi: Record | FakeLine) -> int:
+    """Return the number of generation registered as ancestors of the given person."""
     if not indi:
         return 1
     father, mother = families.get_parents(indi.tag)
-    return 1+max(nb_anc_gen(father), nb_anc_gen(mother))
+    return 1 + max(
+        ancestral_generation_count(father),
+        ancestral_generation_count(mother),
+    )
 
 
 root = document["@I1@"]
-number_generations_above_root = nb_anc_gen(root)
+number_generations_above_root = ancestral_generation_count(root)
 ```
 
 ## Why it is called FastGedcom?
