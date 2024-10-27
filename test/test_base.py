@@ -137,7 +137,7 @@ class TestDocument(unittest.TestCase):
         fam = doc.records["@F1@"] = TrueLine(0, "@F1@", "FAM")
         self.assertEqual(list(doc), [indi1, indi2, fam])
 
-    def test_get_all_lines(self) -> None:
+    def test_all_lines(self) -> None:
         doc = Document()
         indi1 = doc.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
         surn = TrueLine(2, "SURN", "ÉÀÇ")
@@ -147,7 +147,7 @@ class TestDocument(unittest.TestCase):
         indi = TrueLine(0, "@I2@", "INDI", [name, sex])
         indi2 = doc.records["@I2@"] = indi
         fam = doc.records["@F1@"] = TrueLine(0, "@F1@", "FAM")
-        self.assertEqual(list(doc.get_all_lines()), [
+        self.assertEqual(list(doc.all_lines()), [
             [indi1],
             [indi2],
             [indi2, name],

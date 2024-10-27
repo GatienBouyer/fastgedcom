@@ -12,7 +12,7 @@ families = FamilyLink(document)
 ###############################################################################
 
 source_count = 0
-for *parent_lines, line in document.get_all_lines():
+for *parent_lines, line in document.all_lines():
     if line.tag == "SOUR":
         source_count += 1
 

@@ -306,7 +306,7 @@ class Document():
     """Alias for :py:meth:`get_record` to shorten the syntax
     by using the [] operator."""
 
-    def get_all_lines(self) -> Iterator[list[TrueLine]]:
+    def all_lines(self) -> Iterator[list[TrueLine]]:
         """Return an iterator over all lines of the document.
         An element of the iterator is the sequence of lines
         to access the last line of the list.
@@ -318,7 +318,7 @@ class Document():
             2 SURN Doe
             0 @I2@ INDI
 
-        >>> list(document.get_all_lines())
+        >>> list(document.all_lines())
         [
             [<TrueLine 0 @I1@ INDI -> 1>],
             [<TrueLine 0 @I1@ INDI -> 1>, <TrueLine 1 NAME John /Doe/ -> 1>],
@@ -329,7 +329,8 @@ class Document():
         def all_lines_rec(path: list[TrueLine]) -> Iterator[list[TrueLine]]:
             yield path
             for subline in path[-1].sub_lines:
-                yield from all_lines_rec(path + [subline])  # TODO avoid using to much yielding
+                yield from all_lines_rec(path + [subline])
+
         for record in self.records.values():
             yield from all_lines_rec([record])
 
