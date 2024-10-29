@@ -33,28 +33,17 @@ if nb_records_per_type["INDI"] != 0:
 
 
 ###############################################################################
-# Statistics on field usage
+# Statistics on the most common fields
 ###############################################################################
-
-def get_lines_with_path(document: Document) -> Generator[tuple[TrueLine, ...], None, None]:
-    def recursion(line: TrueLine, path: tuple[TrueLine, ...]) -> Generator[tuple[TrueLine, ...], None, None]:
-        yield path
-        for sub_line in line.sub_lines:
-            yield from recursion(sub_line, (*path, sub_line))
-
-    for record in document:
-        yield from recursion(record, (record,))
-
 
 def get_field_usage(document: Document) -> dict[str, int]:
     field_usage: dict[str, int] = defaultdict(int)
-
-    for path in get_lines_with_path(document):
-        if path[0].tag in ("HEAD", "TRLR"):
+    for record, *lines in document.all_lines():
+        if record.tag in ("HEAD", "TRLR"):
             continue
-        if path[0].payload == "SUBM":
+        if record.payload == "SUBM":
             continue
-        path_str = f"{path[0].payload}/" + "/".join(p.tag for p in path[1:])
+        path_str = record.payload + "/" + "/".join(p.tag for p in lines)
         field_usage[path_str] += 1
     return field_usage
 
