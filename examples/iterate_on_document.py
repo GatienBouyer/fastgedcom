@@ -8,6 +8,18 @@ families = FamilyLink(document)
 
 
 ###############################################################################
+# Search for specific lines across the whole document
+###############################################################################
+
+source_count = 0
+for *parent_lines, line in document.all_lines():
+    if line.tag == "SOUR":
+        source_count += 1
+
+print("Number of source citations:", source_count)
+
+
+###############################################################################
 # Iterate on individuals
 ###############################################################################
 

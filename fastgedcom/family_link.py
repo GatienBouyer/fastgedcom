@@ -200,11 +200,11 @@ class FamilyLink():
 
     def get_spouse_in_fam_ref(self, indi: IndiRef, fam: Record) -> IndiRef | None:
         """Return the spouse's reference of the family that is not the person's."""
-        husban = fam >= "HUSB"
+        husband = fam >= "HUSB"
         wife = fam >= "WIFE"
-        if indi == wife and husban not in ("", "@VOID@"):
-            return husban
-        if indi == husban and wife not in ("", "@VOID@"):
+        if indi == wife and husband not in ("", "@VOID@"):
+            return husband
+        if indi == husband and wife not in ("", "@VOID@"):
             return wife
         return None
 

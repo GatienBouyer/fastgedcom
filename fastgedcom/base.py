@@ -68,6 +68,11 @@ class Line(ABC):
     def sub_lines(self) -> list['TrueLine']:
         """See the description of :py:class:`.TrueLine` class."""
 
+    def __iter__(self) -> Iterator['TrueLine']:
+        """Iterate on sub-lines, i.e. the next-level lines that are part
+        of this structure."""
+        return iter(self.sub_lines)
+
     @abstractmethod
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         """Return all sub-lines having the given :any:`tag`.
@@ -192,7 +197,7 @@ class TrueLine(Line):
     """The cross-reference identifier for level 0 line (also called record identifier),
     or the tag defining the information and the structure of the data."""
 
-    payload: str
+    payload: str = ""
     """The payload of the structure, also called content or value.
 
     Warning: Multi-line payloads are split into several :py:class:`Line` as
@@ -300,6 +305,34 @@ class Document():
     __getitem__ = get_record
     """Alias for :py:meth:`get_record` to shorten the syntax
     by using the [] operator."""
+
+    def all_lines(self) -> Iterator[list[TrueLine]]:
+        """Return an iterator over all lines of the document.
+        An element of the iterator is the sequence of lines
+        to access the last line of the list.
+
+        For example, given the following gedcom document::
+
+            0 @I1@ INDI
+            1 NAME John /Doe/
+            2 SURN Doe
+            0 @I2@ INDI
+
+        >>> list(document.all_lines())
+        [
+            [<TrueLine 0 @I1@ INDI -> 1>],
+            [<TrueLine 0 @I1@ INDI -> 1>, <TrueLine 1 NAME John /Doe/ -> 1>],
+            [<TrueLine 0 @I1@ INDI -> 1>, <TrueLine 1 NAME John /Doe/ -> 1>, <TrueLine 2 SURN Doe -> 0>],
+            [<TrueLine 0 @I2@ INDI -> 0>],
+        ]
+        """
+        def all_lines_rec(path: list[TrueLine]) -> Iterator[list[TrueLine]]:
+            yield path
+            for subline in path[-1].sub_lines:
+                yield from all_lines_rec(path + [subline])
+
+        for record in self.records.values():
+            yield from all_lines_rec([record])
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, Document):

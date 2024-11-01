@@ -21,6 +21,14 @@ class TestTrueLine(unittest.TestCase):
         self.assertEqual(indi >> "FAMS", [fam1, fam2])
         self.assertEqual(indi >> "FAMC", [])
 
+    def test_iter_on_sublines(self) -> None:
+        name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
+        fam1 = TrueLine(1, "FAMS", "@F1@")
+        fam2 = TrueLine(1, "FAMS", "@F2@")
+        indi = TrueLine(0, "@I1@", "INDI", [fam1, name, fam2])
+        self.assertEqual(list(indi), [fam1, name, fam2])
+        self.assertEqual(list(TrueLine(0, "@I2@", "INDI")), [])
+
     def test_get_sub_line_payload(self) -> None:
         name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
         indi = TrueLine(0, "@I1@", "INDI", [name])
@@ -66,7 +74,7 @@ class TestTrueLine(unittest.TestCase):
         note_line3 = TrueLine(1, "NOTE", "This text is on several lines:", [
             TrueLine(2, "CONT", "To present a very long"),
             TrueLine(2, "CONC", " text that is split."),
-            TrueLine(2, "CONT", ""),
+            TrueLine(2, "CONT"),
             TrueLine(2, "CONT", "And a second one:"),
             TrueLine(2, "CONT", "Also a very long sent"),
             TrueLine(2, "CONC", "ence that is split."),
@@ -82,6 +90,9 @@ class TestFakeLine(unittest.TestCase):
     def test_get_sub_lines(self) -> None:
         self.assertEqual(fake_line.get_sub_lines("FAMS"), [])
         self.assertEqual(fake_line >> "FAMS", [])
+
+    def test_iter_on_sublines(self) -> None:
+        self.assertEqual(list(fake_line), [])
 
     def test_get_sub_line_payload(self) -> None:
         self.assertEqual(fake_line.get_sub_line_payload("NAME"), "")
@@ -125,6 +136,26 @@ class TestDocument(unittest.TestCase):
         indi2 = doc.records["@I2@"] = TrueLine(0, "@I2@", "INDI")
         fam = doc.records["@F1@"] = TrueLine(0, "@F1@", "FAM")
         self.assertEqual(list(doc), [indi1, indi2, fam])
+
+    def test_all_lines(self) -> None:
+        doc = Document()
+        indi1 = doc.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
+        surn = TrueLine(2, "SURN", "ÉÀÇ")
+        givn = TrueLine(2, "GIVN", "éàç")
+        name = TrueLine(1, "NAME", "éàç /ÉÀÇ/", [surn, givn])
+        sex = TrueLine(1, "SEX", "U")
+        indi = TrueLine(0, "@I2@", "INDI", [name, sex])
+        indi2 = doc.records["@I2@"] = indi
+        fam = doc.records["@F1@"] = TrueLine(0, "@F1@", "FAM")
+        self.assertEqual(list(doc.all_lines()), [
+            [indi1],
+            [indi2],
+            [indi2, name],
+            [indi2, name, surn],
+            [indi2, name, givn],
+            [indi2, sex],
+            [fam],
+        ])
 
     def test_get_source(self) -> None:
         doc = Document()

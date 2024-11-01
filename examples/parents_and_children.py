@@ -1,6 +1,4 @@
-from fastgedcom.helpers import (
-    extract_name_parts, extract_year, format_date, format_name
-)
+from fastgedcom.helpers import extract_name_parts, format_date, format_name
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")
@@ -12,10 +10,10 @@ print("Information about", family.tag)
 # Family members
 ###############################################################################
 
-husban_id = family >= "HUSB"
-if husban_id in document:
-    husban = document.records[husban_id]
-    print("Husban is", format_name(husban >= "NAME"))
+husband_id = family >= "HUSB"
+if husband_id in document:
+    husband = document.records[husband_id]
+    print("Husband is", format_name(husband >= "NAME"))
 
 wife = document[family >= "WIFE"]
 if wife:  # would be a fake line if the wife isn't in the document
@@ -23,11 +21,12 @@ if wife:  # would be a fake line if the wife isn't in the document
 
 children_ids = [line.payload for line in family >> "CHIL"]
 for k, child_id in enumerate(children_ids):
-    child = document[child_id]  # assume that the child is defined, otherwise raise KeyError
+    # assume that the child is defined, otherwise the next line will raise KeyError
+    child = document[child_id]
     first_name, surname = extract_name_parts(child >= "NAME")
-    birth_year = extract_year((child > "BIRT") >= "DATE")
-    print(f"Child n°{k} is {first_name} born in {birth_year}")
+    print(f"Child n°{k} is {first_name}")
 
+# For extensive lookups of parents and/or children, see fastgedcom.family_link
 
 ###############################################################################
 # Marriage

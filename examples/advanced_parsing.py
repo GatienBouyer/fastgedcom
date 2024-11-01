@@ -1,5 +1,3 @@
-from io import StringIO
-
 from fastgedcom.parser import (
     DuplicateXRefWarning, EmptyLineWarning, LevelInconsistencyWarning,
     MalformedError, guess_encoding, parse, strict_parse
@@ -38,7 +36,7 @@ if warnings:
 encoding = guess_encoding(file_pathname)
 print(file_pathname, "will be decoded using the", encoding, "codec.")
 
-with open("../my_gedcom.ged", "r", encoding=encoding) as file:
+with open(file_pathname, "r", encoding=encoding) as file:
     document, warnings = parse(file)
 if warnings:
     print("Parsing warnings:", *warnings, "\n", sep="\n")
