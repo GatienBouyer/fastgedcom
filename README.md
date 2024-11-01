@@ -33,6 +33,7 @@ Comparison:
 	<tr>
 		<td><pre lang="gedcom"><code>
 0 HEAD
+1 FILE my-file.ged
 0 @I1@ INDI
 1 NAME John Doe
 1 BIRT
@@ -42,6 +43,7 @@ Comparison:
 0 TRLR
 		</code></pre></td>
 		<td><pre lang="python3"><code>
+from fastgedcom.parser import strict_parse
 document = strict_parse("my-file.ged")
 person = document["@I1@"]
 # use ">" to get a sub-line
@@ -52,6 +54,7 @@ print(date)
 # Prints "" if the field is missing
 		</code></pre></td>
 		<td><pre lang="python3"><code>
+from gedcom.parser import Parser
 document = Parser()
 document.parse_file("my-file.ged")
 records = document.get_element_dictionary()
