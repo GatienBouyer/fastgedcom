@@ -19,7 +19,7 @@ from fastgedcom.parser import parse
 # to read notes.
 
 gedcom_notes, _ = parse(
-	"""0 HEAD
+        """0 HEAD
 	0 @I1@ INDI
 	1 NAME John /DOE/
 	1 BIRT
@@ -42,7 +42,7 @@ print(f"Note about John:\n{note.payload_with_cont}\n")
 # However, most genealogy software use only one note, which regroup all the information.
 
 gedcom_several_notes, _ = parse(
-	"""
+        """
 	0 @I1@ INDI
 	1 NAME John /DOE/
 	1 NOTE I find John's birth record.
@@ -52,7 +52,7 @@ gedcom_several_notes, _ = parse(
 )
 person = gedcom_several_notes["@I1@"]
 for i, note in enumerate(person >> "NOTE"):
-	print(f"Note n°{i}: {note.payload_with_cont}")
+    print(f"Note n°{i}: {note.payload_with_cont}")
 print("")
 
 
@@ -61,7 +61,7 @@ print("")
 # Nota: Introduced in gedcom version 5, there was modified in version 7: replace 'NOTE' by 'SNOTE'.
 
 gedcom_v5_shared_notes_content, _ = parse(
-	"""
+        """
 	0 @I1@ INDI
 	1 NAME John /DOE/
 	1 NOTE @N1@
@@ -73,14 +73,14 @@ gedcom_v5_shared_notes_content, _ = parse(
 )
 person = gedcom_v5_shared_notes_content["@I1@"]
 for note in person >> "NOTE":
-	if note.payload.startswith("@") and note.payload.endswith("@"):
-		# This note is a shared note
-		shared_note = gedcom_v5_shared_notes_content[note.payload]
-		shared_note_content = shared_note.payload_with_cont[len("NOTE "):]
-		print("Shared note (gedcom v5):", shared_note_content)
+    if note.payload.startswith("@") and note.payload.endswith("@"):
+        # This note is a shared note
+        shared_note = gedcom_v5_shared_notes_content[note.payload]
+        shared_note_content = shared_note.payload_with_cont[len("NOTE "):]
+        print("Shared note (gedcom v5):", shared_note_content)
 
 gedcom_v7_shared_notes_content, _ = parse(
-	"""
+        """
 	0 @I1@ INDI
 	1 NAME John /DOE/
 	1 SNOTE @N1@
@@ -92,17 +92,17 @@ gedcom_v7_shared_notes_content, _ = parse(
 )
 person = gedcom_v7_shared_notes_content["@I1@"]
 for note in person >> "SNOTE":
-	if note.payload.startswith("@") and note.payload.endswith("@"):
-		# This note is a shared note
-		shared_note = gedcom_v7_shared_notes_content[note.payload]
-		shared_note_content = shared_note.payload_with_cont[len("SNOTE "):]
-		print("Shared note (gedcom v7):", shared_note_content)
+    if note.payload.startswith("@") and note.payload.endswith("@"):
+        # This note is a shared note
+        shared_note = gedcom_v7_shared_notes_content[note.payload]
+        shared_note_content = shared_note.payload_with_cont[len("SNOTE "):]
+        print("Shared note (gedcom v7):", shared_note_content)
 
 
 # Sublines of a note
 # Notes can have translation and sources. Notes can also be in other format, e.g. markdown.
 gedcom_note_sublines, _ = parse(
-	"""
+        """
 	0 @I1@ INDI
 	1 NOTE # It's me!
 	2 CONT Me, the author!
@@ -123,12 +123,12 @@ print("Language:", note >= "LANG")
 print("Format:", note >= "MIME")
 print(f"Content:\n{note.payload_with_cont}")
 for translation in note >> "TRAN":
-	print("Translation: ---")
-	print("Language:", translation >= "LANG")
-	print("Format:", translation >= "MIME")
-	print(f"Content:\n{translation.payload_with_cont}")
+    print("Translation: ---")
+    print("Language:", translation >= "LANG")
+    print("Format:", translation >= "MIME")
+    print(f"Content:\n{translation.payload_with_cont}")
 for source in note >> "SOUR":
-	print("Source:", source.payload)
+    print("Source:", source.payload)
 
 
 # Notes can store additional information about:
