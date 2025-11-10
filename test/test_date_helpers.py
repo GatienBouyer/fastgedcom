@@ -37,6 +37,7 @@ class TestDateHelpers(unittest.TestCase):
         self.assertEqual(format_date('BET 22 May 67 AND 1 Apr 67'), '22 May 67 -- 1 Apr 67')
         self.assertEqual(format_date('FROM 62 BC TO 64 BC'), '-62 -- -64')
         self.assertEqual(format_date("FROM 16 Feb 1546/1547"), "16 Feb 1546/1547")
+        self.assertEqual(format_date("TO Dec 888"), "Dec 888")
 
     def test_format_date_stability(self) -> None:
         dates = ('22 Mar 2001', '2001', '12 Fev 67 BCE', 'ABT 22 Mar 2001',
@@ -57,6 +58,7 @@ class TestDateHelpers(unittest.TestCase):
         self.assertEqual(extract_year('ABT 2000 BCE'), '~ -2000')
         self.assertEqual(extract_year('67 BCE'), '-67')
         self.assertEqual(extract_year('BEF Mar 2001 BCE'), '< -2001')
+        self.assertEqual(extract_year('AFT Nov 2025'), '> 2025')
         self.assertEqual(extract_year('BET 2001 AND 2002'), '2001 -- 2002')
         self.assertEqual(extract_year('BET 22 May 67 AND 1 Apr 67'), '67')
         self.assertEqual(extract_year("FROM 16 Feb 1546/1547"), "1547")
@@ -74,6 +76,8 @@ class TestDateHelpers(unittest.TestCase):
         self.assertEqual(extract_int_year('BEF Mar 2001 BCE'), -2001)
         self.assertEqual(extract_int_year('BET 2001 AND 2002'), 2001.5)
         self.assertEqual(extract_int_year('BET 22 May 67 AND 1 Apr 67'), 67)
+        self.assertEqual(extract_int_year('BET 22 Apr 67 AND '), 67)
+        self.assertEqual(extract_int_year('BET  AND 22 May 67'), 67)
         self.assertEqual(extract_int_year("FROM 16 Feb 1546/1547"), 1547)
 
     def test_to_datetime(self) -> None:
@@ -122,20 +126,34 @@ class TestDateHelpers(unittest.TestCase):
         )
 
     def test_line_to_datetime(self) -> None:
-        change_dt = TrueLine(1, "CHAN", "", [
+        date_with_time = TrueLine(1, "CHAN", "", [
             TrueLine(2, "DATE", "20 May 2023",
                      [TrueLine(3, "TIME", "20:51:21")])
         ])
         self.assertEqual(
-            line_to_datetime(change_dt > "DATE"),
+            line_to_datetime(date_with_time > "DATE"),
             datetime(2023, 5, 20, 20, 51, 21)
         )
-        date = TrueLine(1, "BIRT", "", [
+        date_without_time = TrueLine(1, "BIRT", "", [
             TrueLine(2, "DATE", "20 May 2023")
         ])
         self.assertEqual(
-            line_to_datetime(date > "DATE"),
+            line_to_datetime(date_without_time > "DATE"),
             datetime(2023, 5, 20)
+        )
+        date_with_modifier = TrueLine(1, "DEAT", "", [
+            TrueLine(2, "DATE", "ABT 1901")
+        ])
+        self.assertEqual(
+            line_to_datetime(date_with_modifier > "DATE"),
+            datetime(1901, 1, 1)
+        )
+        date_range = TrueLine(1, "BAPT", "", [
+            TrueLine(2, "DATE", "BET 768 AND 814")
+        ])
+        self.assertEqual(
+            line_to_datetime(date_range > "DATE"),
+            datetime(791, 1, 1)
         )
 
     def test_get_date_type(self) -> None:
