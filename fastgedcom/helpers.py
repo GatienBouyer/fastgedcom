@@ -312,6 +312,13 @@ def line_to_datetime(
 
     If default is provided, return default on date parsing failure.
     Otherwise, raise ValueError on failure.
+
+    When the date is a range, return the median date of the range.
     """
-    dt = to_datetime(date.payload, default)
-    return add_time(dt, date >= "TIME")
+    date_type = get_date_type(date.payload)
+    if date_type in (DateType.BET_AND, DateType.FROM_TO):
+        date1, date2 = to_datetime_range(date.payload, default)
+        date_value = date1 + (date2 - date1) / 2
+    else:
+        date_value = to_datetime(date.payload, default)
+    return add_time(date_value, date >= "TIME")
