@@ -1,6 +1,11 @@
+1.1.4 - 2025-11-10
+==================
+- Add Python 3.14 support. [e251c1b](https://github.com/GatienBouyer/fastgedcom/pull/20/commits/e251c1bf0571c56a8e964b62eb2b8b0da90bb7ab)
+- Improve line_to_datetime to also handle date range BET-AND and FROM-TO. [5c40026](https://github.com/GatienBouyer/fastgedcom/pull/20/commits/5c400269d5e43bf2e7d75ad58dbaec0994726650)
+
 1.1.3 - 2024-10-30
 ==================
-- Add Python 3.12 support. [abf7c80](https://github.com/GatienBouyer/fastgedcom/commit/abf7c802f10b7e56a11502130eecfe4f602f58d6)
+- Add Python 3.13 support. [abf7c80](https://github.com/GatienBouyer/fastgedcom/commit/abf7c802f10b7e56a11502130eecfe4f602f58d6)
 - Implement Line.__iter__ to iterate over sub-lines [c25c157](https://github.com/GatienBouyer/fastgedcom/commit/c25c157072a57f4f17cb892aa8fd2807ad442018).
 - Add Document.all_lines to iterate over every single lines [a420c01](https://github.com/GatienBouyer/fastgedcom/commit/a420c010c33646ebba60e91042870a17781399ce).
 
