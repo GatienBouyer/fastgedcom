@@ -18,12 +18,13 @@ class FamilyLink():
 
     The class uses 2 dictionnaries to store family relations:
 
-    - The `parents` dictionnary is used to get the parents of someone
-    (via the FAMC of the person).
-    - The `unions` dictionnary is used to get the spouses or children
-    (via the FAMS of the person).
+    - The :py:attr:`parents` dictionnary is used to get the parents of someone
+      (via the FAMC of the person).
+    - The :py:attr:`unions` dictionnary is used to get the spouses or children
+      (via the FAMS of the person).
+
     Not all methods use those dictionnaries,
-    for example the get_parent_family_ref doesn't.
+    for example the :py:meth:`.get_parent_family_ref` does not.
     """
 
     def __init__(self, document: Document) -> None:
@@ -267,22 +268,36 @@ class FamilyLink():
                       ) -> list[Record]:
         """Return relatives of the person.
 
-        `generation_diff` stand for generation difference:
+        :param generation_diff: stand for the difference in generation:
 
-        * 1 parents, 2 grandparents, -1 children, -2 grand-children, ...
+            =====  =======
+            value  meaning
+            =====  =======
+            1      parents
+            2      grandparents
+            -1     children
+            -2     grand-children
+            ..     etc.
+            =====  =======
 
-        `collateral_diff` is used for same-generation difference:
+        :param collateral_diff: is used for the same-generation difference, must be positive:
 
-        * 1 sibling, 2 cousins, 3 grand-counsins, ...
+            =====  =======
+            value  meaning
+            =====  =======
+            1      siblings
+            2      cousins
+            3      grand-cousins
+            ..     etc.
+            =====  =======
 
         The combinaison can be read as:
 
-        * (when generation_diff > 0) `collateral_diff` of `generation_diff`
-            * examples: siblings of parents, cousings of grandparents
-        * (when generation_diff < 0) `generation_diff` of `collateral_diff`
-            * examples: children of cousins, grand-children of siblings
+        * when ``generation_diff > 0``: *collateral_diff of generation_diff*,
+          e.g. siblings of parents, cousins of grandparents
+        * when ``generation_diff < 0``: *generation_diff of collateral_diff*,
+          e.g. children of cousins, grand-children of siblings
 
-        The `collateral_diff` must be strictly positive.
         This function is a wrapper around :py:meth:`traverse`.
         """
         if generation_diff >= 0:
