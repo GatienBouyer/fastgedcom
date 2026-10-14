@@ -36,6 +36,20 @@ Pointer: TypeAlias = XRef | VoidRef
 or a non-existing one."""
 
 
+HEADER: TypeAlias = Literal["HEAD"]
+"""The unique identifier of the header (or HEAD) record, that describes the document itself."""
+TRAILER: TypeAlias = Literal["TRLR"]
+"""The unique identifier of the trailer record, an empty record that marks the end of the document."""
+
+
+RecordRef: TypeAlias = HEADER | TRAILER | XRef
+"""Any identifier of document record:
+
+- the special identifier of the header or trailer,
+- or a generic cress-reference identifier.
+"""
+
+
 class Line(ABC):
     """Abstract base class for gedcom lines.
 
@@ -269,7 +283,7 @@ class Document():
     :py:attr:`records` dictionnary and the other lines are
     accessible via :py:attr:`.TrueLine.sub_lines`."""
 
-    records: dict[XRef, Record]
+    records: dict[RecordRef, Record]
     """Dictionnary of records, accessible via :py:meth:`get_records` or
     :py:meth:`__getitem__`. Access it directly to raise KeyError instead
     of getting a :py:class:`.FakeLine`. Usefull when you a pretty sure of
@@ -283,7 +297,7 @@ class Document():
         the records, the header, and the TRLR line."""
         return iter(self.records.values())
 
-    def __contains__(self, identifier: XRef) -> bool:
+    def __contains__(self, identifier: RecordRef) -> bool:
         """Return True if the identifier refers to an existing record."""
         return identifier in self.records
 
@@ -298,7 +312,7 @@ class Document():
     """Alias for :py:meth:`get_records` to shorten the syntax
     by using the >> operator."""
 
-    def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
+    def get_record(self, identifier: RecordRef) -> Record | FakeLine:
         """Return the record under that ``identifier``."""
         return self.records.get(identifier, fake_line)
 
