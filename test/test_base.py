@@ -81,6 +81,25 @@ class TestTrueLine(unittest.TestCase):
         ])
         self.assertEqual(note_line3.payload_with_cont, note_text3)
 
+    def test_set_payload_with_cont(self) -> None:
+        note_text1 = "This is a text\non several\n\nlines"
+        note_line1 = TrueLine(1, "NOTE", "This is", [
+            TrueLine(2, "CONT", "the old text"),
+            TrueLine(2, "CONC", "that have multiple lines")
+        ])
+        note_line1.payload_with_cont = note_text1
+        expected_output1 = TrueLine(
+            1, "NOTE", "This is a text",
+            [TrueLine(2, "CONT", "on several"), TrueLine(2, "CONT"), TrueLine(2, "CONT", "lines")],
+        )
+        self.assertEqual(note_line1, expected_output1)
+
+        note_text2 = "This is a single line text"
+        note_line2 = TrueLine(1, "NOTE", "This is", [TrueLine(2, "CONT", "the old text")])
+        note_line2.payload_with_cont = note_text2
+        expected_output2 = TrueLine(1, "NOTE", "This is a single line text")
+        self.assertEqual(note_line2, expected_output2)
+
 
 class TestFakeLine(unittest.TestCase):
     def test_get_sub_line(self) -> None:

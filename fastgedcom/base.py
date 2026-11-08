@@ -271,6 +271,17 @@ class TrueLine(Line):
                 text += sub_line.payload
         return text
 
+    @payload_with_cont.setter
+    def payload_with_cont(self, payload: str) -> None:
+        text_lines = payload.splitlines()
+        self.payload = text_lines[0]
+        new_sub_lines = [TrueLine(self.level + 1, "CONT", text_line) for text_line in text_lines[1:]]
+        for sub_line in self.sub_lines:
+            if sub_line.tag == "CONT" or sub_line.tag == "CONC":
+                continue
+            new_sub_lines.append(sub_line)
+        self.sub_lines = new_sub_lines
+
 
 Record: TypeAlias = TrueLine
 """A level 0 line referenced by an XRef in the document."""
