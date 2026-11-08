@@ -57,3 +57,12 @@ max_line_length = 120
 
 [tool.mypy]
 strict = true
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+	"def __repr__",
+	"if __name__ == .__main__.:",
+]

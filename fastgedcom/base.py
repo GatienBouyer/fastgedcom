@@ -163,20 +163,11 @@ class FakeLine(Line):
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         return []
 
-    def __rshift__(self, tag: str) -> list['TrueLine']:
-        return self.get_sub_lines(tag)
-
     def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
         return fake_line
 
-    def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
-        return self.get_sub_line(tag)
-
     def get_sub_line_payload(self, tag: str) -> str:
         return ""
-
-    def __ge__(self, tag: str) -> str:
-        return self.get_sub_line_payload(tag)
 
     def __repr__(self) -> str:
         """Return the string representation of the class."""
@@ -231,9 +222,6 @@ class TrueLine(Line):
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
 
-    def __rshift__(self, tag: str) -> list['TrueLine']:
-        return self.get_sub_lines(tag)
-
     def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
         for sub_line in self.sub_lines:
             if sub_line.tag == tag:
@@ -258,9 +246,6 @@ class TrueLine(Line):
             if sub_line.tag == tag:
                 return sub_line.payload
         return ""
-
-    def __ge__(self, tag: str) -> str:
-        return self.get_sub_line_payload(tag)
 
     def __str__(self) -> str:
         """Return the gedcom representation of the line (sub-lines excluded)."""
