@@ -145,9 +145,11 @@ class TestDocument(unittest.TestCase):
         doc = Document()
         indi1 = doc.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
         indi2 = doc.records["@I2@"] = TrueLine(0, "@I2@", "INDI")
+        snote1 = doc.records["@N1@"] = TrueLine(0, "@N1@", "SNOTE This is a shared note record")
         doc.records["@F1@"] = TrueLine(0, "@F1@", "FAM")
         self.assertEqual(list(doc.get_records("INDI")), [indi1, indi2])
         self.assertEqual(list(doc >> "INDI"), [indi1, indi2])
+        self.assertEqual(list(doc >> "SNOTE"), [snote1])
 
     def test_iterable(self) -> None:
         doc = Document()

@@ -316,7 +316,7 @@ class Document():
         """Return an iterator over records of that ``record_type``.
         The type is the payload of level 0 lines: INDI, FAM, etc.."""
         for record in self.records.values():
-            if record.payload == record_type:
+            if record.payload.startswith(record_type):
                 yield record
 
     __rshift__ = get_records
