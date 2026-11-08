@@ -12,6 +12,13 @@ class TestTrueLine(unittest.TestCase):
         self.assertEqual(indi > "SEX", sex)
         self.assertEqual(indi > "BIRT", fake_line)
 
+    def test_get_sub_line_or_create(self) -> None:
+        name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
+        sex = TrueLine(1, "SEX", "U")
+        indi = TrueLine(0, "@I1@", "INDI", [name, sex])
+        self.assertEqual(indi.get_sub_line_or_create("SEX"), sex)
+        self.assertEqual(name.get_sub_line_or_create("SURN"), TrueLine(2, "SURN", "", []))
+
     def test_get_sub_lines(self) -> None:
         name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
         fam1 = TrueLine(1, "FAMS", "@F1@")
@@ -140,6 +147,12 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(doc.get_record("@I1@"), indi)
         self.assertEqual(doc["@I1@"], indi)
         self.assertEqual(doc["@I9@"], fake_line)
+
+    def test_get_or_create(self) -> None:
+        doc = Document()
+        indi1 = doc.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
+        self.assertEqual(doc.get_or_create("@I1@", "INDI"), indi1)
+        self.assertEqual(doc.get_or_create("@I2@", "INDI"), TrueLine(0, "@I2@", "INDI"))
 
     def test_get_records(self) -> None:
         doc = Document()

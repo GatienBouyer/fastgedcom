@@ -2,6 +2,7 @@
 
 from typing import Iterator, Literal, TypeAlias
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 
 SubmRef: TypeAlias = str
@@ -242,6 +243,16 @@ class TrueLine(Line):
     def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
         return self.get_sub_line(tag)
 
+    def get_sub_line_or_create(self, tag: str) -> 'TrueLine':
+        """Return the first sub-line having the given :any:`tag`.
+        Create the sub-line if it does not already exist."""
+        sub_line = self.get_sub_line(tag)
+        if sub_line:
+            return sub_line
+        new_sub_line = TrueLine(self.level + 1, tag)
+        self.sub_lines.append(new_sub_line)
+        return new_sub_line
+
     def get_sub_line_payload(self, tag: str) -> str:
         for sub_line in self.sub_lines:
             if sub_line.tag == tag:
@@ -324,12 +335,24 @@ class Document():
     by using the >> operator."""
 
     def get_record(self, identifier: RecordRef) -> Record | FakeLine:
-        """Return the record under that ``identifier``."""
+        """Return the record under that :any:`identifier`.
+        Return a :py:class:`.FakeLine` if no record matches."""
         return self.records.get(identifier, fake_line)
 
     __getitem__ = get_record
     """Alias for :py:meth:`get_record` to shorten the syntax
     by using the [] operator."""
+
+    def get_or_create(self, identifier: RecordRef, record_type: str) -> Record:
+        """Return the record under that :any:`identifier`.
+        Create the record if it does not already exists.
+        The record type is the payload of the created record line."""
+        rec = self.records.get(identifier)
+        if rec is not None:
+            return rec
+        new_rec = TrueLine(0, identifier, record_type)
+        self.records[identifier] = new_rec
+        return new_rec
 
     def all_lines(self) -> Iterator[list[TrueLine]]:
         """Return an iterator over all lines of the document.
