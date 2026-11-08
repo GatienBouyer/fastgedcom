@@ -1,3 +1,10 @@
+1.2.0 - 2026-11-08
+==================
+- Add type literals for `HEAD` (the gedcom header) and `TRLR` (end of the gedcom) records. [b8ce519](https://github.com/GatienBouyer/fastgedcom/pull/21/changes/b8ce519400cc106e612dda4ab8615c469b2ecf5d)
+- Add the possibility to set multi-line payload with `payload_with_cont` on `TrueLine`. [d7c4ef2](https://github.com/GatienBouyer/fastgedcom/pull/21/changes/d7c4ef2158c9e208cac0484a131fc206fec29689)
+- Fix `Document.get_records` for shared note records. [5d4ebdf](https://github.com/GatienBouyer/fastgedcom/pull/21/changes/5d4ebdf8feb5ec2ac5540a6e6a802445f14b2e80)
+- Add methods `Document.get_or_create` and `TrueLine.get_sub_line_or_create` to create the record or sub-line when it is not present. [1b4b8d0](https://github.com/GatienBouyer/fastgedcom/pull/21/changes/1b4b8d0aa0360dfec99784ae3a7537d4289e49df)
+
 1.1.4 - 2025-11-10
 ==================
 - Add Python 3.14 support. [e251c1b](https://github.com/GatienBouyer/fastgedcom/pull/20/commits/e251c1bf0571c56a8e964b62eb2b8b0da90bb7ab)

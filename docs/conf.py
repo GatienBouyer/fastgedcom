@@ -1,10 +1,10 @@
 # Configuration file for the Sphinx documentation builder.
 
 project = 'FastGedcom'
-copyright = '2025, GatienBouyer'
+copyright = '2026, GatienBouyer'
 author = 'GatienBouyer'
-release = '1.1.4'
-version = '1.1.4'
+release = '1.2.0'
+version = '1.2.0'
 
 html_theme = 'sphinx_rtd_theme'
 
