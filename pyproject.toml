@@ -1,6 +1,6 @@
 [project]
 name = "fastgedcom"
-version = "1.1.4"
+version = "1.2.0"
 description = "A lightweight tool to easily parse, browse and edit gedcom files."
 keywords = ["fastgedcom", "gedcom", "parser", "genealogy"]
 authors = [
@@ -18,6 +18,7 @@ classifiers = [
 	"Programming Language :: Python :: 3.12",
 	"Programming Language :: Python :: 3.13",
 	"Programming Language :: Python :: 3.14",
+	"Programming Language :: Python :: 3.15",
 	"Topic :: Sociology :: Genealogy",
 	"Intended Audience :: Developers",
 	"Operating System :: OS Independent",
@@ -56,3 +57,12 @@ max_line_length = 120
 
 [tool.mypy]
 strict = true
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+	"def __repr__",
+	"if __name__ == .__main__.:",
+]

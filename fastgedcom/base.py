@@ -2,6 +2,7 @@
 
 from typing import Iterator, Literal, TypeAlias
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 
 SubmRef: TypeAlias = str
@@ -34,6 +35,20 @@ had a child whom we know nothing. The line is used to keep the children birth or
 Pointer: TypeAlias = XRef | VoidRef
 """Generic pointer that is used in the payload to reference an existing record
 or a non-existing one."""
+
+
+HEADER: TypeAlias = Literal["HEAD"]
+"""The unique identifier of the header (or HEAD) record, that describes the document itself."""
+TRAILER: TypeAlias = Literal["TRLR"]
+"""The unique identifier of the trailer record, an empty record that marks the end of the document."""
+
+
+RecordRef: TypeAlias = HEADER | TRAILER | XRef
+"""Any identifier of document record:
+
+- the special identifier of the header or trailer,
+- or a generic cress-reference identifier.
+"""
 
 
 class Line(ABC):
@@ -148,20 +163,11 @@ class FakeLine(Line):
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         return []
 
-    def __rshift__(self, tag: str) -> list['TrueLine']:
-        return self.get_sub_lines(tag)
-
     def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
         return fake_line
 
-    def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
-        return self.get_sub_line(tag)
-
     def get_sub_line_payload(self, tag: str) -> str:
         return ""
-
-    def __ge__(self, tag: str) -> str:
-        return self.get_sub_line_payload(tag)
 
     def __repr__(self) -> str:
         """Return the string representation of the class."""
@@ -216,9 +222,6 @@ class TrueLine(Line):
     def get_sub_lines(self, tag: str) -> list['TrueLine']:
         return [sub_line for sub_line in self.sub_lines if sub_line.tag == tag]
 
-    def __rshift__(self, tag: str) -> list['TrueLine']:
-        return self.get_sub_lines(tag)
-
     def get_sub_line(self, tag: str) -> 'TrueLine | FakeLine':
         for sub_line in self.sub_lines:
             if sub_line.tag == tag:
@@ -228,14 +231,21 @@ class TrueLine(Line):
     def __gt__(self, tag: str) -> 'TrueLine | FakeLine':
         return self.get_sub_line(tag)
 
+    def get_sub_line_or_create(self, tag: str) -> 'TrueLine':
+        """Return the first sub-line having the given :any:`tag`.
+        Create the sub-line if it does not already exist."""
+        sub_line = self.get_sub_line(tag)
+        if sub_line:
+            return sub_line
+        new_sub_line = TrueLine(self.level + 1, tag)
+        self.sub_lines.append(new_sub_line)
+        return new_sub_line
+
     def get_sub_line_payload(self, tag: str) -> str:
         for sub_line in self.sub_lines:
             if sub_line.tag == tag:
                 return sub_line.payload
         return ""
-
-    def __ge__(self, tag: str) -> str:
-        return self.get_sub_line_payload(tag)
 
     def __str__(self) -> str:
         """Return the gedcom representation of the line (sub-lines excluded)."""
@@ -257,6 +267,17 @@ class TrueLine(Line):
                 text += sub_line.payload
         return text
 
+    @payload_with_cont.setter
+    def payload_with_cont(self, payload: str) -> None:
+        text_lines = payload.splitlines()
+        self.payload = text_lines[0]
+        new_sub_lines = [TrueLine(self.level + 1, "CONT", text_line) for text_line in text_lines[1:]]
+        for sub_line in self.sub_lines:
+            if sub_line.tag == "CONT" or sub_line.tag == "CONC":
+                continue
+            new_sub_lines.append(sub_line)
+        self.sub_lines = new_sub_lines
+
 
 Record: TypeAlias = TrueLine
 """A level 0 line referenced by an XRef in the document."""
@@ -269,7 +290,7 @@ class Document():
     :py:attr:`records` dictionnary and the other lines are
     accessible via :py:attr:`.TrueLine.sub_lines`."""
 
-    records: dict[XRef, Record]
+    records: dict[RecordRef, Record]
     """Dictionnary of records, accessible via :py:meth:`get_records` or
     :py:meth:`__getitem__`. Access it directly to raise KeyError instead
     of getting a :py:class:`.FakeLine`. Usefull when you a pretty sure of
@@ -283,7 +304,7 @@ class Document():
         the records, the header, and the TRLR line."""
         return iter(self.records.values())
 
-    def __contains__(self, identifier: XRef) -> bool:
+    def __contains__(self, identifier: RecordRef) -> bool:
         """Return True if the identifier refers to an existing record."""
         return identifier in self.records
 
@@ -291,20 +312,32 @@ class Document():
         """Return an iterator over records of that ``record_type``.
         The type is the payload of level 0 lines: INDI, FAM, etc.."""
         for record in self.records.values():
-            if record.payload == record_type:
+            if record.payload.startswith(record_type):
                 yield record
 
     __rshift__ = get_records
     """Alias for :py:meth:`get_records` to shorten the syntax
     by using the >> operator."""
 
-    def get_record(self, identifier: XRef | Literal["HEAD"]) -> Record | FakeLine:
-        """Return the record under that ``identifier``."""
+    def get_record(self, identifier: RecordRef) -> Record | FakeLine:
+        """Return the record under that :any:`identifier`.
+        Return a :py:class:`.FakeLine` if no record matches."""
         return self.records.get(identifier, fake_line)
 
     __getitem__ = get_record
     """Alias for :py:meth:`get_record` to shorten the syntax
     by using the [] operator."""
+
+    def get_or_create(self, identifier: RecordRef, record_type: str) -> Record:
+        """Return the record under that :any:`identifier`.
+        Create the record if it does not already exists.
+        The record type is the payload of the created record line."""
+        rec = self.records.get(identifier)
+        if rec is not None:
+            return rec
+        new_rec = TrueLine(0, identifier, record_type)
+        self.records[identifier] = new_rec
+        return new_rec
 
     def all_lines(self) -> Iterator[list[TrueLine]]:
         """Return an iterator over all lines of the document.

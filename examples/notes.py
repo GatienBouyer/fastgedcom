@@ -133,7 +133,7 @@ for source in note >> "SOUR":
 
 # Notes can store additional information about:
 # a person, a family, an event (birth, marriage, ...), a person name, a place, a source, etc.
-# It is very unlikely that you will need of all those note kinds.
+# It is unlikely that you will need of all those note kinds.
 
 gedcom_note_kinds, _ = parse("""0 HEAD
 1 GEDC

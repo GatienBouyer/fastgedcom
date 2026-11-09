@@ -12,6 +12,13 @@ class TestTrueLine(unittest.TestCase):
         self.assertEqual(indi > "SEX", sex)
         self.assertEqual(indi > "BIRT", fake_line)
 
+    def test_get_sub_line_or_create(self) -> None:
+        name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
+        sex = TrueLine(1, "SEX", "U")
+        indi = TrueLine(0, "@I1@", "INDI", [name, sex])
+        self.assertEqual(indi.get_sub_line_or_create("SEX"), sex)
+        self.assertEqual(name.get_sub_line_or_create("SURN"), TrueLine(2, "SURN", "", []))
+
     def test_get_sub_lines(self) -> None:
         name = TrueLine(1, "NAME", "éàç /ÉÀÇ/")
         fam1 = TrueLine(1, "FAMS", "@F1@")
@@ -60,6 +67,7 @@ class TestTrueLine(unittest.TestCase):
         note_line1 = TrueLine(1, "NOTE", "This is a text", [
             TrueLine(2, "CONT", "on several"),
             TrueLine(2, "CONT", "lines"),
+            TrueLine(2, "MIME", "text/markdown"),
         ])
         self.assertEqual(note_line1.payload_with_cont, note_text1)
 
@@ -80,6 +88,27 @@ class TestTrueLine(unittest.TestCase):
             TrueLine(2, "CONC", "ence that is split."),
         ])
         self.assertEqual(note_line3.payload_with_cont, note_text3)
+
+    def test_set_payload_with_cont(self) -> None:
+        note_text1 = "This is a text\non several\n\nlines"
+        note_line1 = TrueLine(1, "NOTE", "This is", [
+            TrueLine(2, "CONT", "the old text"),
+            TrueLine(2, "CONC", "that have multiple lines"),
+            TrueLine(2, "MIME", "text/markdown"),
+        ])
+        note_line1.payload_with_cont = note_text1
+        expected_output1 = TrueLine(
+            1, "NOTE", "This is a text",
+            [TrueLine(2, "CONT", "on several"), TrueLine(2, "CONT"), TrueLine(2, "CONT", "lines"),
+             TrueLine(2, "MIME", "text/markdown")],
+        )
+        self.assertEqual(note_line1, expected_output1)
+
+        note_text2 = "This is a single line text"
+        note_line2 = TrueLine(1, "NOTE", "This is", [TrueLine(2, "CONT", "the old text")])
+        note_line2.payload_with_cont = note_text2
+        expected_output2 = TrueLine(1, "NOTE", "This is a single line text")
+        self.assertEqual(note_line2, expected_output2)
 
 
 class TestFakeLine(unittest.TestCase):
@@ -122,13 +151,21 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(doc["@I1@"], indi)
         self.assertEqual(doc["@I9@"], fake_line)
 
+    def test_get_or_create(self) -> None:
+        doc = Document()
+        indi1 = doc.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
+        self.assertEqual(doc.get_or_create("@I1@", "INDI"), indi1)
+        self.assertEqual(doc.get_or_create("@I2@", "INDI"), TrueLine(0, "@I2@", "INDI"))
+
     def test_get_records(self) -> None:
         doc = Document()
         indi1 = doc.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
         indi2 = doc.records["@I2@"] = TrueLine(0, "@I2@", "INDI")
+        snote1 = doc.records["@N1@"] = TrueLine(0, "@N1@", "SNOTE This is a shared note record")
         doc.records["@F1@"] = TrueLine(0, "@F1@", "FAM")
         self.assertEqual(list(doc.get_records("INDI")), [indi1, indi2])
         self.assertEqual(list(doc >> "INDI"), [indi1, indi2])
+        self.assertEqual(list(doc >> "SNOTE"), [snote1])
 
     def test_iterable(self) -> None:
         doc = Document()
@@ -156,6 +193,17 @@ class TestDocument(unittest.TestCase):
             [indi2, sex],
             [fam],
         ])
+
+    def test_equality(self) -> None:
+        doc = Document()
+        self.assertEqual(doc, Document())
+        self.assertNotEqual(doc, {})
+
+        doc.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
+        self.assertNotEqual(doc, Document())
+        doc2 = Document()
+        doc2.records["@I1@"] = TrueLine(0, "@I1@", "INDI")
+        self.assertEqual(doc, doc2)
 
     def test_get_source(self) -> None:
         doc = Document()

@@ -1,7 +1,6 @@
 from collections import defaultdict
-from collections.abc import Generator
 
-from fastgedcom.base import Document, TrueLine
+from fastgedcom.base import Document
 from fastgedcom.parser import strict_parse
 
 document = strict_parse("../my_gedcom.ged")
